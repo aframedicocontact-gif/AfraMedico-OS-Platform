@@ -1,0 +1,446 @@
+[
+  {
+    "id": "rpc-001",
+    "patientId": "PAT-1001",
+    "caseId": "CASE-1001-CARDIAC",
+    "patientName": "Amina Yusuf",
+    "dateOfBirth": "1984-03-14",
+    "country": "Nigeria",
+    "treatment": "Cardiac surgery",
+    "medicalCondition": "Mitral valve disease requiring specialist review",
+    "destination": "Turkey",
+    "caseStatus": "Active",
+    "createdDate": "2026-06-19",
+    "closedDate": "",
+    "reopenedDate": "",
+    "relatedQuotes": ["Acibadem valve repair package", "Medipol quote pending"],
+    "relatedMedicalReview": "CARD-REV-1001",
+    "relatedPatientJourney": "JOURNEY-1001",
+    "possibleDuplicate": true,
+    "primaryPartnerAttribution": "Lagos Family Physicians Group",
+    "firstReferralDate": "2026-06-19",
+    "lifetimePartnerOwner": "Lagos Family Physicians Group",
+    "adminOverrideReason": "",
+    "currentCommissionOwner": "Lagos Family Physicians Group",
+    "ownership": "Confirmed First Referrer",
+    "conflict": true,
+    "partnerNotified": true,
+    "patientCreatedDate": "2026-06-19",
+    "partnerAttempts": [
+      {
+        "id": "pa-001",
+        "partner": "Lagos Family Physicians Group",
+        "referralDate": "2026-06-19",
+        "channel": "WhatsApp",
+        "ownership": "Confirmed First Referrer",
+        "evidence": [
+          {
+            "id": "ev-001",
+            "type": "WhatsApp",
+            "label": "Initial patient introduction",
+            "date": "2026-06-19",
+            "notes": "Partner sent patient name, phone number, and cardiac diagnosis."
+          },
+          {
+            "id": "ev-002",
+            "type": "Internal Note",
+            "label": "Coordinator intake note",
+            "date": "2026-06-19",
+            "notes": "Maya confirmed first-referrer timestamp."
+          }
+        ]
+      },
+      {
+        "id": "pa-002",
+        "partner": "Lagos Executive Clinic",
+        "referralDate": "2026-06-21",
+        "channel": "Email",
+        "ownership": "Pending Review",
+        "evidence": [
+          {
+            "id": "ev-003",
+            "type": "Email",
+            "label": "Second referral attempt",
+            "date": "2026-06-21",
+            "notes": "Clinic submitted same patient after first referral was already logged."
+          }
+        ]
+      }
+    ],
+    "hospitalReferrals": [
+      {
+        "id": "hr-001",
+        "hospital": "Acibadem",
+        "referralDate": "2026-06-20",
+        "registrationDate": "2026-06-20",
+        "registrationStatus": "Confirmed",
+        "hospitalCaseId": "ACI-2026-1884",
+        "contactPerson": "Elif Arslan",
+        "coordinator": "Maya",
+        "documentsSent": true,
+        "quoteStatus": "Received",
+        "quote": "Valve repair package",
+        "treatmentCost": 28500,
+        "expectedResponseDate": "2026-06-24",
+        "evidence": [
+          {
+            "id": "ev-004",
+            "type": "Hospital Confirmation",
+            "label": "Registration confirmation",
+            "date": "2026-06-20",
+            "notes": "Hospital confirmed patient case ID by email."
+          },
+          {
+            "id": "ev-005",
+            "type": "PDF",
+            "label": "Quote PDF",
+            "date": "2026-06-24",
+            "notes": "Received hospital package quotation."
+          }
+        ],
+        "timeline": [
+          {
+            "id": "au-001",
+            "date": "2026-06-20",
+            "time": "09:14",
+            "user": "Maya",
+            "action": "Referral Sent",
+            "evidence": "Email to Acibadem international office",
+            "notes": "Cardiac records attached."
+          },
+          {
+            "id": "au-002",
+            "date": "2026-06-20",
+            "time": "11:30",
+            "user": "Maya",
+            "action": "Hospital Case ID Received",
+            "evidence": "ACI-2026-1884",
+            "notes": "Case ID stored without overwriting other hospital referrals."
+          }
+        ]
+      },
+      {
+        "id": "hr-002",
+        "hospital": "Medipol",
+        "referralDate": "2026-06-21",
+        "registrationDate": "2026-06-21",
+        "registrationStatus": "Confirmed",
+        "hospitalCaseId": "MED-77421",
+        "contactPerson": "Burak Demir",
+        "coordinator": "Maya",
+        "documentsSent": true,
+        "quoteStatus": "Requested",
+        "quote": "Pending",
+        "treatmentCost": 0,
+        "expectedResponseDate": "2026-06-26",
+        "evidence": [
+          {
+            "id": "ev-006",
+            "type": "Portal Screenshot",
+            "label": "Medipol portal registration",
+            "date": "2026-06-21",
+            "notes": "Screenshot captured after registration."
+          }
+        ],
+        "timeline": [
+          {
+            "id": "au-003",
+            "date": "2026-06-21",
+            "time": "13:05",
+            "user": "Maya",
+            "action": "Patient Registered",
+            "evidence": "Portal screenshot",
+            "notes": "Registration allowed despite duplicate partner attempt."
+          }
+        ]
+      },
+      {
+        "id": "hr-003",
+        "hospital": "Memorial",
+        "referralDate": "2026-06-22",
+        "registrationDate": "2026-06-22",
+        "registrationStatus": "Pending",
+        "hospitalCaseId": "Pending",
+        "contactPerson": "International desk",
+        "coordinator": "Maya",
+        "documentsSent": true,
+        "quoteStatus": "Not Requested",
+        "quote": "Not requested",
+        "treatmentCost": 0,
+        "expectedResponseDate": "2026-06-27",
+        "evidence": [
+          {
+            "id": "ev-007",
+            "type": "Email",
+            "label": "Referral submission",
+            "date": "2026-06-22",
+            "notes": "Hospital has not confirmed case ID yet."
+          }
+        ],
+        "timeline": [
+          {
+            "id": "au-004",
+            "date": "2026-06-22",
+            "time": "10:45",
+            "user": "Maya",
+            "action": "Referral Sent",
+            "evidence": "Email",
+            "notes": "Awaiting confirmation."
+          }
+        ]
+      }
+    ],
+    "duplicateReviews": [
+      {
+        "id": "dr-001",
+        "status": "Pending",
+        "matchingScore": 94,
+        "existingPatient": "Amina Yusuf",
+        "existingPartner": "Lagos Family Physicians Group",
+        "existingHospitalReferrals": ["Acibadem", "Medipol", "Memorial"],
+        "evidence": [
+          {
+            "id": "ev-008",
+            "type": "Email",
+            "label": "Second partner referral",
+            "date": "2026-06-21",
+            "notes": "Same phone and cardiac diagnosis as original lead."
+          }
+        ],
+        "recommendedAction": "Assign Commission Owner"
+      }
+    ],
+    "commissionDecisions": [
+      {
+        "id": "cd-001",
+        "commissionOwner": "Lagos Family Physicians Group",
+        "ownership": "Confirmed First Referrer",
+        "reason": "First documented referral with timestamped WhatsApp evidence.",
+        "decisionDate": "2026-06-22",
+        "decisionBy": "Operations Manager"
+      }
+    ],
+    "auditTrail": [
+      {
+        "id": "au-005",
+        "date": "2026-06-19",
+        "time": "08:42",
+        "user": "Maya",
+        "action": "Lead Created",
+        "evidence": "WhatsApp introduction",
+        "notes": "Patient entered protection ledger."
+      },
+      {
+        "id": "au-006",
+        "date": "2026-06-21",
+        "time": "15:20",
+        "user": "System",
+        "action": "Possible Duplicate Detected",
+        "evidence": "Matching phone, name, diagnosis",
+        "notes": "Registration allowed; duplicate review case created."
+      },
+      {
+        "id": "au-007",
+        "date": "2026-06-22",
+        "time": "16:10",
+        "user": "Operations Manager",
+        "action": "Commission Owner Changed",
+        "evidence": "Decision record cd-001",
+        "notes": "Owner confirmed as first referrer."
+      },
+      {
+        "id": "au-008",
+        "date": "2026-06-22",
+        "time": "16:20",
+        "user": "Maya",
+        "action": "Partner Notified",
+        "evidence": "Email delivered",
+        "notes": "First referrer notified of commission ownership decision."
+      }
+    ]
+  },
+  {
+    "id": "rpc-002",
+    "patientId": "PAT-1004",
+    "caseId": "CASE-1004-SPINE",
+    "patientName": "Peter Mwangi",
+    "dateOfBirth": "1978-04-07",
+    "country": "Kenya",
+    "treatment": "Spine surgery",
+    "medicalCondition": "Lumbar disc herniation with persistent pain",
+    "destination": "Thailand / India",
+    "caseStatus": "Reopened",
+    "createdDate": "2026-06-21",
+    "closedDate": "2026-06-23",
+    "reopenedDate": "2026-06-24",
+    "relatedQuotes": ["Bumrungrad spine surgery estimate", "Apollo quote requested"],
+    "relatedMedicalReview": "SPINE-REV-1004",
+    "relatedPatientJourney": "JOURNEY-1004",
+    "possibleDuplicate": true,
+    "primaryPartnerAttribution": "Nairobi Imaging Centre",
+    "firstReferralDate": "2026-06-21",
+    "lifetimePartnerOwner": "Nairobi Imaging Centre",
+    "adminOverrideReason": "Manager approved split after facilitator supplied family coordination evidence.",
+    "currentCommissionOwner": "Nairobi Imaging Centre",
+    "ownership": "Split Commission",
+    "conflict": false,
+    "partnerNotified": true,
+    "patientCreatedDate": "2026-06-21",
+    "partnerAttempts": [
+      {
+        "id": "pa-003",
+        "partner": "Nairobi Imaging Centre",
+        "referralDate": "2026-06-21",
+        "channel": "Email",
+        "ownership": "Split Commission",
+        "evidence": [
+          {
+            "id": "ev-009",
+            "type": "Email",
+            "label": "MRI referral package",
+            "date": "2026-06-21",
+            "notes": "Diagnostic partner sent MRI and patient contact."
+          }
+        ]
+      },
+      {
+        "id": "pa-004",
+        "partner": "West Africa Medical Facilitators",
+        "referralDate": "2026-06-22",
+        "channel": "Phone Call",
+        "ownership": "Split Commission",
+        "evidence": [
+          {
+            "id": "ev-010",
+            "type": "Voice Note",
+            "label": "Facilitator voice note",
+            "date": "2026-06-22",
+            "notes": "Facilitator assisted family but was not first referrer."
+          }
+        ]
+      }
+    ],
+    "hospitalReferrals": [
+      {
+        "id": "hr-004",
+        "hospital": "Bumrungrad",
+        "referralDate": "2026-06-23",
+        "registrationDate": "2026-06-23",
+        "registrationStatus": "Confirmed",
+        "hospitalCaseId": "BUM-TH-9021",
+        "contactPerson": "Narin S.",
+        "coordinator": "Nadia",
+        "documentsSent": true,
+        "quoteStatus": "Received",
+        "quote": "Spine surgery estimate",
+        "treatmentCost": 21400,
+        "expectedResponseDate": "2026-06-25",
+        "evidence": [
+          {
+            "id": "ev-011",
+            "type": "Hospital Registration Number",
+            "label": "BUM-TH-9021",
+            "date": "2026-06-23",
+            "notes": "Registration number confirmed by hospital."
+          }
+        ],
+        "timeline": [
+          {
+            "id": "au-009",
+            "date": "2026-06-23",
+            "time": "12:12",
+            "user": "Nadia",
+            "action": "Hospital Confirmed",
+            "evidence": "Hospital registration number",
+            "notes": "Quote expected within 48 hours."
+          }
+        ]
+      },
+      {
+        "id": "hr-005",
+        "hospital": "Apollo Spine Unit",
+        "referralDate": "2026-06-24",
+        "registrationDate": "2026-06-24",
+        "registrationStatus": "Submitted",
+        "hospitalCaseId": "Pending",
+        "contactPerson": "International team",
+        "coordinator": "Nadia",
+        "documentsSent": true,
+        "quoteStatus": "Requested",
+        "quote": "Pending",
+        "treatmentCost": 0,
+        "expectedResponseDate": "2026-06-28",
+        "evidence": [
+          {
+            "id": "ev-012",
+            "type": "PDF",
+            "label": "MRI package",
+            "date": "2026-06-24",
+            "notes": "Diagnostic package sent for review."
+          }
+        ],
+        "timeline": [
+          {
+            "id": "au-010",
+            "date": "2026-06-24",
+            "time": "09:55",
+            "user": "Nadia",
+            "action": "Quote Requested",
+            "evidence": "PDF records",
+            "notes": "Requested surgical quote."
+          }
+        ]
+      }
+    ],
+    "duplicateReviews": [
+      {
+        "id": "dr-002",
+        "status": "Resolved",
+        "matchingScore": 88,
+        "existingPatient": "Peter Mwangi",
+        "existingPartner": "Nairobi Imaging Centre",
+        "existingHospitalReferrals": ["Bumrungrad", "Apollo Spine Unit"],
+        "evidence": [
+          {
+            "id": "ev-013",
+            "type": "Voice Note",
+            "label": "Family facilitator message",
+            "date": "2026-06-22",
+            "notes": "Manager approved split commission."
+          }
+        ],
+        "recommendedAction": "Split Commission"
+      }
+    ],
+    "commissionDecisions": [
+      {
+        "id": "cd-002",
+        "commissionOwner": "Nairobi Imaging Centre + West Africa Medical Facilitators",
+        "ownership": "Split Commission",
+        "reason": "Diagnostic partner referred first; facilitator contributed family coordination.",
+        "decisionDate": "2026-06-24",
+        "decisionBy": "Operations Manager"
+      }
+    ],
+    "auditTrail": [
+      {
+        "id": "au-011",
+        "date": "2026-06-21",
+        "time": "10:05",
+        "user": "Nadia",
+        "action": "Patient Registered",
+        "evidence": "MRI referral package",
+        "notes": "Patient added with diagnostic partner evidence."
+      },
+      {
+        "id": "au-012",
+        "date": "2026-06-24",
+        "time": "17:00",
+        "user": "Operations Manager",
+        "action": "Decision Approved",
+        "evidence": "Commission decision cd-002",
+        "notes": "Split commission approved and logged."
+      }
+    ]
+  }
+]

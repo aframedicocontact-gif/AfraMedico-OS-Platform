@@ -1,0 +1,278 @@
+[
+  {
+    "id": "MRV-2026-000001",
+    "caseId": "CASE-2026-000001",
+    "patientId": "PAT-2026-000001",
+    "patientName": "Amina Yusuf",
+    "country": "Nigeria",
+    "treatmentRequested": "Cardiac Surgery",
+    "specialty": "Cardiac surgery",
+    "priority": "Urgent",
+    "urgency": "Urgent",
+    "assignedReviewer": "Dr. Selin Kaya",
+    "clinicalLead": "Dr. Rana Yilmaz",
+    "submittedDate": "2026-06-22",
+    "slaDeadline": "2026-06-24 17:00",
+    "status": "Ready for Hospital Submission",
+    "documentStatus": "Core documents complete, CT requested",
+    "aiDraftStatus": "Approved",
+    "internalReviewStatus": "Approved",
+    "reviewTimeHours": 18,
+    "communication": {
+      "patientNotified": true,
+      "familyNotified": true,
+      "partnerCopied": true,
+      "hospitalContacted": true,
+      "internalReviewerAssigned": true,
+      "clinicalLeadApproved": true
+    },
+    "clinicalProfile": {
+      "patientSummary": "Nigerian patient referred by Lagos Family Physicians Group with symptomatic mitral valve disease.",
+      "caseSummary": "Hospital-ready cardiac package is being prepared for Turkey hospitals after initial referral protection registration.",
+      "medicalProblem": "Valvular heart disease with surgical evaluation required.",
+      "chiefComplaint": "Shortness of breath and fatigue.",
+      "diagnosis": "Suspected severe mitral valve disease.",
+      "medicalHistory": "Progressive cardiac symptoms with cardiology notes and echo report available.",
+      "currentTreatment": "Medical management pending surgical opinion.",
+      "medications": "Beta blocker and diuretic; anticoagulation status needs confirmation.",
+      "allergies": "No known drug allergies reported.",
+      "comorbidities": "Hypertension reported by family.",
+      "functionalStatus": "Symptomatic with exertion but outpatient stable.",
+      "travelFitness": "Likely fit for commercial travel if cardiology clearance confirms stability."
+    },
+    "checklist": [
+      { "category": "General", "item": "Passport", "status": "Received", "lastRequestedDate": "2026-06-22", "requestRecipient": "Patient", "copiedPartner": true, "notes": "Passport bio page uploaded." },
+      { "category": "General", "item": "Contact Information", "status": "Received", "lastRequestedDate": "2026-06-19", "requestRecipient": "Partner", "copiedPartner": true, "notes": "Phone and WhatsApp confirmed." },
+      { "category": "General", "item": "Recent Medical Summary", "status": "Received", "lastRequestedDate": "2026-06-21", "requestRecipient": "Family", "copiedPartner": true, "notes": "Cardiology note uploaded." },
+      { "category": "Cardiac", "item": "Echocardiogram", "status": "Received", "lastRequestedDate": "2026-06-21", "requestRecipient": "Patient", "copiedPartner": true, "notes": "Echo confirms valve disease." },
+      { "category": "Cardiac", "item": "Angiography", "status": "Requested", "lastRequestedDate": "2026-06-23", "requestRecipient": "Family", "copiedPartner": true, "notes": "Requested if previously done." },
+      { "category": "Cardiac", "item": "ECG", "status": "Received", "lastRequestedDate": "2026-06-21", "requestRecipient": "Patient", "copiedPartner": false, "notes": "ECG attached." },
+      { "category": "Cardiac", "item": "Cardiac Enzymes", "status": "Requested", "lastRequestedDate": "2026-06-23", "requestRecipient": "Patient", "copiedPartner": false, "notes": "Updated labs requested." },
+      { "category": "Cardiac", "item": "Medication List", "status": "Requested", "lastRequestedDate": "2026-06-23", "requestRecipient": "Family", "copiedPartner": true, "notes": "Need exact anticoagulation status." }
+    ],
+    "preliminaryOpinion": {
+      "aiDraftSummary": "Available documents suggest clinically significant mitral valve disease requiring cardiothoracic review. Travel appears possible if current stability is confirmed.",
+      "keyFindings": ["Echo report supports mitral valve disease", "Symptoms are progressive", "Passport is available", "Partner referral evidence preserved"],
+      "possibleDiagnosis": "Severe mitral valve disease requiring surgical evaluation.",
+      "redFlags": ["Medication list incomplete", "Anticoagulation status unclear", "Travel timeline is urgent"],
+      "missingInformation": ["Angiography if available", "Updated cardiac enzymes", "Current medication list"],
+      "suggestedQuestions": ["Has the patient had prior cardiac intervention?", "Any history of stroke or clotting?", "Can cardiologist confirm travel stability?"],
+      "travelSuitability": "Potentially suitable for commercial travel after cardiology clearance.",
+      "localTreatmentRecommendation": "Continue local cardiology management while hospital opinions are pending.",
+      "emergencyRecommendation": "If chest pain, fainting, or severe breathlessness occurs, seek urgent local care immediately.",
+      "clinicalLeadReview": "Approved after medication clarification request added.",
+      "correctionNotes": "Changed wording from diagnosis certainty to suspected severity based on available documents.",
+      "approvalStatus": "Approved",
+      "patientFacingOpinion": "Based on the available reports, your case appears suitable for specialist cardiothoracic review abroad. We recommend collecting the remaining medication and cardiac test details while hospital teams review the package.",
+      "disclaimer": "This preliminary medical opinion is based only on the available documents. It is not a final diagnosis or treatment decision and does not replace evaluation by the relevant specialist or hospital medical team."
+    },
+    "hospitalPackage": {
+      "medicalSummary": "42-year-old female from Nigeria with symptomatic mitral valve disease seeking surgical evaluation.",
+      "clinicalCaseSummary": "Echo and cardiology notes available. Patient is clinically stable but requires cardiothoracic review for repair/replacement options.",
+      "caseBrief": "Urgent cardiac surgery evaluation requested. Early hospital registration completed for commission protection.",
+      "documentsIncluded": ["Echo report", "Cardiology note", "ECG", "Passport", "Labs"],
+      "clinicalQuestions": ["Is mitral valve repair feasible?", "What additional pre-op tests are required?", "Estimated surgical package cost?"],
+      "requestedSpecialistReview": "Cardiothoracic surgeon review",
+      "requestedTreatmentPlan": "Surgical plan with repair vs replacement recommendation",
+      "requestedEstimatedCost": "Package estimate including ICU and inpatient stay",
+      "requestedLengthOfStay": "Expected hospital and destination stay",
+      "urgency": "Urgent",
+      "notesToHospital": "Please confirm if angiography is required before travel.",
+      "selectedHospitals": ["Acibadem", "Medipol", "Memorial"],
+      "submissionStatus": "Ready for submission"
+    },
+    "msoTracker": [
+      { "hospital": "Acibadem", "hospitalReferralId": "HREF-2026-000001", "hospitalCaseId": "ACI-2026-1884", "specialist": "Prof. Murat Aydin", "submissionDate": "2026-06-24", "responseDeadline": "2026-06-26", "msoStatus": "Received", "treatmentPlanReceived": true, "estimatedCostReceived": true, "lengthOfStay": "14 days", "quoteId": "QUOTE-2026-000001", "nextFollowUp": "2026-06-27", "status": "Complete" },
+      { "hospital": "Medipol", "hospitalReferralId": "HREF-2026-000002", "hospitalCaseId": "MED-77421", "specialist": "Pending", "submissionDate": "2026-06-24", "responseDeadline": "2026-06-27", "msoStatus": "Pending", "treatmentPlanReceived": false, "estimatedCostReceived": false, "lengthOfStay": "Pending", "quoteId": "QUOTE-2026-000002", "nextFollowUp": "2026-06-27", "status": "Open" }
+    ],
+    "timeline": [
+      { "timestamp": "2026-06-22 09:00", "user": "Maya", "action": "Medical Review Requested", "evidence": "Coordinator request", "notes": "Cardiac case sent for clinical decision workflow." },
+      { "timestamp": "2026-06-23 14:10", "user": "System", "action": "AI Draft Generated", "evidence": "AI draft placeholder", "notes": "Draft generated for internal review." },
+      { "timestamp": "2026-06-23 17:30", "user": "Dr. Rana Yilmaz", "action": "Clinical Lead Approved", "evidence": "Correction notes", "notes": "Approved with medication clarification request." },
+      { "timestamp": "2026-06-24 09:15", "user": "Maya", "action": "Hospital Package Ready", "evidence": "Case package", "notes": "Ready for hospital submission." }
+    ],
+    "auditTrail": [
+      { "timestamp": "2026-06-23 17:30", "user": "Dr. Rana Yilmaz", "action": "Preliminary Opinion Approved", "oldValue": "Internal Review Required", "newValue": "Approved", "reason": "Clinical lead validated AI draft with corrections", "evidence": "Correction notes" },
+      { "timestamp": "2026-06-24 09:15", "user": "Maya", "action": "Hospital Package Created", "oldValue": "Review approved", "newValue": "Ready for Hospital Submission", "reason": "Package prepared after internal approval", "evidence": "Hospital submission package" }
+    ]
+  },
+  {
+    "id": "MRV-2026-000002",
+    "caseId": "CASE-2026-000002",
+    "patientId": "PAT-2026-000002",
+    "patientName": "Kwame Mensah",
+    "country": "Ghana",
+    "treatmentRequested": "Cancer Care",
+    "specialty": "Oncology",
+    "priority": "High",
+    "urgency": "Soon",
+    "assignedReviewer": "Dr. Rana Yilmaz",
+    "clinicalLead": "Dr. Rana Yilmaz",
+    "submittedDate": "2026-06-23",
+    "slaDeadline": "2026-06-25 16:00",
+    "status": "Waiting for Documents",
+    "documentStatus": "Pathology missing",
+    "aiDraftStatus": "Generated",
+    "internalReviewStatus": "Required",
+    "reviewTimeHours": 28,
+    "communication": {
+      "patientNotified": true,
+      "familyNotified": true,
+      "partnerCopied": true,
+      "hospitalContacted": false,
+      "internalReviewerAssigned": true,
+      "clinicalLeadApproved": false
+    },
+    "clinicalProfile": {
+      "patientSummary": "Ghana oncology patient seeking second opinion and treatment planning.",
+      "caseSummary": "Documents are insufficient for hospital package due to missing pathology and staging data.",
+      "medicalProblem": "Prostate cancer treatment planning.",
+      "chiefComplaint": "Patient wants treatment options abroad.",
+      "diagnosis": "Prostate cancer, staging incomplete.",
+      "medicalHistory": "Cancer diagnosis documented; prior treatment details incomplete.",
+      "currentTreatment": "No confirmed active treatment listed.",
+      "medications": "Medication list missing.",
+      "allergies": "Not documented.",
+      "comorbidities": "Not documented.",
+      "functionalStatus": "Ambulatory, stable by family report.",
+      "travelFitness": "Cannot assess fully until staging and current labs are complete."
+    },
+    "checklist": [
+      { "category": "General", "item": "Passport", "status": "Requested", "lastRequestedDate": "2026-06-24", "requestRecipient": "Family", "copiedPartner": true, "notes": "Passport copy pending." },
+      { "category": "General", "item": "Medication List", "status": "Missing", "lastRequestedDate": "2026-06-24", "requestRecipient": "Patient", "copiedPartner": true, "notes": "Needed before preliminary opinion is sent." },
+      { "category": "Oncology", "item": "Pathology Report", "status": "Missing", "lastRequestedDate": "2026-06-24", "requestRecipient": "Family", "copiedPartner": true, "notes": "Critical blocker." },
+      { "category": "Oncology", "item": "Imaging Report", "status": "Received", "lastRequestedDate": "2026-06-22", "requestRecipient": "Patient", "copiedPartner": false, "notes": "Pelvic MRI report received." },
+      { "category": "Oncology", "item": "DICOM Imaging Files", "status": "Requested", "lastRequestedDate": "2026-06-24", "requestRecipient": "Family", "copiedPartner": true, "notes": "Needed for hospital upload." },
+      { "category": "Oncology", "item": "Tumor Markers", "status": "Received", "lastRequestedDate": "2026-06-22", "requestRecipient": "Patient", "copiedPartner": false, "notes": "PSA available." },
+      { "category": "Oncology", "item": "Treatment History", "status": "Missing", "lastRequestedDate": "2026-06-24", "requestRecipient": "Family", "copiedPartner": true, "notes": "No prior treatment summary yet." }
+    ],
+    "preliminaryOpinion": {
+      "aiDraftSummary": "Available records suggest prostate cancer requiring staging confirmation before treatment planning. Pathology is the main missing document.",
+      "keyFindings": ["MRI report received", "PSA available", "Pathology missing", "Treatment history incomplete"],
+      "possibleDiagnosis": "Prostate cancer requiring staging and specialist oncology review.",
+      "redFlags": ["Pathology missing", "Metastatic workup unclear", "No medication list"],
+      "missingInformation": ["Biopsy pathology", "DICOM files", "Treatment history", "Passport"],
+      "suggestedQuestions": ["What is the Gleason score?", "Has hormone therapy started?", "Any bone scan or PET CT?"],
+      "travelSuitability": "Likely possible if staging confirms non-emergency status.",
+      "localTreatmentRecommendation": "Continue local oncology care while records are completed.",
+      "emergencyRecommendation": "Seek urgent local care if severe pain, urinary obstruction, or neurological symptoms occur.",
+      "clinicalLeadReview": "Pending approval.",
+      "correctionNotes": "Do not send until pathology is uploaded.",
+      "approvalStatus": "Internal Review Required",
+      "patientFacingOpinion": "A preliminary opinion can be prepared after pathology and staging documents are received.",
+      "disclaimer": "This preliminary medical opinion is based only on the available documents. It is not a final diagnosis or treatment decision and does not replace evaluation by the relevant specialist or hospital medical team."
+    },
+    "hospitalPackage": {
+      "medicalSummary": "Pending pathology and complete staging.",
+      "clinicalCaseSummary": "Oncology package not ready for hospital submission.",
+      "caseBrief": "Need more documents before hospital MSO request.",
+      "documentsIncluded": ["MRI report", "PSA report", "NGO referral note"],
+      "clinicalQuestions": ["Staging and treatment pathway after pathology review"],
+      "requestedSpecialistReview": "Medical oncology review",
+      "requestedTreatmentPlan": "Pending",
+      "requestedEstimatedCost": "Pending",
+      "requestedLengthOfStay": "Pending",
+      "urgency": "Soon",
+      "notesToHospital": "Do not submit until pathology is added.",
+      "selectedHospitals": ["Acibadem", "Memorial", "Andalos"],
+      "submissionStatus": "Blocked: documents incomplete"
+    },
+    "msoTracker": [
+      { "hospital": "Acibadem", "hospitalReferralId": "HREF-2026-000003", "hospitalCaseId": "Pending", "specialist": "Pending", "submissionDate": "Pending", "responseDeadline": "Pending", "msoStatus": "Not Submitted", "treatmentPlanReceived": false, "estimatedCostReceived": false, "lengthOfStay": "Pending", "quoteId": "QUOTE-2026-000003", "nextFollowUp": "2026-06-27", "status": "Waiting Documents" }
+    ],
+    "timeline": [
+      { "timestamp": "2026-06-23 09:30", "user": "Daniel", "action": "Clinical Review Requested", "evidence": "Website intake", "notes": "Oncology case submitted." },
+      { "timestamp": "2026-06-24 15:45", "user": "Dr. Rana Yilmaz", "action": "Document Gap Found", "evidence": "Checklist", "notes": "Pathology missing." }
+    ],
+    "auditTrail": [
+      { "timestamp": "2026-06-24 15:45", "user": "Dr. Rana Yilmaz", "action": "Status Changed", "oldValue": "Under Review", "newValue": "Waiting for Documents", "reason": "Pathology report missing", "evidence": "Document checklist" }
+    ]
+  },
+  {
+    "id": "MRV-2026-000003",
+    "caseId": "CASE-2026-000003",
+    "patientId": "PAT-2026-000003",
+    "patientName": "Joseph Kato",
+    "country": "Uganda",
+    "treatmentRequested": "Cancer Care",
+    "specialty": "Oncology",
+    "priority": "Urgent",
+    "urgency": "Emergency",
+    "assignedReviewer": "Dr. Selin Kaya",
+    "clinicalLead": "Dr. Rana Yilmaz",
+    "submittedDate": "2026-06-25",
+    "slaDeadline": "2026-06-25 18:00",
+    "status": "Not Recommended for Travel",
+    "documentStatus": "Enough for ethical advisory",
+    "aiDraftStatus": "Corrected",
+    "internalReviewStatus": "Approved",
+    "reviewTimeHours": 6,
+    "communication": {
+      "patientNotified": true,
+      "familyNotified": true,
+      "partnerCopied": true,
+      "hospitalContacted": false,
+      "internalReviewerAssigned": true,
+      "clinicalLeadApproved": true
+    },
+    "clinicalProfile": {
+      "patientSummary": "Advanced oncology patient with limited expected benefit from expensive international travel.",
+      "caseSummary": "Clinical lead recommends local urgent care and palliative discussion before any international plan.",
+      "medicalProblem": "Advanced cancer with severe symptoms.",
+      "chiefComplaint": "Family requests international treatment options.",
+      "diagnosis": "Advanced cancer, likely low-benefit travel case.",
+      "medicalHistory": "Prior oncology records show advanced disease and declining functional status.",
+      "currentTreatment": "Supportive care locally.",
+      "medications": "Pain medication and supportive treatment.",
+      "allergies": "Unknown.",
+      "comorbidities": "Cachexia and poor functional status reported.",
+      "functionalStatus": "Poor; family reports mostly bedbound.",
+      "travelFitness": "Commercial travel not recommended based on available information."
+    },
+    "checklist": [
+      { "category": "General", "item": "Passport", "status": "Received", "lastRequestedDate": "2026-06-25", "requestRecipient": "Family", "copiedPartner": true, "notes": "Available but travel not advised now." },
+      { "category": "Oncology", "item": "Pathology Report", "status": "Received", "lastRequestedDate": "2026-06-25", "requestRecipient": "Family", "copiedPartner": true, "notes": "Confirms diagnosis." },
+      { "category": "Oncology", "item": "Treatment History", "status": "Received", "lastRequestedDate": "2026-06-25", "requestRecipient": "Family", "copiedPartner": true, "notes": "Prior treatment exhausted." },
+      { "category": "Oncology", "item": "Imaging Report", "status": "Received", "lastRequestedDate": "2026-06-25", "requestRecipient": "Family", "copiedPartner": false, "notes": "Advanced disease noted." }
+    ],
+    "preliminaryOpinion": {
+      "aiDraftSummary": "AI draft flagged emergency risk and low expected benefit from travel. Clinical lead corrected tone and recommended local urgent care first.",
+      "keyFindings": ["Advanced disease", "Poor functional status", "Commercial travel risk", "Family needs clear guidance"],
+      "possibleDiagnosis": "Advanced cancer with limited benefit from travel.",
+      "redFlags": ["Bedbound status", "Pain escalation", "Travel unsafe"],
+      "missingInformation": ["Latest vitals", "Local physician assessment"],
+      "suggestedQuestions": ["Is the patient currently admitted?", "Is pain controlled?", "Has palliative team been consulted?"],
+      "travelSuitability": "Commercial travel not recommended at this time.",
+      "localTreatmentRecommendation": "Recommend urgent local care and palliative/supportive care discussion first.",
+      "emergencyRecommendation": "Immediate local hospital evaluation if pain, dehydration, confusion, breathing difficulty, or inability to eat/drink worsens.",
+      "clinicalLeadReview": "Approved ethical recommendation.",
+      "correctionNotes": "Emphasized supportive care and avoided overpromising international benefit.",
+      "approvalStatus": "Approved",
+      "patientFacingOpinion": "Based on the available documents and reported functional status, international travel may have low expected benefit and may create medical risk. We recommend urgent local care and a supportive care discussion before considering travel.",
+      "disclaimer": "This preliminary medical opinion is based only on the available documents. It is not a final diagnosis or treatment decision and does not replace evaluation by the relevant specialist or hospital medical team."
+    },
+    "hospitalPackage": {
+      "medicalSummary": "Hospital package not recommended until local stabilization.",
+      "clinicalCaseSummary": "Low-benefit travel case; hospital submission paused.",
+      "caseBrief": "Ethical advisory sent to family.",
+      "documentsIncluded": ["Pathology report", "Imaging report", "Treatment history"],
+      "clinicalQuestions": ["Would any hospital accept after stabilization?"],
+      "requestedSpecialistReview": "Not requested now",
+      "requestedTreatmentPlan": "Not requested now",
+      "requestedEstimatedCost": "Not requested now",
+      "requestedLengthOfStay": "Not requested now",
+      "urgency": "Emergency",
+      "notesToHospital": "No hospital submission yet.",
+      "selectedHospitals": [],
+      "submissionStatus": "Paused: not recommended for travel"
+    },
+    "msoTracker": [],
+    "timeline": [
+      { "timestamp": "2026-06-25 10:00", "user": "Daniel", "action": "Emergency Review Requested", "evidence": "Family message", "notes": "Advanced cancer case escalated." },
+      { "timestamp": "2026-06-25 14:00", "user": "Dr. Rana Yilmaz", "action": "Low-Benefit Travel Flagged", "evidence": "Clinical lead review", "notes": "Recommended local care first." }
+    ],
+    "auditTrail": [
+      { "timestamp": "2026-06-25 14:00", "user": "Dr. Rana Yilmaz", "action": "Travel Recommendation Changed", "oldValue": "International treatment inquiry", "newValue": "Not Recommended for Travel", "reason": "Low expected benefit and travel risk", "evidence": "Clinical lead review" }
+    ]
+  }
+]

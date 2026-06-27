@@ -1,0 +1,485 @@
+{
+  "providerOrganizations": [
+    {
+      "id": "prov-acibadem-group",
+      "name": "Acibadem Healthcare Group",
+      "type": "Hospital Group",
+      "country": "Turkey",
+      "city": "Istanbul",
+      "treatmentAreas": ["Neurosurgery", "Oncology", "Robotic Surgery", "Cardiology"],
+      "primaryContact": "International Office",
+      "dataCompleteness": 64,
+      "lightweight": false,
+      "dataGrowthNote": "Profile enriched by hospital referrals, MSO responses, quotes, and coordinator notes across Acibadem branches.",
+      "activeCases": 4,
+      "completedCases": 18,
+      "linkedCases": ["CASE-1001-CARDIAC", "CASE-1007-GAMMA", "CASE-1011-ROBOTIC"]
+    },
+    {
+      "id": "prov-acibadem-altunizade",
+      "name": "Acibadem Altunizade",
+      "type": "Hospital Branch",
+      "country": "Turkey",
+      "city": "Istanbul",
+      "treatmentAreas": ["Gamma Knife", "Neurosurgery", "Oncology"],
+      "primaryContact": "Altunizade International Desk",
+      "dataCompleteness": 58,
+      "lightweight": false,
+      "dataGrowthNote": "Gamma Knife knowledge grew from neurosurgery referrals and MSO response evidence.",
+      "activeCases": 2,
+      "completedCases": 7,
+      "linkedCases": ["CASE-1007-GAMMA", "CASE-1014-NEURO"]
+    },
+    {
+      "id": "prov-acibadem-maslak",
+      "name": "Acibadem Maslak",
+      "type": "Hospital Branch",
+      "country": "Turkey",
+      "city": "Istanbul",
+      "treatmentAreas": ["CyberKnife", "Oncology", "Neurosurgery"],
+      "primaryContact": "Maslak International Office",
+      "dataCompleteness": 52,
+      "lightweight": false,
+      "dataGrowthNote": "CyberKnife experience is based on quote speed, MSO detail, and oncology coordinator notes.",
+      "activeCases": 1,
+      "completedCases": 5,
+      "linkedCases": ["CASE-1002-ONCO", "CASE-1012-CYBER"]
+    },
+    {
+      "id": "prov-acibadem-atasehir",
+      "name": "Acibadem Atasehir",
+      "type": "Hospital Branch",
+      "country": "Turkey",
+      "city": "Istanbul",
+      "treatmentAreas": ["Robotic Surgery", "Orthopedics", "Urology"],
+      "primaryContact": "Atasehir Coordinator Desk",
+      "dataCompleteness": 35,
+      "lightweight": true,
+      "dataGrowthNote": "Lightweight record created after first robotic surgery referral. More data should grow from future cases.",
+      "activeCases": 1,
+      "completedCases": 1,
+      "linkedCases": ["CASE-1011-ROBOTIC"]
+    },
+    {
+      "id": "prov-bumrungrad",
+      "name": "Bumrungrad International Hospital",
+      "type": "Hospital Branch",
+      "country": "Thailand",
+      "city": "Bangkok",
+      "treatmentAreas": ["Oncology", "Cardiology", "Executive Checkup"],
+      "primaryContact": "International Patient Center",
+      "dataCompleteness": 29,
+      "lightweight": true,
+      "dataGrowthNote": "Created from an oncology comparison quote request. Needs more case evidence.",
+      "activeCases": 1,
+      "completedCases": 0,
+      "linkedCases": ["CASE-1002-ONCO"]
+    }
+  ],
+  "hospitalBranches": [
+    {
+      "id": "branch-altunizade",
+      "providerId": "prov-acibadem-group",
+      "name": "Acibadem Altunizade",
+      "city": "Istanbul",
+      "country": "Turkey",
+      "strengths": ["Gamma Knife", "Neurosurgery", "Complex oncology"],
+      "linkedCases": ["CASE-1007-GAMMA", "CASE-1014-NEURO"]
+    },
+    {
+      "id": "branch-maslak",
+      "providerId": "prov-acibadem-group",
+      "name": "Acibadem Maslak",
+      "city": "Istanbul",
+      "country": "Turkey",
+      "strengths": ["CyberKnife", "Oncology", "Brain tumor review"],
+      "linkedCases": ["CASE-1002-ONCO", "CASE-1012-CYBER"]
+    },
+    {
+      "id": "branch-atasehir",
+      "providerId": "prov-acibadem-group",
+      "name": "Acibadem Atasehir",
+      "city": "Istanbul",
+      "country": "Turkey",
+      "strengths": ["Robotic Surgery", "Orthopedics", "Urology"],
+      "linkedCases": ["CASE-1011-ROBOTIC"]
+    }
+  ],
+  "departments": [
+    {
+      "id": "dept-alt-neuro",
+      "providerId": "prov-acibadem-altunizade",
+      "branchId": "branch-altunizade",
+      "name": "Neurosurgery Department",
+      "specialty": "Gamma Knife and brain tumors",
+      "linkedCases": ["CASE-1007-GAMMA", "CASE-1014-NEURO"]
+    },
+    {
+      "id": "dept-mas-onco",
+      "providerId": "prov-acibadem-maslak",
+      "branchId": "branch-maslak",
+      "name": "Oncology Department",
+      "specialty": "CyberKnife and oncology planning",
+      "linkedCases": ["CASE-1002-ONCO", "CASE-1012-CYBER"]
+    },
+    {
+      "id": "dept-ata-robotic",
+      "providerId": "prov-acibadem-atasehir",
+      "branchId": "branch-atasehir",
+      "name": "Robotic Surgery Department",
+      "specialty": "Robotic surgery cases",
+      "linkedCases": ["CASE-1011-ROBOTIC"]
+    }
+  ],
+  "treatmentPrograms": [
+    {
+      "id": "program-gamma-knife",
+      "providerId": "prov-acibadem-altunizade",
+      "branchId": "branch-altunizade",
+      "departmentId": "dept-alt-neuro",
+      "name": "Gamma Knife",
+      "treatmentArea": "Neurosurgery",
+      "evidenceCount": 5,
+      "linkedCases": ["CASE-1007-GAMMA", "CASE-1014-NEURO"]
+    },
+    {
+      "id": "program-cyberknife",
+      "providerId": "prov-acibadem-maslak",
+      "branchId": "branch-maslak",
+      "departmentId": "dept-mas-onco",
+      "name": "CyberKnife",
+      "treatmentArea": "Oncology",
+      "evidenceCount": 4,
+      "linkedCases": ["CASE-1002-ONCO", "CASE-1012-CYBER"]
+    },
+    {
+      "id": "program-robotic",
+      "providerId": "prov-acibadem-atasehir",
+      "branchId": "branch-atasehir",
+      "departmentId": "dept-ata-robotic",
+      "name": "Robotic Surgery",
+      "treatmentArea": "Surgery",
+      "evidenceCount": 2,
+      "linkedCases": ["CASE-1011-ROBOTIC"]
+    }
+  ],
+  "physicians": [
+    {
+      "id": "phys-koray",
+      "providerId": "prov-acibadem-altunizade",
+      "branchId": "branch-altunizade",
+      "departmentId": "dept-alt-neuro",
+      "programId": "program-gamma-knife",
+      "name": "Prof. Koray",
+      "specialty": "Gamma Knife neurosurgery",
+      "languages": ["Turkish", "English"],
+      "linkedCases": ["CASE-1007-GAMMA"]
+    },
+    {
+      "id": "phys-enis",
+      "providerId": "prov-acibadem-maslak",
+      "branchId": "branch-maslak",
+      "departmentId": "dept-mas-onco",
+      "programId": "program-cyberknife",
+      "name": "Prof. Enis",
+      "specialty": "CyberKnife oncology",
+      "languages": ["Turkish", "English"],
+      "linkedCases": ["CASE-1012-CYBER"]
+    },
+    {
+      "id": "phys-robotic-team",
+      "providerId": "prov-acibadem-atasehir",
+      "branchId": "branch-atasehir",
+      "departmentId": "dept-ata-robotic",
+      "programId": "program-robotic",
+      "name": "Robotic Surgery Team",
+      "specialty": "Robotic surgical planning",
+      "languages": ["Turkish", "English"],
+      "linkedCases": ["CASE-1011-ROBOTIC"]
+    }
+  ],
+  "coordinators": [
+    {
+      "id": "coord-intl-office",
+      "providerId": "prov-acibadem-group",
+      "name": "International Office",
+      "role": "Central international desk",
+      "office": "Acibadem International",
+      "languages": ["English", "Arabic", "Turkish"],
+      "reliability": 88,
+      "linkedCases": ["CASE-1001-CARDIAC", "CASE-1007-GAMMA", "CASE-1011-ROBOTIC"]
+    },
+    {
+      "id": "coord-altunizade",
+      "providerId": "prov-acibadem-altunizade",
+      "name": "Altunizade International Desk",
+      "role": "Branch coordinator",
+      "office": "Altunizade",
+      "languages": ["English", "Turkish"],
+      "reliability": 84,
+      "linkedCases": ["CASE-1007-GAMMA", "CASE-1014-NEURO"]
+    },
+    {
+      "id": "coord-maslak",
+      "providerId": "prov-acibadem-maslak",
+      "name": "Maslak International Office",
+      "role": "Oncology coordinator",
+      "office": "Maslak",
+      "languages": ["English", "Arabic", "Turkish"],
+      "reliability": 81,
+      "linkedCases": ["CASE-1002-ONCO", "CASE-1012-CYBER"]
+    }
+  ],
+  "regionalContacts": [
+    {
+      "id": "regional-iran-negin",
+      "providerId": "prov-acibadem-group",
+      "name": "Negin Attaran",
+      "region": "Iran Coordinator",
+      "countriesCovered": ["Iran", "Afghanistan"],
+      "languages": ["Persian", "English"],
+      "responsiveness": 91,
+      "linkedCases": ["CASE-1015-IRAN"]
+    },
+    {
+      "id": "regional-africa-mehdi",
+      "providerId": "prov-acibadem-group",
+      "name": "Mehdi Pourrahim",
+      "region": "Africa Coordinator",
+      "countriesCovered": ["Nigeria", "Ghana", "Kenya", "Uganda"],
+      "languages": ["English", "Arabic"],
+      "responsiveness": 86,
+      "linkedCases": ["CASE-1001-CARDIAC", "CASE-1002-ONCO"]
+    }
+  ],
+  "performanceRecords": [
+    {
+      "providerId": "prov-acibadem-group",
+      "averageMsoResponseTime": "28h",
+      "averageQuoteResponseTime": "36h",
+      "averageSurgerySchedulingTime": "5d",
+      "averageAdmissionTime": "3d",
+      "acceptanceRate": 82,
+      "caseSuccessRate": 76,
+      "casesCompleted": 18,
+      "specialtyStrength": "Multi-specialty international cases",
+      "regionalResponsiveness": 86,
+      "coordinatorResponsiveness": 87,
+      "coordinatorReliability": 88,
+      "patientSatisfaction": 84,
+      "commissionReliability": 80,
+      "clinicalCommunication": 82,
+      "followUpQuality": 78,
+      "treatmentStrength": 84,
+      "evidenceCases": ["CASE-1001-CARDIAC", "CASE-1007-GAMMA", "CASE-1011-ROBOTIC"]
+    },
+    {
+      "providerId": "prov-acibadem-altunizade",
+      "averageMsoResponseTime": "22h",
+      "averageQuoteResponseTime": "30h",
+      "averageSurgerySchedulingTime": "4d",
+      "averageAdmissionTime": "2d",
+      "acceptanceRate": 88,
+      "caseSuccessRate": 81,
+      "casesCompleted": 7,
+      "specialtyStrength": "Gamma Knife and neurosurgery",
+      "regionalResponsiveness": 84,
+      "coordinatorResponsiveness": 86,
+      "coordinatorReliability": 84,
+      "patientSatisfaction": 87,
+      "commissionReliability": 78,
+      "clinicalCommunication": 86,
+      "followUpQuality": 82,
+      "treatmentStrength": 90,
+      "evidenceCases": ["CASE-1007-GAMMA", "CASE-1014-NEURO"]
+    },
+    {
+      "providerId": "prov-acibadem-maslak",
+      "averageMsoResponseTime": "34h",
+      "averageQuoteResponseTime": "42h",
+      "averageSurgerySchedulingTime": "6d",
+      "averageAdmissionTime": "4d",
+      "acceptanceRate": 79,
+      "caseSuccessRate": 73,
+      "casesCompleted": 5,
+      "specialtyStrength": "CyberKnife and oncology",
+      "regionalResponsiveness": 80,
+      "coordinatorResponsiveness": 79,
+      "coordinatorReliability": 81,
+      "patientSatisfaction": 82,
+      "commissionReliability": 76,
+      "clinicalCommunication": 80,
+      "followUpQuality": 75,
+      "treatmentStrength": 85,
+      "evidenceCases": ["CASE-1002-ONCO", "CASE-1012-CYBER"]
+    },
+    {
+      "providerId": "prov-acibadem-atasehir",
+      "averageMsoResponseTime": "48h",
+      "averageQuoteResponseTime": "54h",
+      "averageSurgerySchedulingTime": "8d",
+      "averageAdmissionTime": "5d",
+      "acceptanceRate": 68,
+      "caseSuccessRate": 70,
+      "casesCompleted": 1,
+      "specialtyStrength": "Robotic Surgery",
+      "regionalResponsiveness": 69,
+      "coordinatorResponsiveness": 70,
+      "coordinatorReliability": 72,
+      "patientSatisfaction": 74,
+      "commissionReliability": 65,
+      "clinicalCommunication": 72,
+      "followUpQuality": 68,
+      "treatmentStrength": 78,
+      "evidenceCases": ["CASE-1011-ROBOTIC"]
+    }
+  ],
+  "relationshipNotes": [
+    {
+      "id": "note-001",
+      "providerId": "prov-acibadem-altunizade",
+      "date": "2026-06-18",
+      "author": "Selin Arslan",
+      "source": "Coordinator Note",
+      "linkedCase": "CASE-1007-GAMMA",
+      "note": "Altunizade responded faster for Gamma Knife when routed through branch international desk and Africa regional contact."
+    },
+    {
+      "id": "note-002",
+      "providerId": "prov-acibadem-maslak",
+      "date": "2026-06-21",
+      "author": "Dr. Rana Demir",
+      "source": "MSO Response",
+      "linkedCase": "CASE-1012-CYBER",
+      "note": "Prof. Enis provided detailed CyberKnife eligibility questions but required complete imaging before final quote."
+    },
+    {
+      "id": "note-003",
+      "providerId": "prov-acibadem-atasehir",
+      "date": "2026-06-23",
+      "author": "Maya Okafor",
+      "source": "Hospital Referral",
+      "linkedCase": "CASE-1011-ROBOTIC",
+      "note": "Lightweight provider branch record created after first robotic surgery referral. Needs more response and outcome evidence."
+    },
+    {
+      "id": "note-004",
+      "providerId": "prov-acibadem-group",
+      "date": "2026-06-24",
+      "author": "Farah Bello",
+      "source": "Commission Experience",
+      "linkedCase": "CASE-1001-CARDIAC",
+      "note": "Commission process was clear after early hospital registration evidence was shared with international office."
+    }
+  ],
+  "relationshipActivities": [
+    {
+      "id": "rel-001",
+      "providerId": "prov-acibadem-group",
+      "date": "2026-06-05",
+      "type": "Meeting",
+      "owner": "Executive Office",
+      "summary": "Reviewed Africa case flow and early hospital registration expectations with international office.",
+      "relationshipScore": 82,
+      "linkedCase": "CASE-1001-CARDIAC"
+    },
+    {
+      "id": "rel-002",
+      "providerId": "prov-acibadem-altunizade",
+      "date": "2026-06-18",
+      "type": "Email",
+      "owner": "Selin Arslan",
+      "summary": "Gamma Knife evidence request clarified; branch coordinator confirmed MRI DICOM is required before final MSO.",
+      "relationshipScore": 86,
+      "linkedCase": "CASE-1007-GAMMA"
+    },
+    {
+      "id": "rel-003",
+      "providerId": "prov-acibadem-maslak",
+      "date": "2026-06-21",
+      "type": "Important Conversation",
+      "owner": "Dr. Rana Demir",
+      "summary": "CyberKnife clinical questions were strong but quote depended on missing pathology and PET scan.",
+      "relationshipScore": 78,
+      "linkedCase": "CASE-1012-CYBER"
+    },
+    {
+      "id": "rel-004",
+      "providerId": "prov-acibadem-atasehir",
+      "date": "2026-06-23",
+      "type": "Operational Note",
+      "owner": "Maya Okafor",
+      "summary": "First robotic surgery referral created lightweight branch knowledge. Future cases should enrich physician and scheduling data.",
+      "relationshipScore": 65,
+      "linkedCase": "CASE-1011-ROBOTIC"
+    },
+    {
+      "id": "rel-005",
+      "providerId": "prov-acibadem-group",
+      "date": "2026-06-24",
+      "type": "Contract",
+      "owner": "Farah Bello",
+      "summary": "Commission process and evidence expectations documented after early registration confirmation.",
+      "relationshipScore": 80,
+      "linkedCase": "CASE-1001-CARDIAC"
+    }
+  ],
+  "caseLinkedIntelligence": [
+    {
+      "id": "intel-001",
+      "providerId": "prov-acibadem-group",
+      "caseId": "CASE-1001-CARDIAC",
+      "patientName": "Amina Yusuf",
+      "treatment": "Cardiac Surgery",
+      "evidenceSource": "Hospital Referral",
+      "eventDate": "2026-06-20",
+      "referralStatus": "Hospital registered",
+      "msoStatus": "MSO received",
+      "quoteStatus": "Quote received",
+      "treatmentOutcome": "Travel planning",
+      "coordinatorNote": "International Office accepted early registration evidence and linked Africa coordinator."
+    },
+    {
+      "id": "intel-002",
+      "providerId": "prov-acibadem-altunizade",
+      "caseId": "CASE-1007-GAMMA",
+      "patientName": "Daniel Mensah",
+      "treatment": "Gamma Knife",
+      "evidenceSource": "MSO Response",
+      "eventDate": "2026-06-18",
+      "referralStatus": "Referral sent",
+      "msoStatus": "Detailed MSO received",
+      "quoteStatus": "Quote pending",
+      "treatmentOutcome": "Decision pending",
+      "coordinatorNote": "Strong neurosurgery response. Requires MRI DICOM and prior radiotherapy history."
+    },
+    {
+      "id": "intel-003",
+      "providerId": "prov-acibadem-maslak",
+      "caseId": "CASE-1012-CYBER",
+      "patientName": "Joseph Kato",
+      "treatment": "CyberKnife oncology",
+      "evidenceSource": "Quote",
+      "eventDate": "2026-06-21",
+      "referralStatus": "Hospital referral active",
+      "msoStatus": "Questions received",
+      "quoteStatus": "Preliminary quote received",
+      "treatmentOutcome": "Waiting documents",
+      "coordinatorNote": "Quote was clear but final eligibility depends on pathology and PET scan."
+    },
+    {
+      "id": "intel-004",
+      "providerId": "prov-acibadem-atasehir",
+      "caseId": "CASE-1011-ROBOTIC",
+      "patientName": "Kofi Adjei",
+      "treatment": "Robotic Surgery",
+      "evidenceSource": "Hospital Referral",
+      "eventDate": "2026-06-23",
+      "referralStatus": "New branch referral",
+      "msoStatus": "Requested",
+      "quoteStatus": "Not requested",
+      "treatmentOutcome": "New provider evidence",
+      "coordinatorNote": "Created lightweight Atasehir branch record. Needs physician and quote enrichment."
+    }
+  ]
+}

@@ -1,0 +1,308 @@
+[
+  {
+    "id": "MR-1001",
+    "caseId": "CASE-1001-CARDIAC",
+    "patientId": "PAT-1001",
+    "patientName": "Amina Yusuf",
+    "country": "Nigeria",
+    "age": 42,
+    "gender": "Female",
+    "treatment": "Cardiac Surgery",
+    "priority": "Urgent",
+    "assignedReviewer": "Dr. Selin Kaya",
+    "coordinator": "Maya",
+    "submissionDate": "2026-06-22",
+    "status": "Ready for Referral",
+    "reviewTimeHours": 18,
+    "patientSummary": "Returning referral partner patient from Nigeria with cardiology documentation and high intent for Turkey.",
+    "caseSummary": "Case requires hospital-ready cardiac package for mitral valve repair evaluation and quote comparison.",
+    "diagnosis": "Mitral valve disease, surgical repair evaluation required.",
+    "chiefComplaint": "Shortness of breath and fatigue with documented valvular disease.",
+    "medicalHistory": "Known cardiac murmur, progressive symptoms, cardiology notes available.",
+    "currentMedications": "Beta blocker, diuretic, anticoagulation status to be confirmed.",
+    "allergies": "No known drug allergies reported.",
+    "vitalInformation": "Stable outpatient status. Recent echo and labs uploaded.",
+    "documents": [
+      { "category": "MRI", "fileName": "Not applicable", "uploadDate": "2026-06-19", "status": "Received" },
+      { "category": "CT", "fileName": "Chest CT pending", "uploadDate": "Pending", "status": "Requested" },
+      { "category": "Lab Results", "fileName": "Cardiac labs", "uploadDate": "2026-06-21", "status": "Received" },
+      { "category": "Blood Tests", "fileName": "CBC and coagulation profile", "uploadDate": "2026-06-21", "status": "Received" },
+      { "category": "Pathology", "fileName": "Not applicable", "uploadDate": "Pending", "status": "Missing" },
+      { "category": "Discharge Summary", "fileName": "Prior admission summary", "uploadDate": "Pending", "status": "Requested" },
+      { "category": "Referral Letter", "fileName": "Partner referral letter", "uploadDate": "2026-06-19", "status": "Received" },
+      { "category": "Passport", "fileName": "Passport bio page", "uploadDate": "2026-06-22", "status": "Received" },
+      { "category": "Other", "fileName": "Cardiologist note", "uploadDate": "2026-06-21", "status": "Received" }
+    ],
+    "aiSummary": {
+      "keyFindings": ["Echo confirms mitral valve disease", "Patient symptomatic", "Passport available", "Partner referral evidence preserved"],
+      "possibleDiagnosis": "Severe mitral valve disease requiring cardiothoracic surgical review.",
+      "redFlags": ["Anticoagulation history unclear", "Need updated chest imaging", "Travel timeline is urgent"],
+      "missingInformation": ["Recent chest CT", "Medication list confirmation", "Pre-anesthesia clearance"],
+      "suggestedQuestions": ["Has the patient had prior valve intervention?", "Any history of stroke or anticoagulation complications?", "Can the patient travel within three weeks?"]
+    },
+    "missingDocuments": [
+      { "item": "MRI", "status": "Received" },
+      { "item": "Blood Tests", "status": "Received" },
+      { "item": "Pathology", "status": "Missing" },
+      { "item": "Passport", "status": "Received" },
+      { "item": "Insurance", "status": "Missing" },
+      { "item": "Referral Letter", "status": "Received" }
+    ],
+    "clinicalRecommendation": {
+      "suggestedTreatment": "Mitral valve repair or replacement evaluation",
+      "suggestedSpecialty": "Cardiothoracic Surgery",
+      "urgency": "Urgent",
+      "estimatedTimeline": "Hospital quote and surgeon opinion within 48 hours"
+    },
+    "destinationRecommendation": {
+      "recommendedCountries": ["Turkey", "Germany", "India"],
+      "reason": "Turkey offers fastest cardiothoracic response; Germany can provide premium second opinion; India may support cost comparison."
+    },
+    "hospitalRecommendations": [
+      { "hospital": "Acibadem", "reason": "Strong cardiac surgery program and fast quote response.", "priority": "Urgent" },
+      { "hospital": "Medipol", "reason": "Good Turkey comparison option for cardiac packages.", "priority": "High" },
+      { "hospital": "Memorial", "reason": "Useful third quote but confirmation pending.", "priority": "Medium" }
+    ],
+    "outcome": "Ready for Hospital Referral",
+    "timeline": [
+      { "date": "2026-06-22", "time": "09:00", "user": "Maya", "action": "Medical Review Requested", "evidence": "Coordinator request", "notes": "Cardiac case sent for clinical packaging." },
+      { "date": "2026-06-22", "time": "10:20", "user": "Operations", "action": "Reviewer Assigned", "evidence": "Reviewer queue", "notes": "Assigned to Dr. Selin Kaya." },
+      { "date": "2026-06-23", "time": "12:40", "user": "Dr. Selin Kaya", "action": "Documents Received", "evidence": "Echo and labs", "notes": "Core cardiac documents reviewed." },
+      { "date": "2026-06-23", "time": "14:10", "user": "System", "action": "AI Summary Generated", "evidence": "AI placeholder", "notes": "Draft findings prepared for human review." },
+      { "date": "2026-06-23", "time": "17:30", "user": "Dr. Selin Kaya", "action": "Clinical Review Completed", "evidence": "Reviewer notes", "notes": "Ready for referral with CT requested." },
+      { "date": "2026-06-24", "time": "09:15", "user": "Maya", "action": "Ready for Referral", "evidence": "Hospital package", "notes": "Package sent to Acibadem and Medipol." }
+    ],
+    "internalNotes": {
+      "reviewerNotes": "Proceed to cardiothoracic hospitals but ask for updated CT and medication list.",
+      "coordinatorNotes": "Patient is responsive on WhatsApp and has passport ready.",
+      "managerNotes": "Prioritize Turkey quote speed while protecting partner ownership."
+    }
+  },
+  {
+    "id": "MR-1002",
+    "caseId": "CASE-1002-ONCOLOGY",
+    "patientId": "PAT-1002",
+    "patientName": "Kwame Mensah",
+    "country": "Ghana",
+    "age": 56,
+    "gender": "Male",
+    "treatment": "Cancer Care",
+    "priority": "High",
+    "assignedReviewer": "Dr. Rana Yilmaz",
+    "coordinator": "Daniel",
+    "submissionDate": "2026-06-23",
+    "status": "Under Review",
+    "reviewTimeHours": 28,
+    "patientSummary": "Ghana oncology patient seeking second opinion before treatment selection.",
+    "caseSummary": "Needs oncology-ready summary, pathology verification, staging clarity, and hospital selection.",
+    "diagnosis": "Prostate cancer, staging and treatment plan review pending.",
+    "chiefComplaint": "Patient requests oncology second opinion and treatment options.",
+    "medicalHistory": "Cancer diagnosis documented; prior treatment history incomplete.",
+    "currentMedications": "Unknown; medication list requested.",
+    "allergies": "Not documented.",
+    "vitalInformation": "Stable, outpatient, no emergency symptoms reported.",
+    "documents": [
+      { "category": "MRI", "fileName": "Pelvic MRI", "uploadDate": "2026-06-22", "status": "Received" },
+      { "category": "CT", "fileName": "CT abdomen pending", "uploadDate": "Pending", "status": "Requested" },
+      { "category": "Lab Results", "fileName": "PSA report", "uploadDate": "2026-06-22", "status": "Received" },
+      { "category": "Blood Tests", "fileName": "CBC and chemistry", "uploadDate": "Pending", "status": "Requested" },
+      { "category": "Pathology", "fileName": "Biopsy pathology report", "uploadDate": "Pending", "status": "Missing" },
+      { "category": "Discharge Summary", "fileName": "Not applicable", "uploadDate": "Pending", "status": "Missing" },
+      { "category": "Referral Letter", "fileName": "NGO referral note", "uploadDate": "2026-06-20", "status": "Received" },
+      { "category": "Passport", "fileName": "Passport copy pending", "uploadDate": "Pending", "status": "Requested" },
+      { "category": "Other", "fileName": "Prior consultation note", "uploadDate": "2026-06-22", "status": "Received" }
+    ],
+    "aiSummary": {
+      "keyFindings": ["Oncology second opinion requested", "PSA report received", "Pathology missing", "Passport pending"],
+      "possibleDiagnosis": "Prostate cancer requiring staging confirmation and oncology treatment planning.",
+      "redFlags": ["Pathology missing", "Staging incomplete", "No medication list"],
+      "missingInformation": ["Biopsy pathology", "CT abdomen", "Current medications", "Passport"],
+      "suggestedQuestions": ["What is the Gleason score?", "Any prior hormone therapy?", "Has metastatic workup been completed?"]
+    },
+    "missingDocuments": [
+      { "item": "MRI", "status": "Received" },
+      { "item": "Blood Tests", "status": "Requested" },
+      { "item": "Pathology", "status": "Missing" },
+      { "item": "Passport", "status": "Requested" },
+      { "item": "Insurance", "status": "Missing" },
+      { "item": "Referral Letter", "status": "Received" }
+    ],
+    "clinicalRecommendation": {
+      "suggestedTreatment": "Oncology second opinion with staging review",
+      "suggestedSpecialty": "Medical Oncology",
+      "urgency": "High",
+      "estimatedTimeline": "Request missing pathology before hospital quote"
+    },
+    "destinationRecommendation": {
+      "recommendedCountries": ["Turkey", "Germany", "South Korea"],
+      "reason": "Turkey supports fast oncology quote; Germany and South Korea are strong for premium oncology second opinions."
+    },
+    "hospitalRecommendations": [
+      { "hospital": "Acibadem", "reason": "Strong oncology coordination and international patient office.", "priority": "High" },
+      { "hospital": "Memorial", "reason": "Useful oncology comparator once pathology is uploaded.", "priority": "Medium" },
+      { "hospital": "Andalos", "reason": "Potential affordability option after staging clarity.", "priority": "Medium" }
+    ],
+    "outcome": "Need More Documents",
+    "timeline": [
+      { "date": "2026-06-23", "time": "09:30", "user": "Daniel", "action": "Medical Review Requested", "evidence": "Website intake", "notes": "Oncology second opinion case submitted." },
+      { "date": "2026-06-23", "time": "11:00", "user": "Operations", "action": "Reviewer Assigned", "evidence": "Review queue", "notes": "Assigned to oncology reviewer." },
+      { "date": "2026-06-24", "time": "15:45", "user": "Dr. Rana Yilmaz", "action": "Documents Received", "evidence": "MRI and PSA", "notes": "Pathology still missing." }
+    ],
+    "internalNotes": {
+      "reviewerNotes": "Cannot finalize hospital package without pathology and staging information.",
+      "coordinatorNotes": "Ask family for pathology and passport today.",
+      "managerNotes": "High-potential oncology case; do not delay missing document follow-up."
+    }
+  },
+  {
+    "id": "MR-1003",
+    "caseId": "CASE-1003-IVF",
+    "patientId": "PAT-1003",
+    "patientName": "Sarah Nambasa",
+    "country": "Uganda",
+    "age": 34,
+    "gender": "Female",
+    "treatment": "IVF",
+    "priority": "Medium",
+    "assignedReviewer": "Pending Assignment",
+    "coordinator": "Maya",
+    "submissionDate": "2026-06-24",
+    "status": "Waiting for Documents",
+    "reviewTimeHours": 0,
+    "patientSummary": "Uganda patient referred by corporate partner for IVF assessment.",
+    "caseSummary": "Fertility package cannot be prepared until hormone panel and prior IVF records are received.",
+    "diagnosis": "Infertility after two failed cycles, incomplete records.",
+    "chiefComplaint": "Patient wants destination recommendation for IVF.",
+    "medicalHistory": "Two failed IVF cycles reported; details pending.",
+    "currentMedications": "Prenatal vitamins reported; full medication list pending.",
+    "allergies": "Not reported.",
+    "vitalInformation": "Stable outpatient case.",
+    "documents": [
+      { "category": "MRI", "fileName": "Not applicable", "uploadDate": "Pending", "status": "Missing" },
+      { "category": "CT", "fileName": "Not applicable", "uploadDate": "Pending", "status": "Missing" },
+      { "category": "Lab Results", "fileName": "Hormone panel pending", "uploadDate": "Pending", "status": "Requested" },
+      { "category": "Blood Tests", "fileName": "Baseline blood work pending", "uploadDate": "Pending", "status": "Requested" },
+      { "category": "Pathology", "fileName": "Not applicable", "uploadDate": "Pending", "status": "Missing" },
+      { "category": "Discharge Summary", "fileName": "Prior IVF cycle summary", "uploadDate": "Pending", "status": "Requested" },
+      { "category": "Referral Letter", "fileName": "Corporate referral note", "uploadDate": "2026-06-22", "status": "Received" },
+      { "category": "Passport", "fileName": "Passport pending", "uploadDate": "Pending", "status": "Requested" },
+      { "category": "Other", "fileName": "Partner questionnaire", "uploadDate": "Pending", "status": "Requested" }
+    ],
+    "aiSummary": {
+      "keyFindings": ["Two failed IVF cycles reported", "Corporate referral source", "Most clinical documents missing"],
+      "possibleDiagnosis": "Infertility requiring reproductive medicine review.",
+      "redFlags": ["Missing hormone profile", "Prior IVF protocol unknown"],
+      "missingInformation": ["AMH", "FSH/LH", "Partner semen analysis", "Prior cycle details", "Passport"],
+      "suggestedQuestions": ["Were embryos created in prior cycles?", "Any known tubal or male-factor diagnosis?", "Preferred treatment month?"]
+    },
+    "missingDocuments": [
+      { "item": "MRI", "status": "Missing" },
+      { "item": "Blood Tests", "status": "Requested" },
+      { "item": "Pathology", "status": "Missing" },
+      { "item": "Passport", "status": "Requested" },
+      { "item": "Insurance", "status": "Missing" },
+      { "item": "Referral Letter", "status": "Received" }
+    ],
+    "clinicalRecommendation": {
+      "suggestedTreatment": "IVF consultation and reproductive endocrinology review",
+      "suggestedSpecialty": "Reproductive Medicine",
+      "urgency": "Medium",
+      "estimatedTimeline": "Collect documents within 5 days before quote request"
+    },
+    "destinationRecommendation": {
+      "recommendedCountries": ["Turkey", "India", "Thailand"],
+      "reason": "Turkey and India offer strong IVF package options; Thailand can be considered for premium service."
+    },
+    "hospitalRecommendations": [
+      { "hospital": "Medipol", "reason": "Good IVF package comparison in Turkey.", "priority": "Medium" },
+      { "hospital": "Apollo", "reason": "Cost comparison once hormone panel is complete.", "priority": "Medium" },
+      { "hospital": "Bumrungrad", "reason": "Premium option if patient prefers Thailand.", "priority": "Low" }
+    ],
+    "outcome": "Need More Documents",
+    "timeline": [
+      { "date": "2026-06-24", "time": "10:30", "user": "Maya", "action": "Medical Review Requested", "evidence": "Coordinator note", "notes": "Waiting for fertility document checklist." }
+    ],
+    "internalNotes": {
+      "reviewerNotes": "Reviewer should be assigned after core IVF documents arrive.",
+      "coordinatorNotes": "Send document checklist and request prior IVF cycle records.",
+      "managerNotes": "Partner ownership pending review; keep communication documented."
+    }
+  },
+  {
+    "id": "MR-1004",
+    "caseId": "CASE-1004-SPINE",
+    "patientId": "PAT-1004",
+    "patientName": "Peter Mwangi",
+    "country": "Kenya",
+    "age": 48,
+    "gender": "Male",
+    "treatment": "Spine Surgery",
+    "priority": "High",
+    "assignedReviewer": "Dr. Anil Sharma",
+    "coordinator": "Nadia",
+    "submissionDate": "2026-06-22",
+    "status": "Completed",
+    "reviewTimeHours": 21,
+    "patientSummary": "Kenya diagnostic center referral with MRI-confirmed lumbar disc disease.",
+    "caseSummary": "Hospital package prepared for spine surgery comparison across Thailand and India.",
+    "diagnosis": "Lumbar disc herniation with persistent pain.",
+    "chiefComplaint": "Back pain radiating to leg, persistent despite conservative care.",
+    "medicalHistory": "Chronic lumbar symptoms; MRI uploaded by diagnostic partner.",
+    "currentMedications": "Analgesics and anti-inflammatory medications reported.",
+    "allergies": "No allergy documented.",
+    "vitalInformation": "Mobility limitation; neurological deficits must be clarified.",
+    "documents": [
+      { "category": "MRI", "fileName": "Lumbar MRI", "uploadDate": "2026-06-21", "status": "Received" },
+      { "category": "CT", "fileName": "Not required", "uploadDate": "Pending", "status": "Missing" },
+      { "category": "Lab Results", "fileName": "Pre-op labs pending", "uploadDate": "Pending", "status": "Requested" },
+      { "category": "Blood Tests", "fileName": "CBC requested", "uploadDate": "Pending", "status": "Requested" },
+      { "category": "Pathology", "fileName": "Not applicable", "uploadDate": "Pending", "status": "Missing" },
+      { "category": "Discharge Summary", "fileName": "None", "uploadDate": "Pending", "status": "Missing" },
+      { "category": "Referral Letter", "fileName": "Diagnostic partner letter", "uploadDate": "2026-06-21", "status": "Received" },
+      { "category": "Passport", "fileName": "Passport requested", "uploadDate": "Pending", "status": "Requested" },
+      { "category": "Other", "fileName": "Radiology report", "uploadDate": "2026-06-21", "status": "Received" }
+    ],
+    "aiSummary": {
+      "keyFindings": ["MRI confirms lumbar disc herniation", "Pain persistent", "Thailand and India both viable"],
+      "possibleDiagnosis": "Lumbar disc herniation requiring neurosurgery or spine orthopedic opinion.",
+      "redFlags": ["Neurological deficit status unclear", "Passport pending"],
+      "missingInformation": ["Current neurological symptoms", "Pre-op labs", "Passport"],
+      "suggestedQuestions": ["Any foot drop or bladder symptoms?", "How long has conservative treatment been tried?", "Preferred destination budget?"]
+    },
+    "missingDocuments": [
+      { "item": "MRI", "status": "Received" },
+      { "item": "Blood Tests", "status": "Requested" },
+      { "item": "Pathology", "status": "Missing" },
+      { "item": "Passport", "status": "Requested" },
+      { "item": "Insurance", "status": "Missing" },
+      { "item": "Referral Letter", "status": "Received" }
+    ],
+    "clinicalRecommendation": {
+      "suggestedTreatment": "Spine surgery consultation",
+      "suggestedSpecialty": "Neurosurgery / Spine Orthopedics",
+      "urgency": "High",
+      "estimatedTimeline": "Hospital quotes within 72 hours"
+    },
+    "destinationRecommendation": {
+      "recommendedCountries": ["Thailand", "India", "Turkey"],
+      "reason": "Thailand offers premium spine pathway; India provides cost comparison; Turkey remains a secondary option."
+    },
+    "hospitalRecommendations": [
+      { "hospital": "Bumrungrad", "reason": "Strong premium spine option and fast case ID confirmation.", "priority": "High" },
+      { "hospital": "Apollo", "reason": "Useful India cost comparison for spine surgery.", "priority": "High" },
+      { "hospital": "Acibadem", "reason": "Backup Turkey option if patient prefers Turkey.", "priority": "Medium" }
+    ],
+    "outcome": "Ready for Hospital Referral",
+    "timeline": [
+      { "date": "2026-06-22", "time": "08:15", "user": "Nadia", "action": "Medical Review Requested", "evidence": "MRI package", "notes": "Diagnostic center referral." },
+      { "date": "2026-06-22", "time": "11:00", "user": "Operations", "action": "Reviewer Assigned", "evidence": "Review queue", "notes": "Assigned to Dr. Anil Sharma." },
+      { "date": "2026-06-23", "time": "16:30", "user": "Dr. Anil Sharma", "action": "Clinical Review Completed", "evidence": "Reviewer note", "notes": "Ready for spine referral." },
+      { "date": "2026-06-24", "time": "09:55", "user": "Nadia", "action": "Ready for Referral", "evidence": "Hospital package", "notes": "Bumrungrad and Apollo selected." }
+    ],
+    "internalNotes": {
+      "reviewerNotes": "Ask patient specifically about neurological deficits before final travel confirmation.",
+      "coordinatorNotes": "Patient wants Thailand and India compared.",
+      "managerNotes": "Split commission decision exists; keep all referrals tied to case."
+    }
+  }
+]

@@ -1,0 +1,646 @@
+[
+  {
+    "caseId": "CASE-1001-CARDIAC",
+    "patientId": "PAT-1001",
+    "patientName": "Amina Yusuf",
+    "photoInitials": "AY",
+    "dateOfBirth": "1984-03-14",
+    "country": "Nigeria",
+    "age": 42,
+    "gender": "Female",
+    "preferredLanguage": "English",
+    "phone": "+234 802 555 0184",
+    "email": "amina.yusuf@example.com",
+    "whatsapp": "+234 802 555 0184",
+    "passportStatus": "Valid",
+    "returningPatient": true,
+    "vipFlag": true,
+    "riskFlag": "High clinical urgency",
+    "leadSource": "Referral Partner",
+    "referralPartner": "Lagos Family Physicians Group",
+    "treatmentRequested": "Cardiac Surgery",
+    "medicalCondition": "Mitral valve disease requiring specialist review",
+    "destinationCountry": "Turkey",
+    "coordinator": "Maya",
+    "priority": "Urgent",
+    "caseStatus": "Active",
+    "createdDate": "2026-06-19",
+    "expectedTravelDate": "2026-07-18",
+    "lastUpdated": "2026-06-25",
+    "primaryPartner": "Lagos Family Physicians Group",
+    "lifetimePartnerOwner": "Lagos Family Physicians Group",
+    "firstReferralDate": "2026-06-19",
+    "ownershipStatus": "Confirmed First Referrer",
+    "commissionOwner": "Lagos Family Physicians Group",
+    "adminOverrideReason": "None",
+    "currentStep": "Hospital Quotes",
+    "partnerTimeline": [
+      {
+        "date": "2026-06-19",
+        "time": "08:42",
+        "user": "Maya",
+        "title": "First referral received",
+        "action": "Partner referral logged",
+        "evidence": "WhatsApp introduction",
+        "notes": "Original partner evidence preserved.",
+        "detail": "Partner sent WhatsApp introduction with diagnosis and patient contact."
+      },
+      {
+        "date": "2026-06-21",
+        "time": "15:20",
+        "user": "System",
+        "title": "Second partner attempt preserved",
+        "action": "Duplicate review created",
+        "evidence": "Duplicate review DR-001",
+        "notes": "Duplicate did not block hospital registration.",
+        "detail": "Lagos Executive Clinic also referred same patient; duplicate review created without blocking registration."
+      }
+    ],
+    "medicalReview": {
+      "documentsReceived": "Yes",
+      "medicalReviewStatus": "Completed",
+      "medicalSummary": "Patient requires cardiothoracic review for mitral valve repair options. Echo, labs, and cardiology notes received.",
+      "medicalReviewer": "Dr. Selin Kaya",
+      "reviewDate": "2026-06-23",
+      "aiSummaryPlaceholder": "AI summary will condense uploaded reports, red flags, and destination-specific questions."
+    },
+    "hospitalReferrals": [
+      {
+        "hospital": "Acibadem",
+        "referralDate": "2026-06-20",
+        "registrationStatus": "Confirmed",
+        "hospitalCaseId": "ACI-2026-1884",
+        "coordinator": "Maya",
+        "quoteStatus": "Received",
+        "treatmentCost": 28500,
+        "expectedResponse": "2026-06-24",
+        "lastContact": "2026-06-24",
+        "nextFollowUp": "2026-06-26",
+        "responseTime": "2 days"
+      },
+      {
+        "hospital": "Medipol",
+        "referralDate": "2026-06-21",
+        "registrationStatus": "Confirmed",
+        "hospitalCaseId": "MED-77421",
+        "coordinator": "Maya",
+        "quoteStatus": "Requested",
+        "treatmentCost": 0,
+        "expectedResponse": "2026-06-26",
+        "lastContact": "2026-06-23",
+        "nextFollowUp": "2026-06-26",
+        "responseTime": "Pending"
+      },
+      {
+        "hospital": "Memorial",
+        "referralDate": "2026-06-22",
+        "registrationStatus": "Pending",
+        "hospitalCaseId": "Pending",
+        "coordinator": "Maya",
+        "quoteStatus": "Not Requested",
+        "treatmentCost": 0,
+        "expectedResponse": "2026-06-27",
+        "lastContact": "2026-06-22",
+        "nextFollowUp": "2026-06-27",
+        "responseTime": "Pending"
+      }
+    ],
+    "hospitalQuotes": [
+      {
+        "hospital": "Acibadem",
+        "quotedCost": 28500,
+        "currency": "USD",
+        "estimatedStay": "14 days",
+        "doctor": "Prof. Murat Aydin",
+        "notes": "Includes cardiac surgery package and ICU estimate.",
+        "quoteDate": "2026-06-24",
+        "status": "Sent to Patient",
+        "validityDate": "2026-07-08",
+        "responseDeadline": "2026-06-28",
+        "coordinator": "Maya",
+        "patientDecision": "Reviewing with family"
+      },
+      {
+        "hospital": "Medipol",
+        "quotedCost": 0,
+        "currency": "USD",
+        "estimatedStay": "Pending",
+        "doctor": "Pending assignment",
+        "notes": "Clinical review in progress.",
+        "quoteDate": "Pending",
+        "status": "Requested",
+        "validityDate": "Pending",
+        "responseDeadline": "2026-06-26",
+        "coordinator": "Maya",
+        "patientDecision": "Waiting for quote"
+      }
+    ],
+    "caseTimeline": [
+      {
+        "date": "2026-06-19",
+        "time": "08:42",
+        "user": "Maya",
+        "title": "Lead Created",
+        "action": "Lead Created",
+        "evidence": "WhatsApp introduction",
+        "notes": "Referral partner submitted patient.",
+        "detail": "WhatsApp lead created from referral partner."
+      },
+      {
+        "date": "2026-06-21",
+        "time": "11:15",
+        "user": "Maya",
+        "title": "Documents Uploaded",
+        "action": "Documents Uploaded",
+        "evidence": "Echo report, labs, cardiology note",
+        "notes": "Ready for medical review.",
+        "detail": "Echo report, lab work, and cardiologist note received."
+      },
+      {
+        "date": "2026-06-22",
+        "time": "16:10",
+        "user": "Maya",
+        "title": "Referral Sent",
+        "action": "Referral Sent",
+        "evidence": "Hospital referral package",
+        "notes": "Sent to three hospitals for comparison.",
+        "detail": "Patient package sent to Acibadem, Medipol, and Memorial."
+      },
+      {
+        "date": "2026-06-24",
+        "time": "14:05",
+        "user": "Maya",
+        "title": "Quote Received",
+        "action": "Quote Received",
+        "evidence": "Acibadem quote PDF",
+        "notes": "Quote shared with patient.",
+        "detail": "Acibadem quote received and sent to patient."
+      }
+    ],
+    "auditTrail": [
+      {
+        "date": "2026-06-19",
+        "time": "08:42",
+        "user": "Maya",
+        "action": "Lead Created",
+        "reason": "Referral partner submitted patient",
+        "evidence": "WhatsApp introduction",
+        "oldValue": "None",
+        "newValue": "Lead and case created"
+      },
+      {
+        "date": "2026-06-21",
+        "time": "15:20",
+        "user": "System",
+        "action": "Possible Duplicate Detected",
+        "reason": "Matching phone, name, and diagnosis",
+        "evidence": "Duplicate review DR-001",
+        "oldValue": "No duplicate flag",
+        "newValue": "Duplicate review pending"
+      },
+      {
+        "date": "2026-06-22",
+        "time": "16:10",
+        "user": "Operations Manager",
+        "action": "Commission Owner Confirmed",
+        "reason": "First timestamped partner evidence",
+        "evidence": "Commission decision CD-001",
+        "oldValue": "Pending Review",
+        "newValue": "Lagos Family Physicians Group"
+      }
+    ],
+    "attachedFiles": [
+      { "type": "MRI", "name": "Not applicable", "date": "2026-06-19", "category": "Imaging", "uploadDate": "2026-06-19", "ocrStatus": "Not Required", "aiExtracted": false, "verified": true },
+      { "type": "Reports", "name": "Echo report and cardiology note", "date": "2026-06-21", "category": "Medical Reports", "uploadDate": "2026-06-21", "ocrStatus": "Complete", "aiExtracted": true, "verified": true },
+      { "type": "Passport", "name": "Passport bio page", "date": "2026-06-22", "category": "Identity", "uploadDate": "2026-06-22", "ocrStatus": "Complete", "aiExtracted": true, "verified": true },
+      { "type": "Invoices", "name": "Acibadem quote PDF", "date": "2026-06-24", "category": "Hospital Quote", "uploadDate": "2026-06-24", "ocrStatus": "Queued", "aiExtracted": false, "verified": false },
+      { "type": "Consent", "name": "Patient consent placeholder", "date": "Pending", "category": "Consent", "uploadDate": "Pending", "ocrStatus": "Pending", "aiExtracted": false, "verified": false }
+    ],
+    "internalNotes": {
+      "coordinatorNotes": "Patient is comparing two quotes and needs visa timeline guidance.",
+      "medicalNotes": "Cardiology review recommends surgical consult before travel confirmation.",
+      "administrativeNotes": "Protect commission owner due to duplicate partner attempt."
+    },
+    "tasks": [
+      { "title": "Upcoming Follow-up", "owner": "Maya", "dueDate": "2026-06-25", "status": "Due" },
+      { "title": "Pending Quotes", "owner": "Maya", "dueDate": "2026-06-26", "status": "Open" },
+      { "title": "Visa Reminder", "owner": "Operations", "dueDate": "2026-07-01", "status": "Planned" }
+    ]
+  },
+  {
+    "caseId": "CASE-1002-CHEMO",
+    "patientId": "PAT-1001",
+    "patientName": "Amina Yusuf",
+    "photoInitials": "AY",
+    "dateOfBirth": "1984-03-14",
+    "country": "Nigeria",
+    "age": 42,
+    "gender": "Female",
+    "preferredLanguage": "English",
+    "phone": "+234 802 555 0184",
+    "email": "amina.yusuf@example.com",
+    "whatsapp": "+234 802 555 0184",
+    "passportStatus": "Valid",
+    "returningPatient": true,
+    "vipFlag": false,
+    "riskFlag": "Routine follow-up",
+    "leadSource": "Returning Patient",
+    "referralPartner": "Lagos Family Physicians Group",
+    "treatmentRequested": "Chemotherapy Cycle 2",
+    "medicalCondition": "Post-surgery oncology continuation request",
+    "destinationCountry": "Turkey",
+    "coordinator": "Maya",
+    "priority": "Medium",
+    "caseStatus": "Closed",
+    "createdDate": "2026-05-08",
+    "expectedTravelDate": "2026-05-29",
+    "lastUpdated": "2026-06-18",
+    "primaryPartner": "Lagos Family Physicians Group",
+    "lifetimePartnerOwner": "Lagos Family Physicians Group",
+    "firstReferralDate": "2026-06-19",
+    "ownershipStatus": "Confirmed First Referrer",
+    "commissionOwner": "Lagos Family Physicians Group",
+    "adminOverrideReason": "None",
+    "currentStep": "Completed",
+    "partnerTimeline": [
+      {
+        "date": "2026-05-08",
+        "time": "09:10",
+        "user": "Maya",
+        "title": "Returning patient case opened",
+        "action": "New case created",
+        "evidence": "Patient WhatsApp message",
+        "notes": "Lifetime owner inherited from original referral.",
+        "detail": "Chemotherapy continuation case opened for existing patient."
+      }
+    ],
+    "medicalReview": {
+      "documentsReceived": "Yes",
+      "medicalReviewStatus": "Completed",
+      "medicalSummary": "Oncology follow-up completed and cycle plan confirmed.",
+      "medicalReviewer": "Dr. Selin Kaya",
+      "reviewDate": "2026-05-12",
+      "aiSummaryPlaceholder": "AI summary will highlight prior case context and treatment continuity."
+    },
+    "hospitalReferrals": [
+      {
+        "hospital": "Acibadem",
+        "referralDate": "2026-05-09",
+        "registrationStatus": "Confirmed",
+        "hospitalCaseId": "ACI-2026-1220",
+        "coordinator": "Maya",
+        "quoteStatus": "Received",
+        "treatmentCost": 9200,
+        "expectedResponse": "2026-05-13",
+        "lastContact": "2026-06-18",
+        "nextFollowUp": "Closed",
+        "responseTime": "3 days"
+      }
+    ],
+    "hospitalQuotes": [
+      {
+        "hospital": "Acibadem",
+        "quotedCost": 9200,
+        "currency": "USD",
+        "estimatedStay": "8 days",
+        "doctor": "Dr. Ayse Demir",
+        "notes": "Cycle 2 oncology package.",
+        "quoteDate": "2026-05-13",
+        "status": "Accepted",
+        "validityDate": "2026-05-27",
+        "responseDeadline": "2026-05-16",
+        "coordinator": "Maya",
+        "patientDecision": "Accepted"
+      }
+    ],
+    "caseTimeline": [
+      {
+        "date": "2026-05-08",
+        "time": "09:10",
+        "user": "Maya",
+        "title": "Case Created",
+        "action": "Case Created",
+        "evidence": "Patient WhatsApp message",
+        "notes": "Returning patient.",
+        "detail": "Chemotherapy continuation case created."
+      },
+      {
+        "date": "2026-06-18",
+        "time": "13:30",
+        "user": "Maya",
+        "title": "Case Closed",
+        "action": "Case Closed",
+        "evidence": "Discharge summary",
+        "notes": "Cycle completed.",
+        "detail": "Treatment cycle completed and follow-up recommended."
+      }
+    ],
+    "auditTrail": [
+      {
+        "date": "2026-05-08",
+        "time": "09:10",
+        "user": "Maya",
+        "action": "Case Created",
+        "reason": "Returning patient requested chemotherapy continuation",
+        "evidence": "Patient WhatsApp message",
+        "oldValue": "No active chemotherapy case",
+        "newValue": "CASE-1002-CHEMO"
+      }
+    ],
+    "attachedFiles": [
+      { "type": "Reports", "name": "Oncology review", "date": "2026-05-12", "category": "Medical Reports", "uploadDate": "2026-05-12", "ocrStatus": "Complete", "aiExtracted": true, "verified": true },
+      { "type": "Invoices", "name": "Chemotherapy invoice", "date": "2026-06-18", "category": "Invoice", "uploadDate": "2026-06-18", "ocrStatus": "Complete", "aiExtracted": true, "verified": true }
+    ],
+    "internalNotes": {
+      "coordinatorNotes": "Closed after treatment cycle completion.",
+      "medicalNotes": "Monitor future oncology follow-up date.",
+      "administrativeNotes": "Lifetime partner owner preserved."
+    },
+    "tasks": [
+      { "title": "Future follow-up review", "owner": "Maya", "dueDate": "2026-08-01", "status": "Planned" }
+    ]
+  },
+  {
+    "caseId": "CASE-1003-FOLLOWUP",
+    "patientId": "PAT-1001",
+    "patientName": "Amina Yusuf",
+    "photoInitials": "AY",
+    "dateOfBirth": "1984-03-14",
+    "country": "Nigeria",
+    "age": 42,
+    "gender": "Female",
+    "preferredLanguage": "English",
+    "phone": "+234 802 555 0184",
+    "email": "amina.yusuf@example.com",
+    "whatsapp": "+234 802 555 0184",
+    "passportStatus": "Valid",
+    "returningPatient": true,
+    "vipFlag": false,
+    "riskFlag": "Future review",
+    "leadSource": "Returning Patient",
+    "referralPartner": "Lagos Family Physicians Group",
+    "treatmentRequested": "Follow-up Review",
+    "medicalCondition": "Planned remote review after treatment",
+    "destinationCountry": "Remote / Turkey",
+    "coordinator": "Maya",
+    "priority": "Low",
+    "caseStatus": "New",
+    "createdDate": "2026-06-25",
+    "expectedTravelDate": "2026-09-10",
+    "lastUpdated": "2026-06-25",
+    "primaryPartner": "Lagos Family Physicians Group",
+    "lifetimePartnerOwner": "Lagos Family Physicians Group",
+    "firstReferralDate": "2026-06-19",
+    "ownershipStatus": "Confirmed First Referrer",
+    "commissionOwner": "Lagos Family Physicians Group",
+    "adminOverrideReason": "None",
+    "currentStep": "Lead",
+    "partnerTimeline": [
+      {
+        "date": "2026-06-25",
+        "time": "12:00",
+        "user": "Maya",
+        "title": "Future case created",
+        "action": "Create New Case",
+        "evidence": "Coordinator note",
+        "notes": "Used to preview multi-case patient model.",
+        "detail": "Future follow-up case added for continuity."
+      }
+    ],
+    "medicalReview": {
+      "documentsReceived": "No",
+      "medicalReviewStatus": "Not Started",
+      "medicalSummary": "Future follow-up review pending updated reports.",
+      "medicalReviewer": "Pending",
+      "reviewDate": "Pending",
+      "aiSummaryPlaceholder": "AI summary will prepare a longitudinal view across prior cases."
+    },
+    "hospitalReferrals": [],
+    "hospitalQuotes": [],
+    "caseTimeline": [
+      {
+        "date": "2026-06-25",
+        "time": "12:00",
+        "user": "Maya",
+        "title": "Future Case Created",
+        "action": "Create New Case",
+        "evidence": "Coordinator note",
+        "notes": "No hospital action yet.",
+        "detail": "Follow-up review planned for September."
+      }
+    ],
+    "auditTrail": [
+      {
+        "date": "2026-06-25",
+        "time": "12:00",
+        "user": "Maya",
+        "action": "Future Case Created",
+        "reason": "Patient needs planned follow-up review",
+        "evidence": "Coordinator note",
+        "oldValue": "No future case",
+        "newValue": "CASE-1003-FOLLOWUP"
+      }
+    ],
+    "attachedFiles": [
+      { "type": "Reports", "name": "Pending updated reports", "date": "Pending", "category": "Medical Reports", "uploadDate": "Pending", "ocrStatus": "Pending", "aiExtracted": false, "verified": false }
+    ],
+    "internalNotes": {
+      "coordinatorNotes": "Request updated reports closer to September.",
+      "medicalNotes": "No medical review yet.",
+      "administrativeNotes": "Lifetime partner owner inherited."
+    },
+    "tasks": [
+      { "title": "Request updated reports", "owner": "Maya", "dueDate": "2026-08-20", "status": "Planned" }
+    ]
+  },
+  {
+    "caseId": "CASE-1004-SPINE",
+    "patientId": "PAT-1004",
+    "patientName": "Peter Mwangi",
+    "photoInitials": "PM",
+    "dateOfBirth": "1978-04-07",
+    "country": "Kenya",
+    "age": 48,
+    "gender": "Male",
+    "preferredLanguage": "English / Swahili",
+    "phone": "+254 722 555 904",
+    "email": "peter.mwangi@example.com",
+    "whatsapp": "+254 722 555 904",
+    "passportStatus": "Renewal Needed",
+    "returningPatient": false,
+    "vipFlag": false,
+    "riskFlag": "Mobility limitation",
+    "leadSource": "Diagnostic Center",
+    "referralPartner": "Nairobi Imaging Centre",
+    "treatmentRequested": "Spine Surgery",
+    "medicalCondition": "Lumbar disc herniation with persistent pain",
+    "destinationCountry": "Thailand / India",
+    "coordinator": "Nadia",
+    "priority": "High",
+    "caseStatus": "Reopened",
+    "createdDate": "2026-06-21",
+    "expectedTravelDate": "2026-07-28",
+    "lastUpdated": "2026-06-25",
+    "primaryPartner": "Nairobi Imaging Centre",
+    "lifetimePartnerOwner": "Nairobi Imaging Centre",
+    "firstReferralDate": "2026-06-21",
+    "ownershipStatus": "Split Commission",
+    "commissionOwner": "Nairobi Imaging Centre + West Africa Medical Facilitators",
+    "adminOverrideReason": "Manager approved split after facilitator supplied family coordination evidence.",
+    "currentStep": "Hospital Registration",
+    "partnerTimeline": [
+      {
+        "date": "2026-06-21",
+        "time": "10:05",
+        "user": "Nadia",
+        "title": "Diagnostic partner referral",
+        "action": "Patient Registered",
+        "evidence": "MRI PDF and email referral",
+        "notes": "Diagnostic partner evidence is first valid source.",
+        "detail": "Nairobi Imaging Centre sent MRI package and patient contact."
+      },
+      {
+        "date": "2026-06-24",
+        "time": "17:00",
+        "user": "Operations Manager",
+        "title": "Split commission approved",
+        "action": "Decision Approved",
+        "evidence": "Commission decision CD-002",
+        "notes": "Family facilitator evidence accepted for split.",
+        "detail": "Manager approved split based on family coordination evidence."
+      }
+    ],
+    "medicalReview": {
+      "documentsReceived": "Yes",
+      "medicalReviewStatus": "Completed",
+      "medicalSummary": "MRI indicates lumbar disc herniation. Surgical opinion and conservative care history requested.",
+      "medicalReviewer": "Dr. Anil Sharma",
+      "reviewDate": "2026-06-23",
+      "aiSummaryPlaceholder": "AI summary will compare imaging report, symptoms, and surgical quote readiness."
+    },
+    "hospitalReferrals": [
+      {
+        "hospital": "Bumrungrad",
+        "referralDate": "2026-06-23",
+        "registrationStatus": "Confirmed",
+        "hospitalCaseId": "BUM-TH-9021",
+        "coordinator": "Nadia",
+        "quoteStatus": "Received",
+        "treatmentCost": 21400,
+        "expectedResponse": "2026-06-25",
+        "lastContact": "2026-06-25",
+        "nextFollowUp": "2026-06-28",
+        "responseTime": "2 days"
+      },
+      {
+        "hospital": "Apollo Spine Unit",
+        "referralDate": "2026-06-24",
+        "registrationStatus": "Submitted",
+        "hospitalCaseId": "Pending",
+        "coordinator": "Nadia",
+        "quoteStatus": "Requested",
+        "treatmentCost": 0,
+        "expectedResponse": "2026-06-28",
+        "lastContact": "2026-06-24",
+        "nextFollowUp": "2026-06-28",
+        "responseTime": "Pending"
+      }
+    ],
+    "hospitalQuotes": [
+      {
+        "hospital": "Bumrungrad",
+        "quotedCost": 21400,
+        "currency": "USD",
+        "estimatedStay": "10 days",
+        "doctor": "Dr. Narin S.",
+        "notes": "Includes spine surgery estimate and inpatient stay.",
+        "quoteDate": "2026-06-25",
+        "status": "Received",
+        "validityDate": "2026-07-09",
+        "responseDeadline": "2026-06-29",
+        "coordinator": "Nadia",
+        "patientDecision": "Comparing India option"
+      }
+    ],
+    "caseTimeline": [
+      {
+        "date": "2026-06-21",
+        "time": "10:05",
+        "user": "Nadia",
+        "title": "Lead Created",
+        "action": "Lead Created",
+        "evidence": "MRI PDF and email referral",
+        "notes": "Diagnostic partner referred patient after imaging.",
+        "detail": "Diagnostic partner referred patient after imaging."
+      },
+      {
+        "date": "2026-06-23",
+        "time": "13:45",
+        "user": "Nadia",
+        "title": "Hospital Registered",
+        "action": "Hospital Confirmed",
+        "evidence": "BUM-TH-9021",
+        "notes": "Hospital case ID confirmed.",
+        "detail": "Bumrungrad confirmed hospital case ID."
+      },
+      {
+        "date": "2026-06-24",
+        "time": "17:00",
+        "user": "Operations Manager",
+        "title": "Case Reopened",
+        "action": "Decision Approved",
+        "evidence": "Family WhatsApp evidence",
+        "notes": "Family requested additional India hospital option.",
+        "detail": "Family requested additional India hospital option."
+      },
+      {
+        "date": "2026-06-25",
+        "time": "09:35",
+        "user": "Nadia",
+        "title": "Quote Received",
+        "action": "Quote Received",
+        "evidence": "Bumrungrad quote PDF",
+        "notes": "Patient comparing destination options.",
+        "detail": "Bumrungrad quote received."
+      }
+    ],
+    "auditTrail": [
+      {
+        "date": "2026-06-21",
+        "time": "10:05",
+        "user": "Nadia",
+        "action": "Patient Registered",
+        "reason": "Diagnostic partner sent complete MRI package",
+        "evidence": "MRI PDF and email referral",
+        "oldValue": "No case",
+        "newValue": "CASE-1004-SPINE"
+      },
+      {
+        "date": "2026-06-24",
+        "time": "17:00",
+        "user": "Operations Manager",
+        "action": "Decision Approved",
+        "reason": "Split commission justified by partner/facilitator involvement",
+        "evidence": "Commission decision CD-002",
+        "oldValue": "Nairobi Imaging Centre",
+        "newValue": "Nairobi Imaging Centre + West Africa Medical Facilitators"
+      }
+    ],
+    "attachedFiles": [
+      { "type": "MRI", "name": "Lumbar MRI", "date": "2026-06-21", "category": "Imaging", "uploadDate": "2026-06-21", "ocrStatus": "Complete", "aiExtracted": true, "verified": true },
+      { "type": "Reports", "name": "Radiology report", "date": "2026-06-21", "category": "Medical Reports", "uploadDate": "2026-06-21", "ocrStatus": "Complete", "aiExtracted": true, "verified": true },
+      { "type": "Images", "name": "MRI image set placeholder", "date": "2026-06-22", "category": "Images", "uploadDate": "2026-06-22", "ocrStatus": "Not Required", "aiExtracted": false, "verified": true },
+      { "type": "Invoices", "name": "Bumrungrad quote", "date": "2026-06-25", "category": "Hospital Quote", "uploadDate": "2026-06-25", "ocrStatus": "Queued", "aiExtracted": false, "verified": false }
+    ],
+    "internalNotes": {
+      "coordinatorNotes": "Patient wants Thailand and India compared before making decision.",
+      "medicalNotes": "Review surgical option and ask whether neurological deficits are present.",
+      "administrativeNotes": "Split commission decision must stay visible in case record."
+    },
+    "tasks": [
+      { "title": "Hospital Follow-up", "owner": "Nadia", "dueDate": "2026-06-28", "status": "Open" },
+      { "title": "Partner Follow-up", "owner": "Operations", "dueDate": "2026-06-29", "status": "Open" },
+      { "title": "Create Task", "owner": "Nadia", "dueDate": "2026-06-30", "status": "Draft" }
+    ]
+  }
+]

@@ -1,0 +1,272 @@
+[
+  {
+    "id": "rp-001",
+    "organizationName": "Lagos Executive Clinic",
+    "contactPerson": "Dr. Adaeze Okonkwo",
+    "country": "Nigeria",
+    "city": "Lagos",
+    "partnerType": "Specialist Clinics",
+    "specialties": ["Cardiology", "Executive health"],
+    "treatmentsReferred": ["Cardiac surgery", "Advanced diagnostics"],
+    "phone": "+234 800 111 2001",
+    "email": "referrals@lagosexecutiveclinic.example",
+    "website": "https://lagosexecutiveclinic.example",
+    "whatsapp": "+234 800 111 2001",
+    "referralStatus": "Active Referrer",
+    "agreementStatus": "Signed",
+    "commissionModel": "Percentage of net revenue",
+    "patientsReferred": 18,
+    "newReferrals": 4,
+    "estimatedRevenue": 142000,
+    "lastContact": "2026-06-21",
+    "nextFollowUp": "2026-06-28",
+    "notes": "Strong high-intent patient flow for cardiac and diagnostics referrals.",
+    "activity": [
+      {
+        "date": "2026-06-05",
+        "title": "Agreement signed",
+        "detail": "Referral terms accepted for specialist outbound cases."
+      },
+      {
+        "date": "2026-06-21",
+        "title": "Referral review",
+        "detail": "Reviewed four active patient referrals and next documentation needs."
+      }
+    ]
+  },
+  {
+    "id": "rp-002",
+    "organizationName": "Accra Oncology Support Network",
+    "contactPerson": "Miriam Boateng",
+    "country": "Ghana",
+    "city": "Accra",
+    "partnerType": "NGOs",
+    "specialties": ["Cancer support", "Patient navigation"],
+    "treatmentsReferred": ["Oncology consultation", "Radiotherapy"],
+    "phone": "+233 302 555 018",
+    "email": "programs@accraoncologysupport.example",
+    "website": "https://accraoncologysupport.example",
+    "whatsapp": "+233 302 555 018",
+    "referralStatus": "Agreement Signed",
+    "agreementStatus": "Signed",
+    "commissionModel": "No commission",
+    "patientsReferred": 9,
+    "newReferrals": 2,
+    "estimatedRevenue": 68000,
+    "lastContact": "2026-06-20",
+    "nextFollowUp": "2026-06-27",
+    "notes": "Mission-aligned partner for oncology education and patient support referrals.",
+    "activity": [
+      {
+        "date": "2026-06-10",
+        "title": "Program call",
+        "detail": "Discussed patient support workflow and referral expectations."
+      },
+      {
+        "date": "2026-06-20",
+        "title": "Agreement confirmed",
+        "detail": "Confirmed non-commission referral arrangement."
+      }
+    ]
+  },
+  {
+    "id": "rp-003",
+    "organizationName": "Nairobi Imaging Centre",
+    "contactPerson": "Dr. Peter Mwangi",
+    "country": "Kenya",
+    "city": "Nairobi",
+    "partnerType": "Diagnostic Centers",
+    "specialties": ["MRI", "CT scan", "Pre-surgical diagnostics"],
+    "treatmentsReferred": ["Neurosurgery", "Orthopedics", "Second opinion"],
+    "phone": "+254 700 441 208",
+    "email": "partners@nairobiimaging.example",
+    "website": "https://nairobiimaging.example",
+    "whatsapp": "+254 700 441 208",
+    "referralStatus": "Negotiation",
+    "agreementStatus": "Under Review",
+    "commissionModel": "Flat referral fee",
+    "patientsReferred": 5,
+    "newReferrals": 1,
+    "estimatedRevenue": 41000,
+    "lastContact": "2026-06-18",
+    "nextFollowUp": "2026-06-25",
+    "notes": "Useful diagnostic gateway for complex surgery referrals.",
+    "activity": [
+      {
+        "date": "2026-06-12",
+        "title": "Intro meeting",
+        "detail": "Validated diagnostic referral pathway."
+      },
+      {
+        "date": "2026-06-18",
+        "title": "Terms under review",
+        "detail": "Partner reviewing flat-fee commission model."
+      }
+    ]
+  },
+  {
+    "id": "rp-004",
+    "organizationName": "Kampala Corporate Health Desk",
+    "contactPerson": "Grace Nambasa",
+    "country": "Uganda",
+    "city": "Kampala",
+    "partnerType": "Corporate Organizations",
+    "specialties": ["Employee health", "Executive benefits"],
+    "treatmentsReferred": ["Health checkups", "Fertility", "Cancer screening"],
+    "phone": "+256 414 900 334",
+    "email": "healthdesk@kampalacorporate.example",
+    "website": "https://kampalacorporate.example",
+    "whatsapp": "+256 414 900 334",
+    "referralStatus": "Meeting Scheduled",
+    "agreementStatus": "Draft Sent",
+    "commissionModel": "Case-by-case",
+    "patientsReferred": 2,
+    "newReferrals": 1,
+    "estimatedRevenue": 18000,
+    "lastContact": "2026-06-23",
+    "nextFollowUp": "2026-06-26",
+    "notes": "Potential channel for employer-sponsored medical travel cases.",
+    "activity": [
+      {
+        "date": "2026-06-19",
+        "title": "Prospect qualified",
+        "detail": "Corporate wellness team mapped as referral source."
+      },
+      {
+        "date": "2026-06-23",
+        "title": "Meeting scheduled",
+        "detail": "First partnership meeting scheduled."
+      }
+    ]
+  },
+  {
+    "id": "rp-005",
+    "organizationName": "Dar Health Travel Services",
+    "contactPerson": "Amina Said",
+    "country": "Tanzania",
+    "city": "Dar es Salaam",
+    "partnerType": "Travel Agencies",
+    "specialties": ["Medical travel logistics", "Patient accommodation"],
+    "treatmentsReferred": ["Dental implants", "Cosmetic surgery", "Hair transplant"],
+    "phone": "+255 22 410 884",
+    "email": "medicaltravel@darhealthtravel.example",
+    "website": "https://darhealthtravel.example",
+    "whatsapp": "+255 22 410 884",
+    "referralStatus": "Contacted",
+    "agreementStatus": "Not Started",
+    "commissionModel": "Case-by-case",
+    "patientsReferred": 0,
+    "newReferrals": 0,
+    "estimatedRevenue": 0,
+    "lastContact": "2026-06-22",
+    "nextFollowUp": "2026-06-29",
+    "notes": "May support logistics-heavy elective treatment referrals.",
+    "activity": [
+      {
+        "date": "2026-06-22",
+        "title": "Initial contact",
+        "detail": "Introduced AfraMedico partner model."
+      }
+    ]
+  },
+  {
+    "id": "rp-006",
+    "organizationName": "West Africa Medical Facilitators",
+    "contactPerson": "Samuel Mensah",
+    "country": "Ghana",
+    "city": "Kumasi",
+    "partnerType": "Medical Facilitators",
+    "specialties": ["Cross-border referrals", "Patient coordination"],
+    "treatmentsReferred": ["Bariatric surgery", "Orthopedics", "IVF"],
+    "phone": "+233 244 551 019",
+    "email": "samuel@wamf.example",
+    "website": "https://wamf.example",
+    "whatsapp": "+233 244 551 019",
+    "referralStatus": "Prospect",
+    "agreementStatus": "Not Started",
+    "commissionModel": "Percentage of net revenue",
+    "patientsReferred": 0,
+    "newReferrals": 0,
+    "estimatedRevenue": 0,
+    "lastContact": "2026-06-15",
+    "nextFollowUp": "2026-06-30",
+    "notes": "Needs vetting before active outreach due to facilitator quality variance.",
+    "activity": [
+      {
+        "date": "2026-06-15",
+        "title": "Added to pipeline",
+        "detail": "Identified through Ghana referral market research."
+      }
+    ]
+  },
+  {
+    "id": "rp-007",
+    "organizationName": "Lagos Family Physicians Group",
+    "contactPerson": "Dr. Tunde Adebayo",
+    "country": "Nigeria",
+    "city": "Lagos",
+    "partnerType": "Physicians",
+    "specialties": ["Family medicine", "Chronic disease management"],
+    "treatmentsReferred": ["Second opinion", "Cardiology", "Diabetes care"],
+    "phone": "+234 802 330 1099",
+    "email": "dr.adebayo@lfpg.example",
+    "website": "https://lfpg.example",
+    "whatsapp": "+234 802 330 1099",
+    "referralStatus": "Active Referrer",
+    "agreementStatus": "Signed",
+    "commissionModel": "Flat referral fee",
+    "patientsReferred": 11,
+    "newReferrals": 3,
+    "estimatedRevenue": 76000,
+    "lastContact": "2026-06-24",
+    "nextFollowUp": "2026-07-01",
+    "notes": "Consistent referral source for second opinions and chronic disease escalation.",
+    "activity": [
+      {
+        "date": "2026-06-01",
+        "title": "Referral model agreed",
+        "detail": "Flat referral fee accepted for qualified patient referrals."
+      },
+      {
+        "date": "2026-06-24",
+        "title": "New referrals received",
+        "detail": "Three new second-opinion cases sent for review."
+      }
+    ]
+  },
+  {
+    "id": "rp-008",
+    "organizationName": "PanAfrica Care HMO",
+    "contactPerson": "Ifeoma Eze",
+    "country": "Nigeria",
+    "city": "Abuja",
+    "partnerType": "HMOs / Insurance",
+    "specialties": ["Private health plans", "Employer coverage"],
+    "treatmentsReferred": ["Oncology", "Orthopedics", "Complex diagnostics"],
+    "phone": "+234 809 440 5000",
+    "email": "partnerships@panafricacare.example",
+    "website": "https://panafricacare.example",
+    "whatsapp": "+234 809 440 5000",
+    "referralStatus": "Inactive",
+    "agreementStatus": "Paused",
+    "commissionModel": "No commission",
+    "patientsReferred": 3,
+    "newReferrals": 0,
+    "estimatedRevenue": 22000,
+    "lastContact": "2026-05-30",
+    "nextFollowUp": "2026-07-05",
+    "notes": "Paused pending internal policy review.",
+    "activity": [
+      {
+        "date": "2026-05-20",
+        "title": "Policy review started",
+        "detail": "Partner requested internal compliance review."
+      },
+      {
+        "date": "2026-05-30",
+        "title": "Paused",
+        "detail": "Moved to inactive until review completes."
+      }
+    ]
+  }
+]

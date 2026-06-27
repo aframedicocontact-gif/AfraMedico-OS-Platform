@@ -93,6 +93,9 @@ Created architecture documentation for:
 
 Upcoming planned milestones:
 
+- Phase 2 frontend-backend connection.
+- Phase 2 Sprint 2 Supabase authentication foundation.
+- Phase 2 Sprint 3 first organization and admin bootstrap foundation.
 - Backend Sprint 3.
 - Clinical Decision Foundation.
 - Travel Workflow backend.

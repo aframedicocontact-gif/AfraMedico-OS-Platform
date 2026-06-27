@@ -24,6 +24,7 @@ import { LeadDashboard } from "../components/pages/LeadDashboard";
 import { LeadDirectory } from "../components/pages/LeadDirectory";
 import { LeadPipeline } from "../components/pages/LeadPipeline";
 import { LeadProfile } from "../components/pages/LeadProfile";
+import { LoginPage } from "../components/pages/LoginPage";
 import { MedicalReviewDashboard } from "../components/pages/MedicalReviewDashboard";
 import { MedicalReviewQueue } from "../components/pages/MedicalReviewQueue";
 import { MedicalReviewWorkspace } from "../components/pages/MedicalReviewWorkspace";
@@ -60,6 +61,7 @@ import type { ProtectedReferralCase } from "../types/referralProtection";
 import type { ReferralPartner } from "../types/referralPartner";
 
 export type AppView =
+  | { name: "login" }
   | { name: "dashboard" }
   | { name: "organizations" }
   | { name: "organization-details"; organizationId: string }
@@ -128,7 +130,9 @@ const hpn = hpnJson as HpnData;
 const finance = financeJson as FinanceData;
 
 export function App() {
-  const [view, setView] = useState<AppView>({ name: "dashboard" });
+  const [view, setView] = useState<AppView>(() =>
+    window.location.pathname === "/login" ? { name: "login" } : { name: "dashboard" },
+  );
 
   const selectedOrganization = useMemo(() => {
     if (view.name !== "organization-details") {
@@ -261,6 +265,15 @@ export function App() {
       tasks: buildUnifiedTasks(selectedCaseProfile, activeClinicalReview),
     };
   }, [activeClinicalReview, selectedCaseProfile]);
+
+  function openMissionControl() {
+    window.history.replaceState({}, "", "/");
+    setView({ name: "dashboard" });
+  }
+
+  if (view.name === "login") {
+    return <LoginPage onSignedIn={openMissionControl} />;
+  }
 
   return (
     <AppShell caseContext={usesCaseContextFrame(view.name) ? unifiedCaseContext : undefined} currentView={view.name} onNavigate={setView}>

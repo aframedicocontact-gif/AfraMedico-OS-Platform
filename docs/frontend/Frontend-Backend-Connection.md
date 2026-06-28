@@ -46,6 +46,19 @@ It reads the Vite environment variables and exposes a small request wrapper for 
 
 The package `@supabase/supabase-js` should be installed when npm registry access is available. The current wrapper keeps the project build-safe until the package can be installed in this environment.
 
+## Live Development Project
+
+Phase 2 Sprint 4 connects the frontend configuration path to the live Supabase Development project:
+
+```text
+AfraMedico OS - Development
+Project ID: sblaedmxxquiavmfdmwq
+```
+
+Backend Foundation v1.0 is frozen for this project. All 8 backend migrations were executed successfully on the fresh Supabase Development database.
+
+Local developers should create `.env.local` using `docs/frontend/Local-Environment-Setup.md`. Real keys must remain local and must not be committed.
+
 ## Service Layer
 
 Initial service files:
@@ -95,7 +108,7 @@ Do not replace all local JSON at once.
 The next backend-connected workflow should be:
 
 ```text
-Authentication and first live Organization / Patient / Case workflow
+First admin user and auth profile linkage, followed by the first live Organization / Patient / Case workflow
 ```
 
 Recommended order:
@@ -103,11 +116,13 @@ Recommended order:
 1. configure local `.env`
 2. install `@supabase/supabase-js`
 3. add frontend authentication
-4. set or verify `auth.jwt().app_metadata.organization_id`
-5. load the current Organization
-6. list Patients
-7. list Cases
-8. connect Case Workspace gradually
+4. create the first development admin user
+5. link the Auth user to `user_profiles` and `organization_users`
+6. set or verify `auth.jwt().app_metadata.organization_id`
+7. load the current Organization
+8. list Patients
+9. list Cases
+10. connect Case Workspace gradually
 
 ## Current Boundary
 

@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { useAuth } from "../../contexts/AuthContext";
+import { BackendConnectionStatus } from "../auth/BackendConnectionStatus";
 
 type LoginPageProps = {
   onSignedIn: () => void;
@@ -101,6 +102,8 @@ export function LoginPage({ onSignedIn }: LoginPageProps) {
             )}
           </CardContent>
         </Card>
+
+        <BackendConnectionStatus />
       </div>
     </div>
   );

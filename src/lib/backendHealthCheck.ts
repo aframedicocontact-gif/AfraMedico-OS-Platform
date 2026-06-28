@@ -1,22 +1,29 @@
-import { querySupabaseTable, supabaseConfig } from "./supabaseClient";
+import { querySupabaseTable, supabaseClient, supabaseConfig } from "./supabaseClient";
 
 export type BackendHealthCheckResult = {
   clientLoaded: boolean;
+  clientInitialized: boolean;
   environmentConfigured: boolean;
   organizationsQuerySucceeded: boolean;
+  organizationCount: number | null;
+  error: string | null;
   status: "ready" | "not_configured" | "query_failed";
   message: string;
 };
 
 export async function runBackendHealthCheck(): Promise<BackendHealthCheckResult> {
-  const clientLoaded = Boolean(querySupabaseTable);
+  const clientLoaded = Boolean(supabaseClient);
+  const clientInitialized = Boolean(supabaseClient.config);
   const environmentConfigured = supabaseConfig.isConfigured;
 
   if (!environmentConfigured) {
     return {
       clientLoaded,
+      clientInitialized,
       environmentConfigured,
       organizationsQuerySucceeded: false,
+      organizationCount: null,
+      error: "Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY.",
       status: "not_configured",
       message: "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY before testing the backend connection.",
     };
@@ -30,8 +37,11 @@ export async function runBackendHealthCheck(): Promise<BackendHealthCheckResult>
   if (result.error) {
     return {
       clientLoaded,
+      clientInitialized,
       environmentConfigured,
       organizationsQuerySucceeded: false,
+      organizationCount: null,
+      error: result.error,
       status: "query_failed",
       message: result.error,
     };
@@ -39,8 +49,11 @@ export async function runBackendHealthCheck(): Promise<BackendHealthCheckResult>
 
   return {
     clientLoaded,
+    clientInitialized,
     environmentConfigured,
     organizationsQuerySucceeded: true,
+    organizationCount: result.data?.length ?? 0,
+    error: null,
     status: "ready",
     message: "Backend connection check completed successfully.",
   };

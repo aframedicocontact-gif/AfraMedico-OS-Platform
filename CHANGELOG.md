@@ -99,6 +99,7 @@ Upcoming planned milestones:
 - Phase 2 Sprint 4 live Supabase environment connection.
 - Phase 2 Sprint 5 Organization Management module.
 - Phase 2 Sprint 6 Patient Management module.
+- Phase 2 Sprint 7 Case Management module.
 - Backend Sprint 3.
 - Clinical Decision Foundation.
 - Travel Workflow backend.

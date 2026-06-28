@@ -4,6 +4,7 @@ import type { UnifiedCaseContext } from "../components/context/UnifiedPatientCon
 import { AddLead } from "../components/pages/AddLead";
 import { AddOrganization } from "../components/pages/AddOrganization";
 import { AddPartner } from "../components/pages/AddPartner";
+import { CasesPage } from "../components/pages/CasesPage";
 import { CaseProfile } from "../components/pages/CaseProfile";
 import {
   ClinicalDecisionDashboard,
@@ -67,6 +68,7 @@ export type AppView =
   | { name: "dashboard" }
   | { name: "platform-organizations" }
   | { name: "patients" }
+  | { name: "cases" }
   | { name: "organizations" }
   | { name: "organization-details"; organizationId: string }
   | { name: "add-organization" }
@@ -282,7 +284,13 @@ export function App() {
       window.history.pushState({}, "", "/organizations");
     } else if (nextView.name === "patients") {
       window.history.pushState({}, "", "/patients");
-    } else if (window.location.pathname === "/organizations" || window.location.pathname === "/patients") {
+    } else if (nextView.name === "cases") {
+      window.history.pushState({}, "", "/cases");
+    } else if (
+      window.location.pathname === "/organizations" ||
+      window.location.pathname === "/patients" ||
+      window.location.pathname === "/cases"
+    ) {
       window.history.pushState({}, "", "/");
     }
 
@@ -302,6 +310,7 @@ export function App() {
       ) : null}
       {view.name === "platform-organizations" ? <OrganizationsPage /> : null}
       {view.name === "patients" ? <PatientsPage /> : null}
+      {view.name === "cases" ? <CasesPage /> : null}
       {view.name === "organizations" ? (
         <OrganizationsList organizations={organizations} onNavigate={setView} />
       ) : null}
@@ -506,6 +515,10 @@ function getInitialView(): AppView {
 
   if (window.location.pathname === "/patients") {
     return { name: "patients" };
+  }
+
+  if (window.location.pathname === "/cases") {
+    return { name: "cases" };
   }
 
   return { name: "dashboard" };

@@ -9,6 +9,7 @@ import {
   FileSearch,
   FileStack,
   Flag,
+  FolderOpen,
   Hospital,
   Layers3,
   ListChecks,
@@ -208,6 +209,12 @@ export function AppShell({ children, caseContext, currentView, onNavigate }: App
             icon={<UsersRound className="h-4 w-4" />}
             label="Patients"
             onClick={() => onNavigate({ name: "patients" })}
+          />
+          <NavButton
+            active={currentView === "cases"}
+            icon={<FolderOpen className="h-4 w-4" />}
+            label="Cases"
+            onClick={() => onNavigate({ name: "cases" })}
           />
           <NavButton
             disabled

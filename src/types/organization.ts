@@ -50,3 +50,34 @@ export type Organization = {
   notes: string;
   activity: ActivityItem[];
 };
+
+export type OrganizationPlan = "cloud" | "enterprise" | "trial" | "internal";
+
+export type OrganizationLifecycleStatus = "active" | "inactive" | "suspended" | "archived";
+
+export type PlatformOrganization = {
+  id: string;
+  name: string;
+  slug: string;
+  country: string | null;
+  timezone: string;
+  currency: string;
+  plan: OrganizationPlan;
+  status: OrganizationLifecycleStatus;
+  logo_url: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CreateOrganizationInput = {
+  name: string;
+  slug: string;
+  country?: string | null;
+  timezone?: string;
+  currency?: string;
+  plan?: OrganizationPlan;
+  status?: OrganizationLifecycleStatus;
+  logo_url?: string | null;
+};
+
+export type UpdateOrganizationInput = Partial<CreateOrganizationInput>;

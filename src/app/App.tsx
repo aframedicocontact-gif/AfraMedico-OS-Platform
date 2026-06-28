@@ -31,6 +31,7 @@ import { MedicalReviewWorkspace } from "../components/pages/MedicalReviewWorkspa
 import { MissionControl } from "../components/pages/MissionControl";
 import { OrganizationDetails } from "../components/pages/OrganizationDetails";
 import { OrganizationsList } from "../components/pages/OrganizationsList";
+import { OrganizationsPage } from "../components/pages/OrganizationsPage";
 import { OperationsCenter } from "../components/pages/OperationsCenter";
 import { PartnerDirectory } from "../components/pages/PartnerDirectory";
 import { PartnerProfile } from "../components/pages/PartnerProfile";
@@ -63,6 +64,7 @@ import type { ReferralPartner } from "../types/referralPartner";
 export type AppView =
   | { name: "login" }
   | { name: "dashboard" }
+  | { name: "platform-organizations" }
   | { name: "organizations" }
   | { name: "organization-details"; organizationId: string }
   | { name: "add-organization" }
@@ -130,9 +132,7 @@ const hpn = hpnJson as HpnData;
 const finance = financeJson as FinanceData;
 
 export function App() {
-  const [view, setView] = useState<AppView>(() =>
-    window.location.pathname === "/login" ? { name: "login" } : { name: "dashboard" },
-  );
+  const [view, setView] = useState<AppView>(() => getInitialView());
 
   const selectedOrganization = useMemo(() => {
     if (view.name !== "organization-details") {
@@ -275,8 +275,18 @@ export function App() {
     return <LoginPage onSignedIn={openMissionControl} />;
   }
 
+  function navigateFromShell(nextView: AppView) {
+    if (nextView.name === "platform-organizations") {
+      window.history.pushState({}, "", "/organizations");
+    } else if (window.location.pathname === "/organizations") {
+      window.history.pushState({}, "", "/");
+    }
+
+    setView(nextView);
+  }
+
   return (
-    <AppShell caseContext={usesCaseContextFrame(view.name) ? unifiedCaseContext : undefined} currentView={view.name} onNavigate={setView}>
+    <AppShell caseContext={usesCaseContextFrame(view.name) ? unifiedCaseContext : undefined} currentView={view.name} onNavigate={navigateFromShell}>
       {view.name === "dashboard" ? (
         <MissionControl
           leads={leads}
@@ -286,6 +296,7 @@ export function App() {
           onNavigate={setView}
         />
       ) : null}
+      {view.name === "platform-organizations" ? <OrganizationsPage /> : null}
       {view.name === "organizations" ? (
         <OrganizationsList organizations={organizations} onNavigate={setView} />
       ) : null}
@@ -477,6 +488,18 @@ export function App() {
       ) : null}
     </AppShell>
   );
+}
+
+function getInitialView(): AppView {
+  if (window.location.pathname === "/login") {
+    return { name: "login" };
+  }
+
+  if (window.location.pathname === "/organizations") {
+    return { name: "platform-organizations" };
+  }
+
+  return { name: "dashboard" };
 }
 
 function usesCaseContextFrame(viewName: AppView["name"]) {

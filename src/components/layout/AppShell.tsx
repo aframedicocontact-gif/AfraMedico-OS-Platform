@@ -197,10 +197,10 @@ export function AppShell({ children, caseContext, currentView, onNavigate }: App
             label="Countries"
           />
           <NavButton
-            active={currentView === "organizations" || currentView === "organization-details"}
+            active={currentView === "platform-organizations"}
             icon={<Building2 className="h-4 w-4" />}
             label="Organizations"
-            onClick={() => onNavigate({ name: "organizations" })}
+            onClick={() => onNavigate({ name: "platform-organizations" })}
           />
           <NavButton
             disabled

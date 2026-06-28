@@ -18,6 +18,7 @@ import {
   Search,
   Settings,
   Sparkles,
+  UsersRound,
 } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode } from "react";
@@ -201,6 +202,12 @@ export function AppShell({ children, caseContext, currentView, onNavigate }: App
             icon={<Building2 className="h-4 w-4" />}
             label="Organizations"
             onClick={() => onNavigate({ name: "platform-organizations" })}
+          />
+          <NavButton
+            active={currentView === "patients"}
+            icon={<UsersRound className="h-4 w-4" />}
+            label="Patients"
+            onClick={() => onNavigate({ name: "patients" })}
           />
           <NavButton
             disabled

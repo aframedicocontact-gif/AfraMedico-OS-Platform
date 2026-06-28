@@ -35,6 +35,7 @@ import { OrganizationsPage } from "../components/pages/OrganizationsPage";
 import { OperationsCenter } from "../components/pages/OperationsCenter";
 import { PartnerDirectory } from "../components/pages/PartnerDirectory";
 import { PartnerProfile } from "../components/pages/PartnerProfile";
+import { PatientsPage } from "../components/pages/PatientsPage";
 import { ProtectionAuditTrail } from "../components/pages/ProtectionAuditTrail";
 import { ProtectionDashboard } from "../components/pages/ProtectionDashboard";
 import { ReferralDashboard } from "../components/pages/ReferralDashboard";
@@ -65,6 +66,7 @@ export type AppView =
   | { name: "login" }
   | { name: "dashboard" }
   | { name: "platform-organizations" }
+  | { name: "patients" }
   | { name: "organizations" }
   | { name: "organization-details"; organizationId: string }
   | { name: "add-organization" }
@@ -278,7 +280,9 @@ export function App() {
   function navigateFromShell(nextView: AppView) {
     if (nextView.name === "platform-organizations") {
       window.history.pushState({}, "", "/organizations");
-    } else if (window.location.pathname === "/organizations") {
+    } else if (nextView.name === "patients") {
+      window.history.pushState({}, "", "/patients");
+    } else if (window.location.pathname === "/organizations" || window.location.pathname === "/patients") {
       window.history.pushState({}, "", "/");
     }
 
@@ -297,6 +301,7 @@ export function App() {
         />
       ) : null}
       {view.name === "platform-organizations" ? <OrganizationsPage /> : null}
+      {view.name === "patients" ? <PatientsPage /> : null}
       {view.name === "organizations" ? (
         <OrganizationsList organizations={organizations} onNavigate={setView} />
       ) : null}
@@ -497,6 +502,10 @@ function getInitialView(): AppView {
 
   if (window.location.pathname === "/organizations") {
     return { name: "platform-organizations" };
+  }
+
+  if (window.location.pathname === "/patients") {
+    return { name: "patients" };
   }
 
   return { name: "dashboard" };

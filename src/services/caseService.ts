@@ -24,6 +24,10 @@ function unavailableResult<T>(error: string): CaseServiceResult<T> {
   return { data: null, error, source: "unavailable" };
 }
 
+function logCaseServiceWarning(context: string, message: string) {
+  console.warn(`[caseService] ${context}: ${message}`);
+}
+
 function buildRestUrl(tableName: string, queryParams: Record<string, string | number | boolean | undefined> = {}) {
   const baseUrl = supabaseConfig.url.replace(/\/$/, "");
   const url = new URL(`${baseUrl}/rest/v1/${tableName}`);
@@ -76,10 +80,11 @@ export async function getCases(limit = 50): Promise<CaseServiceResult<PatientCas
     order: "created_at.desc",
   });
 
-  if (result.error || !result.data) {
+  if (result.error || !result.data?.length) {
+    if (result.error) logCaseServiceWarning("getCases", result.error);
     return mockResult(
       developmentCases,
-      result.error ?? "Live cases unavailable. Showing development fallback data.",
+      result.error ?? "No live cases returned. Showing development fallback data.",
     );
   }
 
@@ -94,6 +99,7 @@ export async function getCaseById(id: string): Promise<CaseServiceResult<Patient
   });
 
   if (result.error || !result.data?.[0]) {
+    if (result.error) logCaseServiceWarning("getCaseById", result.error);
     const fallback = developmentCases.find((patientCase) => patientCase.id === id) ?? null;
     if (fallback) {
       return mockResult(fallback, result.error ?? "Live case unavailable. Showing development fallback data.");
@@ -116,10 +122,11 @@ export async function getCasesByPatientId(
     order: "created_at.desc",
   });
 
-  if (result.error || !result.data) {
+  if (result.error || !result.data?.length) {
+    if (result.error) logCaseServiceWarning("getCasesByPatientId", result.error);
     return mockResult(
       developmentCases.filter((patientCase) => patientCase.patient_id === patientId),
-      result.error ?? "Live patient cases unavailable. Showing development fallback data.",
+      result.error ?? "No live patient cases returned. Showing development fallback data.",
     );
   }
 
@@ -137,10 +144,11 @@ export async function getCasesByOrganization(
     order: "created_at.desc",
   });
 
-  if (result.error || !result.data) {
+  if (result.error || !result.data?.length) {
+    if (result.error) logCaseServiceWarning("getCasesByOrganization", result.error);
     return mockResult(
       developmentCases.filter((patientCase) => patientCase.organization_id === organizationId),
-      result.error ?? "Live organization cases unavailable. Showing development fallback data.",
+      result.error ?? "No live organization cases returned. Showing development fallback data.",
     );
   }
 

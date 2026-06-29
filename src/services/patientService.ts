@@ -29,6 +29,10 @@ function unavailableResult<T>(error: string): PatientServiceResult<T> {
   return { data: null, error, source: "unavailable" };
 }
 
+function logPatientServiceWarning(context: string, message: string) {
+  console.warn(`[patientService] ${context}: ${message}`);
+}
+
 function splitName(fullName: string | undefined) {
   const parts = (fullName ?? "Unknown Patient").trim().split(/\s+/);
   const firstName = parts.shift() ?? "Unknown";
@@ -123,10 +127,11 @@ export async function getPatients(limit = 50): Promise<PatientServiceResult<Pati
     order: "created_at.desc",
   });
 
-  if (result.error || !result.data) {
+  if (result.error || !result.data?.length) {
+    if (result.error) logPatientServiceWarning("getPatients", result.error);
     return mockResult(
       developmentPatients,
-      result.error ?? "Live patients unavailable. Showing development fallback data.",
+      result.error ?? "No live patients returned. Showing development fallback data.",
     );
   }
 
@@ -141,6 +146,7 @@ export async function getPatientById(id: string): Promise<PatientServiceResult<P
   });
 
   if (result.error || !result.data?.[0]) {
+    if (result.error) logPatientServiceWarning("getPatientById", result.error);
     const fallback = developmentPatients.find((patient) => patient.id === id) ?? null;
     if (fallback) {
       return mockResult(fallback, result.error ?? "Live patient unavailable. Showing development fallback data.");
@@ -163,10 +169,11 @@ export async function getPatientsByOrganization(
     order: "created_at.desc",
   });
 
-  if (result.error || !result.data) {
+  if (result.error || !result.data?.length) {
+    if (result.error) logPatientServiceWarning("getPatientsByOrganization", result.error);
     return mockResult(
       developmentPatients.filter((patient) => patient.organization_id === organizationId),
-      result.error ?? "Live organization patients unavailable. Showing development fallback data.",
+      result.error ?? "No live organization patients returned. Showing development fallback data.",
     );
   }
 

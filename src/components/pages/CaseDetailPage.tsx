@@ -3,6 +3,11 @@ import { ArrowLeft, Database } from "lucide-react";
 import type { AppView } from "../../app/App";
 import { getCaseById, type CaseServiceResult } from "../../services/caseService";
 import { getPatientById, type PatientServiceResult } from "../../services/patientService";
+import {
+  getTimelineEventsByCaseId,
+  type TimelineEvent,
+  type TimelineServiceResult,
+} from "../../services/timelineService";
 import type { PatientCase } from "../../types/case";
 import type { Patient } from "../../types/patient";
 import { CaseActionsPanel } from "../cases/CaseActionsPanel";
@@ -26,6 +31,7 @@ type CaseDetailState = {
   loading: boolean;
   caseResult: CaseServiceResult<PatientCase> | null;
   patientResult: PatientServiceResult<Patient> | null;
+  timelineResult: TimelineServiceResult<TimelineEvent[]> | null;
 };
 
 const sections = [
@@ -47,6 +53,7 @@ export function CaseDetailPage({ caseId, onNavigate }: CaseDetailPageProps) {
     loading: true,
     caseResult: null,
     patientResult: null,
+    timelineResult: null,
   });
 
   useEffect(() => {
@@ -54,13 +61,19 @@ export function CaseDetailPage({ caseId, onNavigate }: CaseDetailPageProps) {
 
     async function loadCase() {
       const caseResult = await getCaseById(caseId);
-      const patientResult = caseResult.data ? await getPatientById(caseResult.data.patient_id) : null;
+      const [patientResult, timelineResult] = caseResult.data
+        ? await Promise.all([
+            getPatientById(caseResult.data.patient_id),
+            getTimelineEventsByCaseId(caseResult.data.id),
+          ])
+        : [null, null];
 
       if (mounted) {
         setState({
           loading: false,
           caseResult,
           patientResult,
+          timelineResult,
         });
       }
     }
@@ -75,6 +88,13 @@ export function CaseDetailPage({ caseId, onNavigate }: CaseDetailPageProps) {
   const patientCase = state.caseResult?.data ?? null;
   const patient = state.patientResult?.data ?? null;
   const source = state.caseResult?.source ?? "unavailable";
+
+  async function reloadTimeline() {
+    if (!patientCase) return;
+
+    const timelineResult = await getTimelineEventsByCaseId(patientCase.id);
+    setState((current) => ({ ...current, timelineResult }));
+  }
 
   if (state.loading) {
     return (
@@ -122,7 +142,7 @@ export function CaseDetailPage({ caseId, onNavigate }: CaseDetailPageProps) {
           <p className="mt-4 text-sm font-medium text-primary">Case Detail Workspace</p>
           <h2 className="mt-1 text-2xl font-semibold sm:text-3xl">{patientCase.case_code}</h2>
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-            Operational center for one patient case. This workspace is read-only in Sprint 8 and uses live data when available with safe mock fallback.
+            Operational center for one patient case. Sprint 9 connects live reads and limits writes to internal timeline notes only.
           </p>
         </div>
         <Badge tone={source === "live" ? "success" : source === "mock" ? "warning" : "danger"}>
@@ -152,13 +172,21 @@ export function CaseDetailPage({ caseId, onNavigate }: CaseDetailPageProps) {
       </div>
 
       {activeSection === "Overview" ? <CaseOverviewPanel patientCase={patientCase} patient={patient} /> : null}
-      {activeSection === "Timeline" ? <CaseTimelinePanel patientCase={patientCase} /> : null}
+      {activeSection === "Timeline" ? (
+        <CaseTimelinePanel patientCase={patientCase} timelineResult={state.timelineResult} />
+      ) : null}
       {activeSection === "Documents" ? <CaseDocumentsPanel patientCase={patientCase} /> : null}
       {activeSection === "Clinical Review" ? <CaseClinicalPanel patientCase={patientCase} /> : null}
       {activeSection === "Hospital Referral" ? <CaseReferralPanel patientCase={patientCase} /> : null}
       {activeSection === "Travel" ? <CaseTravelPanel patientCase={patientCase} /> : null}
       {activeSection === "Finance" ? <CaseFinancePanel patientCase={patientCase} /> : null}
-      {activeSection === "Actions" ? <CaseActionsPanel /> : null}
+      {activeSection === "Actions" ? (
+        <CaseActionsPanel
+          canCreateTimelineNote={state.caseResult?.source === "live"}
+          patientCase={patientCase}
+          onTimelineEventCreated={reloadTimeline}
+        />
+      ) : null}
     </div>
   );
 }

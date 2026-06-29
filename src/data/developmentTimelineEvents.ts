@@ -1,0 +1,58 @@
+import type { TimelineEvent } from "../services/timelineService";
+
+const afraMedicoOrganizationId = "00000000-0000-4000-8000-000000000001";
+
+export const developmentTimelineEvents: TimelineEvent[] = [
+  {
+    id: "timeline-dev-001",
+    organization_id: afraMedicoOrganizationId,
+    case_id: "case-dev-001",
+    patient_id: "patient-dev-001",
+    event_type: "case_created",
+    title: "Case created",
+    description: "Cardiac surgery case opened for clinical review.",
+    department: "Case Management",
+    user_id: null,
+    event_type_id: null,
+    created_at: "2026-06-20T10:15:00.000Z",
+  },
+  {
+    id: "timeline-dev-002",
+    organization_id: afraMedicoOrganizationId,
+    case_id: "case-dev-001",
+    patient_id: "patient-dev-001",
+    event_type: "documents_requested",
+    title: "Documents requested",
+    description: "Requested cardiac reports, recent labs, and passport copy.",
+    department: "Clinical",
+    user_id: null,
+    event_type_id: null,
+    created_at: "2026-06-21T09:00:00.000Z",
+  },
+  {
+    id: "timeline-dev-003",
+    organization_id: afraMedicoOrganizationId,
+    case_id: "case-dev-003",
+    patient_id: "patient-dev-002",
+    event_type: "hospital_quote_pending",
+    title: "Hospital quote pending",
+    description: "Spine surgery package is waiting for provider quote response.",
+    department: "Hospital Relations",
+    user_id: null,
+    event_type_id: null,
+    created_at: "2026-06-24T15:30:00.000Z",
+  },
+  {
+    id: "timeline-dev-004",
+    organization_id: afraMedicoOrganizationId,
+    case_id: "case-dev-004",
+    patient_id: "patient-dev-003",
+    event_type: "lead_to_case",
+    title: "Lead converted to case",
+    description: "Oncology consultation case created from patient inquiry.",
+    department: "Case Management",
+    user_id: null,
+    event_type_id: null,
+    created_at: "2026-06-23T08:45:00.000Z",
+  },
+];

@@ -57,6 +57,46 @@ Live reads and writes depend on:
 
 RLS policies use organization context. If that context is missing, live queries may fail and the UI should fall back safely.
 
+## Why Timeline Writes May Fail
+
+Timeline writes depend on Supabase RLS. A signed-in user is not enough by itself.
+
+The JWT must include:
+
+```text
+app_metadata.organization_id
+```
+
+That value must match the `organization_id` being inserted into `public.timeline_events`.
+
+If the Auth user was bootstrapped after the session was created, sign out and sign back in. Supabase JWT claims may not reflect updated app metadata until a fresh session is issued.
+
+Use:
+
+```text
+docs/backend/Development-Auth-RLS-Bootstrap.md
+supabase/bootstrap/002_development_auth_rls_bootstrap.sql
+```
+
+to complete the development-only Auth/RLS setup.
+
+## How To Verify Authenticated Organization Context
+
+The frontend utility:
+
+```text
+src/lib/rlsHealthCheck.ts
+```
+
+can verify:
+
+- session exists
+- `app_metadata.organization_id` exists
+- organizations can be read through RLS
+- cases can be read through RLS
+
+It also exposes an explicit test function for inserting a development-only `timeline_events` row. That insert is never automatic.
+
 ## Timeline Event Creation Rule
 
 Sprint 9 adds one controlled write action:

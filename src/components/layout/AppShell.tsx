@@ -211,7 +211,7 @@ export function AppShell({ children, caseContext, currentView, onNavigate }: App
             onClick={() => onNavigate({ name: "patients" })}
           />
           <NavButton
-            active={currentView === "cases"}
+            active={currentView === "cases" || currentView === "case-detail"}
             icon={<FolderOpen className="h-4 w-4" />}
             label="Cases"
             onClick={() => onNavigate({ name: "cases" })}

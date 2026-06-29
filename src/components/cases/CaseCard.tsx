@@ -7,6 +7,7 @@ import type { PatientCase } from "../../types/case";
 
 type CaseCardProps = {
   patientCase: PatientCase;
+  onOpen?: (caseId: string) => void;
 };
 
 function formatDate(value: string) {
@@ -17,9 +18,12 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-export function CaseCard({ patientCase }: CaseCardProps) {
+export function CaseCard({ patientCase, onOpen }: CaseCardProps) {
   return (
-    <Card>
+    <Card
+      className={onOpen ? "cursor-pointer transition hover:border-emerald-300 hover:shadow-md" : undefined}
+      onClick={onOpen ? () => onOpen(patientCase.id) : undefined}
+    >
       <CardHeader className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div>

@@ -4,6 +4,7 @@ import {
   getCurrentOrganizationCases,
   type CaseServiceResult,
 } from "../../services/caseService";
+import type { AppView } from "../../app/App";
 import type { CasePriority, CaseStatus, PatientCase } from "../../types/case";
 import { CaseCard } from "../cases/CaseCard";
 import { Badge } from "../ui/badge";
@@ -17,7 +18,11 @@ type CasesPageState = {
   result: CaseServiceResult<PatientCase[]> | null;
 };
 
-export function CasesPage() {
+type CasesPageProps = {
+  onNavigate: (view: AppView) => void;
+};
+
+export function CasesPage({ onNavigate }: CasesPageProps) {
   const [state, setState] = useState<CasesPageState>({
     loading: true,
     result: null,
@@ -172,7 +177,11 @@ export function CasesPage() {
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">
           {filteredCases.map((patientCase) => (
-            <CaseCard key={patientCase.id} patientCase={patientCase} />
+            <CaseCard
+              key={patientCase.id}
+              patientCase={patientCase}
+              onOpen={(caseId) => onNavigate({ name: "case-detail", caseId })}
+            />
           ))}
         </div>
       )}

@@ -5,6 +5,7 @@ import { AddLead } from "../components/pages/AddLead";
 import { AddOrganization } from "../components/pages/AddOrganization";
 import { AddPartner } from "../components/pages/AddPartner";
 import { CasesPage } from "../components/pages/CasesPage";
+import { CaseDetailPage } from "../components/pages/CaseDetailPage";
 import { CaseProfile } from "../components/pages/CaseProfile";
 import {
   ClinicalDecisionDashboard,
@@ -69,6 +70,7 @@ export type AppView =
   | { name: "platform-organizations" }
   | { name: "patients" }
   | { name: "cases" }
+  | { name: "case-detail"; caseId: string }
   | { name: "organizations" }
   | { name: "organization-details"; organizationId: string }
   | { name: "add-organization" }
@@ -286,10 +288,13 @@ export function App() {
       window.history.pushState({}, "", "/patients");
     } else if (nextView.name === "cases") {
       window.history.pushState({}, "", "/cases");
+    } else if (nextView.name === "case-detail") {
+      window.history.pushState({}, "", `/cases/${nextView.caseId}`);
     } else if (
       window.location.pathname === "/organizations" ||
       window.location.pathname === "/patients" ||
-      window.location.pathname === "/cases"
+      window.location.pathname === "/cases" ||
+      window.location.pathname.startsWith("/cases/")
     ) {
       window.history.pushState({}, "", "/");
     }
@@ -310,7 +315,10 @@ export function App() {
       ) : null}
       {view.name === "platform-organizations" ? <OrganizationsPage /> : null}
       {view.name === "patients" ? <PatientsPage /> : null}
-      {view.name === "cases" ? <CasesPage /> : null}
+      {view.name === "cases" ? <CasesPage onNavigate={navigateFromShell} /> : null}
+      {view.name === "case-detail" ? (
+        <CaseDetailPage caseId={view.caseId} onNavigate={navigateFromShell} />
+      ) : null}
       {view.name === "organizations" ? (
         <OrganizationsList organizations={organizations} onNavigate={setView} />
       ) : null}
@@ -519,6 +527,13 @@ function getInitialView(): AppView {
 
   if (window.location.pathname === "/cases") {
     return { name: "cases" };
+  }
+
+  if (window.location.pathname.startsWith("/cases/")) {
+    const caseId = window.location.pathname.replace("/cases/", "").trim();
+    if (caseId) {
+      return { name: "case-detail", caseId };
+    }
   }
 
   return { name: "dashboard" };

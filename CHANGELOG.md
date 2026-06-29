@@ -100,6 +100,7 @@ Upcoming planned milestones:
 - Phase 2 Sprint 5 Organization Management module.
 - Phase 2 Sprint 6 Patient Management module.
 - Phase 2 Sprint 7 Case Management module.
+- Phase 2 Sprint 8 Case Detail Workspace.
 - Backend Sprint 3.
 - Clinical Decision Foundation.
 - Travel Workflow backend.

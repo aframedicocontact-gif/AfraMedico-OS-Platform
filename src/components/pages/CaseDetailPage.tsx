@@ -182,7 +182,7 @@ export function CaseDetailPage({ caseId, onNavigate }: CaseDetailPageProps) {
       {activeSection === "Finance" ? <CaseFinancePanel patientCase={patientCase} /> : null}
       {activeSection === "Actions" ? (
         <CaseActionsPanel
-          canCreateTimelineNote={state.caseResult?.source === "live"}
+          canCreateTimelineNote={state.caseResult?.source === "live" || state.caseResult?.source === "mock"}
           patientCase={patientCase}
           onTimelineEventCreated={reloadTimeline}
         />

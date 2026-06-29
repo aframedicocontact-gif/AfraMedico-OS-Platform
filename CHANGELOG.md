@@ -103,6 +103,7 @@ Upcoming planned milestones:
 - Phase 2 Sprint 8 Case Detail Workspace.
 - Phase 2 Sprint 9 Live Case Workspace Integration.
 - Phase 2 Sprint 10 Development Auth and RLS Bootstrap.
+- Phase 2 Sprint 11 First End-to-End Operational Workflow.
 - Backend Sprint 3.
 - Clinical Decision Foundation.
 - Travel Workflow backend.

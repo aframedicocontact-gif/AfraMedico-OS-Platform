@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Database, FolderOpen, RefreshCw, Search } from "lucide-react";
+import { Database, FolderOpen, PlayCircle, RefreshCw, Search } from "lucide-react";
 import {
   getCurrentOrganizationCases,
   type CaseServiceResult,
 } from "../../services/caseService";
 import type { AppView } from "../../app/App";
+import {
+  runFirstOperationalWorkflow,
+  type OperationalWorkflowResult,
+} from "../../services/operationalWorkflowService";
 import type { CasePriority, CaseStatus, PatientCase } from "../../types/case";
 import { CaseCard } from "../cases/CaseCard";
 import { Badge } from "../ui/badge";
@@ -31,6 +35,8 @@ export function CasesPage({ onNavigate }: CasesPageProps) {
   const [status, setStatus] = useState<"all" | CaseStatus>("all");
   const [priority, setPriority] = useState<"all" | CasePriority>("all");
   const [stage, setStage] = useState("all");
+  const [workflowResult, setWorkflowResult] = useState<OperationalWorkflowResult | null>(null);
+  const [workflowRunning, setWorkflowRunning] = useState(false);
 
   async function loadCases() {
     setState((current) => ({ ...current, loading: true }));
@@ -41,6 +47,21 @@ export function CasesPage({ onNavigate }: CasesPageProps) {
   useEffect(() => {
     void loadCases();
   }, []);
+
+  async function runWorkflow() {
+    setWorkflowRunning(true);
+    setWorkflowResult(null);
+
+    const result = await runFirstOperationalWorkflow();
+    setWorkflowResult(result);
+    setWorkflowRunning(false);
+
+    if (result.caseId) {
+      onNavigate({ name: "case-detail", caseId: result.caseId });
+    } else {
+      await loadCases();
+    }
+  }
 
   const cases = state.result?.data ?? [];
   const source = state.result?.source ?? "unavailable";
@@ -89,11 +110,40 @@ export function CasesPage({ onNavigate }: CasesPageProps) {
             Manage organization-scoped treatment cases. This module is live Supabase-ready and preserves mock fallback while backend access is connected.
           </p>
         </div>
-        <Button type="button" variant="secondary" onClick={() => void loadCases()}>
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" onClick={() => void runWorkflow()} disabled={workflowRunning}>
+            <PlayCircle className="h-4 w-4" />
+            {workflowRunning ? "Running..." : "Run First Workflow"}
+          </Button>
+          <Button type="button" variant="secondary" onClick={() => void loadCases()}>
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+        </div>
       </div>
+
+      {workflowResult ? (
+        <Card>
+          <CardHeader className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <CardTitle className="text-base">First Operational Workflow</CardTitle>
+              <Badge tone={workflowResult.status === "live" ? "success" : workflowResult.status === "fallback" ? "warning" : "danger"}>
+                {workflowResult.status}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Patient {workflowResult.patientPersisted ? "persisted" : "not verified"} · Case {workflowResult.casePersisted ? "persisted" : "not verified"} · Timeline {workflowResult.timelinePersisted ? "persisted" : "not verified"}
+            </p>
+          </CardHeader>
+          {workflowResult.warnings.length ? (
+            <CardContent>
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                {workflowResult.warnings[0]}
+              </div>
+            </CardContent>
+          ) : null}
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader className="space-y-1">

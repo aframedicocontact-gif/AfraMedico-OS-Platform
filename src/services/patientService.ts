@@ -1,4 +1,9 @@
 import { getDevelopmentOrganizationContext } from "../lib/currentOrganization";
+import {
+  createDevelopmentId,
+  getDevelopmentOperationalPatients,
+  saveDevelopmentOperationalPatient,
+} from "../lib/developmentOperationalStore";
 import { querySupabaseTable, supabaseConfig } from "../lib/supabaseClient";
 import { developmentPatients } from "../data/developmentPatients";
 import { getSession } from "./authService";
@@ -61,6 +66,10 @@ function toPatient(row: BackendPatientRow): Patient {
   };
 }
 
+function getFallbackPatients() {
+  return [...getDevelopmentOperationalPatients(), ...developmentPatients];
+}
+
 function buildRestUrl(tableName: string, queryParams: Record<string, string | number | boolean | undefined> = {}) {
   const baseUrl = supabaseConfig.url.replace(/\/$/, "");
   const url = new URL(`${baseUrl}/rest/v1/${tableName}`);
@@ -81,11 +90,33 @@ function toBackendPayload(input: CreatePatientInput | UpdatePatientInput) {
 
   return {
     ...("organization_id" in input ? { organization_id: input.organization_id } : {}),
+    ...("first_name" in input ? { patient_code: `PAT-${Date.now()}` } : {}),
     ...(fullName ? { full_name: fullName } : {}),
     ...("country" in input ? { country: input.country } : {}),
     ...("phone" in input ? { phone: input.phone } : {}),
     ...("email" in input ? { email: input.email } : {}),
   };
+}
+
+function createFallbackPatient(input: CreatePatientInput, error: string): PatientServiceResult<Patient> {
+  const now = new Date().toISOString();
+  const patient: Patient = {
+    id: createDevelopmentId("patient-dev"),
+    organization_id: input.organization_id,
+    first_name: input.first_name,
+    last_name: input.last_name,
+    date_of_birth: input.date_of_birth ?? null,
+    gender: input.gender ?? "unknown",
+    country: input.country ?? null,
+    phone: input.phone ?? null,
+    email: input.email ?? null,
+    status: input.status ?? "active",
+    created_at: now,
+    updated_at: now,
+  };
+
+  saveDevelopmentOperationalPatient(patient);
+  return mockResult(patient, error);
 }
 
 async function mutatePatient(
@@ -98,11 +129,19 @@ async function mutatePatient(
   }
 
   const session = await getSession();
+  if (!session?.access_token) {
+    if (method === "POST") {
+      return createFallbackPatient(body as CreatePatientInput, "No authenticated Supabase session. Created development fallback patient.");
+    }
+
+    return unavailableResult("Sign in before updating a patient.");
+  }
+
   const response = await fetch(buildRestUrl("patients", queryParams), {
     method,
     headers: {
       apikey: supabaseConfig.anonKey,
-      Authorization: `Bearer ${session?.access_token ?? supabaseConfig.anonKey}`,
+      Authorization: `Bearer ${session.access_token}`,
       "Content-Type": "application/json",
       Prefer: "return=representation",
     },
@@ -113,6 +152,13 @@ async function mutatePatient(
   const payload = responseText ? JSON.parse(responseText) : null;
 
   if (!response.ok) {
+    if (method === "POST") {
+      return createFallbackPatient(
+        body as CreatePatientInput,
+        payload?.message ?? response.statusText ?? "Live patient creation failed. Created development fallback patient.",
+      );
+    }
+
     return unavailableResult(payload?.message ?? response.statusText ?? "Patient request failed.");
   }
 
@@ -130,7 +176,7 @@ export async function getPatients(limit = 50): Promise<PatientServiceResult<Pati
   if (result.error || !result.data?.length) {
     if (result.error) logPatientServiceWarning("getPatients", result.error);
     return mockResult(
-      developmentPatients,
+      getFallbackPatients(),
       result.error ?? "No live patients returned. Showing development fallback data.",
     );
   }
@@ -147,7 +193,7 @@ export async function getPatientById(id: string): Promise<PatientServiceResult<P
 
   if (result.error || !result.data?.[0]) {
     if (result.error) logPatientServiceWarning("getPatientById", result.error);
-    const fallback = developmentPatients.find((patient) => patient.id === id) ?? null;
+    const fallback = getFallbackPatients().find((patient) => patient.id === id) ?? null;
     if (fallback) {
       return mockResult(fallback, result.error ?? "Live patient unavailable. Showing development fallback data.");
     }
@@ -172,7 +218,7 @@ export async function getPatientsByOrganization(
   if (result.error || !result.data?.length) {
     if (result.error) logPatientServiceWarning("getPatientsByOrganization", result.error);
     return mockResult(
-      developmentPatients.filter((patient) => patient.organization_id === organizationId),
+      getFallbackPatients().filter((patient) => patient.organization_id === organizationId),
       result.error ?? "No live organization patients returned. Showing development fallback data.",
     );
   }

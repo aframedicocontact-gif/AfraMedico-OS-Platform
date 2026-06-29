@@ -13,7 +13,7 @@ export type CaseStatus =
 
 export type CasePriority = "critical" | "high" | "medium" | "low";
 
-export type CaseUrgency = "emergency" | "urgent" | "standard" | "future";
+export type CaseUrgency = "emergency" | "urgent" | "routine" | "standard" | "future";
 
 export type PatientCase = {
   id: string;

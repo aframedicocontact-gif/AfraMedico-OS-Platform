@@ -14,6 +14,7 @@ export type SupabaseQueryResult<T> = {
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim() ?? "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() ?? "";
+const sessionStorageKey = "aframedico.supabase.session";
 
 export const supabaseConfig: SupabaseClientConfig = {
   url: supabaseUrl,
@@ -34,6 +35,20 @@ function buildRestUrl(tableName: string, queryParams: QueryParams = {}) {
   return url.toString();
 }
 
+function getStoredAccessToken() {
+  if (typeof window === "undefined") return null;
+
+  const value = window.localStorage.getItem(sessionStorageKey);
+  if (!value) return null;
+
+  try {
+    const parsed = JSON.parse(value) as { access_token?: string };
+    return parsed.access_token ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function querySupabaseTable<T>(
   tableName: string,
   queryParams: QueryParams = {},
@@ -47,10 +62,11 @@ export async function querySupabaseTable<T>(
   }
 
   try {
+    const accessToken = getStoredAccessToken();
     const response = await fetch(buildRestUrl(tableName, queryParams), {
       headers: {
         apikey: supabaseConfig.anonKey,
-        Authorization: `Bearer ${supabaseConfig.anonKey}`,
+        Authorization: `Bearer ${accessToken ?? supabaseConfig.anonKey}`,
       },
     });
 

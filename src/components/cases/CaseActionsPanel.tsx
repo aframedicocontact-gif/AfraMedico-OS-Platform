@@ -28,7 +28,7 @@ export function CaseActionsPanel({
 
   async function addInternalTimelineNote() {
     if (!canCreateTimelineNote) {
-      setStatusMessage("Timeline note was not created. Live case data is required before writing timeline events.");
+      setStatusMessage("Timeline note was not created. A case record is required before writing timeline events.");
       return;
     }
 
@@ -78,7 +78,7 @@ export function CaseActionsPanel({
           </p>
         ) : null}
         <p className="md:col-span-2 xl:col-span-3 text-xs text-muted-foreground">
-          Only "Add Internal Timeline Note" can write, and only to `timeline_events`. All other buttons are placeholders.
+          Only "Add Internal Timeline Note" can write. It writes to `timeline_events` when Supabase is available, or to development fallback storage when backend access is unavailable.
         </p>
       </CardContent>
     </Card>

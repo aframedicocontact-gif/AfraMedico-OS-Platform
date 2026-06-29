@@ -1,4 +1,9 @@
 import { getDevelopmentOrganizationContext } from "../lib/currentOrganization";
+import {
+  createDevelopmentId,
+  getDevelopmentOperationalCases,
+  saveDevelopmentOperationalCase,
+} from "../lib/developmentOperationalStore";
 import { querySupabaseTable, supabaseConfig } from "../lib/supabaseClient";
 import { developmentCases } from "../data/developmentCases";
 import { getSession } from "./authService";
@@ -28,6 +33,19 @@ function logCaseServiceWarning(context: string, message: string) {
   console.warn(`[caseService] ${context}: ${message}`);
 }
 
+function getFallbackCases() {
+  return [...getDevelopmentOperationalCases(), ...developmentCases];
+}
+
+function toBackendCasePayload(input: CreateCaseInput | UpdateCaseInput) {
+  const urgency = "urgency" in input ? input.urgency : undefined;
+
+  return {
+    ...input,
+    ...(urgency ? { urgency: urgency === "standard" || urgency === "future" ? "routine" : urgency } : {}),
+  };
+}
+
 function buildRestUrl(tableName: string, queryParams: Record<string, string | number | boolean | undefined> = {}) {
   const baseUrl = supabaseConfig.url.replace(/\/$/, "");
   const url = new URL(`${baseUrl}/rest/v1/${tableName}`);
@@ -41,6 +59,30 @@ function buildRestUrl(tableName: string, queryParams: Record<string, string | nu
   return url.toString();
 }
 
+function createFallbackCase(input: CreateCaseInput, error: string): CaseServiceResult<PatientCase> {
+  const now = new Date().toISOString();
+  const patientCase: PatientCase = {
+    id: createDevelopmentId("case-dev"),
+    organization_id: input.organization_id,
+    patient_id: input.patient_id,
+    case_code: input.case_code,
+    treatment: input.treatment ?? null,
+    specialty: input.specialty ?? null,
+    country: input.country ?? null,
+    status: input.status ?? "new",
+    priority: input.priority ?? "medium",
+    urgency: input.urgency ?? "routine",
+    current_stage: input.current_stage ?? "Lead",
+    current_owner_id: input.current_owner_id ?? null,
+    current_department: input.current_department ?? "Case Management",
+    created_at: now,
+    updated_at: now,
+  };
+
+  saveDevelopmentOperationalCase(patientCase);
+  return mockResult(patientCase, error);
+}
+
 async function mutateCase(
   method: "POST" | "PATCH",
   body: CreateCaseInput | UpdateCaseInput,
@@ -51,21 +93,36 @@ async function mutateCase(
   }
 
   const session = await getSession();
+  if (!session?.access_token) {
+    if (method === "POST") {
+      return createFallbackCase(body as CreateCaseInput, "No authenticated Supabase session. Created development fallback case.");
+    }
+
+    return unavailableResult("Sign in before updating a case.");
+  }
+
   const response = await fetch(buildRestUrl("cases", queryParams), {
     method,
     headers: {
       apikey: supabaseConfig.anonKey,
-      Authorization: `Bearer ${session?.access_token ?? supabaseConfig.anonKey}`,
+      Authorization: `Bearer ${session.access_token}`,
       "Content-Type": "application/json",
       Prefer: "return=representation",
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(toBackendCasePayload(body)),
   });
 
   const responseText = await response.text();
   const payload = responseText ? JSON.parse(responseText) : null;
 
   if (!response.ok) {
+    if (method === "POST") {
+      return createFallbackCase(
+        body as CreateCaseInput,
+        payload?.message ?? response.statusText ?? "Live case creation failed. Created development fallback case.",
+      );
+    }
+
     return unavailableResult(payload?.message ?? response.statusText ?? "Case request failed.");
   }
 
@@ -83,7 +140,7 @@ export async function getCases(limit = 50): Promise<CaseServiceResult<PatientCas
   if (result.error || !result.data?.length) {
     if (result.error) logCaseServiceWarning("getCases", result.error);
     return mockResult(
-      developmentCases,
+      getFallbackCases(),
       result.error ?? "No live cases returned. Showing development fallback data.",
     );
   }
@@ -100,7 +157,7 @@ export async function getCaseById(id: string): Promise<CaseServiceResult<Patient
 
   if (result.error || !result.data?.[0]) {
     if (result.error) logCaseServiceWarning("getCaseById", result.error);
-    const fallback = developmentCases.find((patientCase) => patientCase.id === id) ?? null;
+    const fallback = getFallbackCases().find((patientCase) => patientCase.id === id) ?? null;
     if (fallback) {
       return mockResult(fallback, result.error ?? "Live case unavailable. Showing development fallback data.");
     }
@@ -125,7 +182,7 @@ export async function getCasesByPatientId(
   if (result.error || !result.data?.length) {
     if (result.error) logCaseServiceWarning("getCasesByPatientId", result.error);
     return mockResult(
-      developmentCases.filter((patientCase) => patientCase.patient_id === patientId),
+      getFallbackCases().filter((patientCase) => patientCase.patient_id === patientId),
       result.error ?? "No live patient cases returned. Showing development fallback data.",
     );
   }
@@ -147,7 +204,7 @@ export async function getCasesByOrganization(
   if (result.error || !result.data?.length) {
     if (result.error) logCaseServiceWarning("getCasesByOrganization", result.error);
     return mockResult(
-      developmentCases.filter((patientCase) => patientCase.organization_id === organizationId),
+      getFallbackCases().filter((patientCase) => patientCase.organization_id === organizationId),
       result.error ?? "No live organization cases returned. Showing development fallback data.",
     );
   }

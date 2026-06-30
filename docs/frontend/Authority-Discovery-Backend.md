@@ -42,6 +42,8 @@ Do not use the `VITE_` prefix for these values. `VITE_` variables are exposed to
 7. The frontend displays organization, description, organization type, medical specialty, treatment focus, partnership type, confidence, website, source URL, snippet, verification status, raw search source, and AI summary.
 8. The user selects rows and imports them into Authority CRM.
 
+If OpenAI analysis fails or returns malformed/unusable JSON after Tavily succeeds, the backend returns normalized Tavily results for manual verification instead of failing the entire discovery request. These fallback rows are clearly marked as needing manual review.
+
 ## OpenAI Prompt Strategy
 
 The OpenAI prompt is strict and evidence-bound:
@@ -85,6 +87,22 @@ If OpenAI is not configured, the backend returns:
 ```
 
 The frontend displays the error and does not generate fake organizations.
+
+If Tavily is configured and returns results, but OpenAI cannot structure them, the route returns:
+
+```json
+{
+  "results": [],
+  "warning": "OpenAI returned no structured organizations. Showing normalized Tavily results for manual verification.",
+  "diagnostics": {
+    "provider": "tavily",
+    "aiProvider": "openai",
+    "fallbackUsed": true
+  }
+}
+```
+
+The real response includes normalized Tavily rows when available. Diagnostics never include API keys.
 
 ## Safety Rules
 

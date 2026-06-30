@@ -73,7 +73,8 @@ function normalizeTavilyResults({ tavilyResults, country, category }) {
         linkedin: sourceUrl.includes("linkedin.com") ? sourceUrl : null,
         sourceUrl: sourceUrl || null,
         snippet,
-        verificationStatus: "Needs verification",
+        verificationStatus: "Needs Manual Review",
+        confidence: "Low",
         source: "tavily_web_search",
         rawSearchSource: `Tavily result: ${title}`,
         reason: "Retrieved from Tavily web search. Human verification required before outreach.",
@@ -101,7 +102,7 @@ async function runTavilySearch({ query, maxResults, apiKey }) {
   });
 
   if (!response.ok) {
-    throw new Error("Tavily search request failed.");
+    throw new Error(`TAVILY_SEARCH_FAILED:${response.status}`);
   }
 
   const payload = await response.json();
@@ -127,6 +128,7 @@ export default async function handler(request, response) {
   if (aiProvider !== configuredAiProvider || !openAiApiKey) {
     return sendJson(response, 503, {
       error: "OpenAI Intelligence Layer is not configured. Add OPENAI_API_KEY in Vercel environment variables.",
+      code: "OPENAI_NOT_CONFIGURED",
     });
   }
 
@@ -147,18 +149,46 @@ export default async function handler(request, response) {
       maxResults,
       apiKey: tavilyApiKey,
     });
-    const results = await analyzeOrganizationsWithOpenAi({
-      searchResults: tavilyResults,
-      country,
-      category,
-      treatmentKeyword,
-      apiKey: openAiApiKey,
-    });
 
-    return sendJson(response, 200, { results });
+    let results = [];
+    let warning = "";
+
+    try {
+      results = await analyzeOrganizationsWithOpenAi({
+        searchResults: tavilyResults,
+        country,
+        category,
+        treatmentKeyword,
+        apiKey: openAiApiKey,
+      });
+    } catch (error) {
+      warning = "OpenAI analysis failed. Showing normalized Tavily results for manual verification.";
+      console.warn("Authority discovery OpenAI fallback:", error instanceof Error ? error.message : "Unknown OpenAI error");
+    }
+
+    if (results.length === 0 && tavilyResults.length > 0) {
+      results = normalizeTavilyResults({ tavilyResults, country, category });
+      warning ||= "OpenAI returned no structured organizations. Showing normalized Tavily results for manual verification.";
+    }
+
+    return sendJson(response, 200, {
+      results,
+      warning,
+      diagnostics: {
+        provider: "tavily",
+        aiProvider: "openai",
+        tavilyResultCount: tavilyResults.length,
+        returnedResultCount: results.length,
+        fallbackUsed: Boolean(warning),
+      },
+    });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Tavily Web Search failed.";
     return sendJson(response, 502, {
-      error: error instanceof Error ? error.message : "Tavily Web Search failed.",
+      error: message.startsWith("TAVILY_SEARCH_FAILED:")
+        ? "Tavily search request failed. Check TAVILY_API_KEY, provider quota, and request parameters."
+        : message,
+      code: message.startsWith("TAVILY_SEARCH_FAILED:") ? "TAVILY_SEARCH_FAILED" : "AUTHORITY_DISCOVERY_FAILED",
     });
   }
 }

@@ -249,7 +249,17 @@ type TavilyDiscoveryResponse = {
     suggestedNextStep?: string;
   }>;
   error?: string;
+  warning?: string;
 };
+
+function getWebsiteFromUrl(value: string) {
+  try {
+    const parsed = new URL(value);
+    return `${parsed.protocol}//${parsed.hostname}`;
+  } catch {
+    return "";
+  }
+}
 
 async function tavilyWebSearch(parameters: AuthorityDiscoveryParameters) {
   const query = [
@@ -287,13 +297,14 @@ async function tavilyWebSearch(parameters: AuthorityDiscoveryParameters) {
     .map((result, index) => {
       const category = normalizeCategory(result.category || parameters.category);
       const sourceUrl = result.sourceUrl || result.website || "";
+      const website = result.website || getWebsiteFromUrl(sourceUrl);
 
       return {
         id: `tavily-${slugify(result.name || "organization")}-${index + 1}`,
         organization: result.name || "",
         country: result.country || parameters.country,
         category,
-        website: result.website || "",
+        website,
         linkedin: result.linkedin || "",
         contactEmail: result.email || "Not found",
         sourceUrl,

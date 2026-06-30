@@ -35,7 +35,7 @@ function dedupeSearchResults(searchResults) {
   return searchResults
     .map((item) => ({
       title: sanitizeText(item.title),
-      link: safeUrl(item.link),
+      link: safeUrl(item.link || item.url),
       snippet: sanitizeText(item.snippet || item.content),
     }))
     .filter((item) => item.title && item.link)

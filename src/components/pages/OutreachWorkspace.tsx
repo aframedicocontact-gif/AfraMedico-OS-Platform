@@ -23,6 +23,7 @@ import type {
 } from "../../types/outreach";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { ExternalFieldLink } from "../common/ExternalFieldLink";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
@@ -223,7 +224,7 @@ function ContactsTab({ workspace, onChange }: WorkspaceTabProps) {
     >
       <Table className="min-w-[1000px]">
         <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Position</TableHead><TableHead>Department</TableHead><TableHead>Email</TableHead><TableHead>Phone</TableHead><TableHead>LinkedIn</TableHead><TableHead>Decision Maker</TableHead><TableHead>Preferred</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
-        <TableBody>{workspace.contacts.map((contact) => <TableRow key={contact.id}><TableCell>{contact.fullName}</TableCell><TableCell>{contact.position}</TableCell><TableCell>{contact.department}</TableCell><TableCell>{contact.email}</TableCell><TableCell>{contact.phone}</TableCell><TableCell>{contact.linkedin}</TableCell><TableCell>{contact.decisionMaker ? "Yes" : "No"}</TableCell><TableCell>{contact.preferredCommunication}</TableCell><TableCell><Badge tone="info">{contact.status}</Badge></TableCell></TableRow>)}</TableBody>
+        <TableBody>{workspace.contacts.map((contact) => <TableRow key={contact.id}><TableCell>{contact.fullName}</TableCell><TableCell>{contact.position}</TableCell><TableCell>{contact.department}</TableCell><TableCell><ExternalFieldLink type="email" value={contact.email} /></TableCell><TableCell>{contact.phone || "Not found"}</TableCell><TableCell><ExternalFieldLink type="linkedin" value={contact.linkedin} /></TableCell><TableCell>{contact.decisionMaker ? "Yes" : "No"}</TableCell><TableCell>{contact.preferredCommunication}</TableCell><TableCell><Badge tone="info">{contact.status}</Badge></TableCell></TableRow>)}</TableBody>
       </Table>
     </WorkspaceSection>
   );

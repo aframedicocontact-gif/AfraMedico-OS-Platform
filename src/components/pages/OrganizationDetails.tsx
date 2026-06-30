@@ -1,6 +1,7 @@
 import { ArrowLeft, BrainCircuit, CalendarClock, ExternalLink, Handshake, Linkedin, Mail, Pencil } from "lucide-react";
 import type { ReactNode } from "react";
 import type { AppView } from "../../app/App";
+import { ExternalFieldLink } from "../common/ExternalFieldLink";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -151,9 +152,9 @@ export function OrganizationDetails({ organization, onNavigate }: OrganizationDe
             </CardHeader>
             <CardContent className="space-y-4">
               <Field label="Contact Person" value={organization.contactName} />
-              <ContactLine icon={<Mail className="h-4 w-4" />} label="Email" value={organization.email} />
-              <ContactLine icon={<ExternalLink className="h-4 w-4" />} label="Website" value={organization.website} />
-              <ContactLine icon={<Linkedin className="h-4 w-4" />} label="LinkedIn" value={organization.linkedin} />
+              <ContactLine icon={<Mail className="h-4 w-4" />} label="Email" value={<ExternalFieldLink type="email" value={organization.email} />} />
+              <ContactLine icon={<ExternalLink className="h-4 w-4" />} label="Website" value={<ExternalFieldLink type="website" value={organization.website} />} />
+              <ContactLine icon={<Linkedin className="h-4 w-4" />} label="LinkedIn" value={<ExternalFieldLink type="linkedin" value={organization.linkedin} />} />
             </CardContent>
           </Card>
 
@@ -207,7 +208,7 @@ function ContactLine({
 }: {
   icon: ReactNode;
   label: string;
-  value: string;
+  value: ReactNode;
 }) {
   return (
     <div className="rounded-md border p-3">
@@ -215,7 +216,7 @@ function ContactLine({
         {icon}
         {label}
       </p>
-      <p className="mt-2 break-words text-sm text-emerald-900">{value}</p>
+      <div className="mt-2 break-words text-sm text-emerald-900">{value}</div>
     </div>
   );
 }

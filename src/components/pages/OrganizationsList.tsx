@@ -1,6 +1,7 @@
 import { FileSpreadsheet, Plus, Search, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { AppView } from "../../app/App";
+import { ExternalFieldLink } from "../common/ExternalFieldLink";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -199,8 +200,12 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
                   <StatusBadge status={organization.status} />
                 </TableCell>
                 <TableCell>{organization.opportunityType}</TableCell>
-                <TableCell className="text-sm">{organization.email}</TableCell>
-                <TableCell className="text-sm text-emerald-800">{organization.website}</TableCell>
+                <TableCell className="text-sm">
+                  <ExternalFieldLink type="email" value={organization.email} />
+                </TableCell>
+                <TableCell className="text-sm">
+                  <ExternalFieldLink type="website" value={organization.website} />
+                </TableCell>
                 <TableCell className="max-w-80">{organization.nextStep}</TableCell>
               </TableRow>
             ))}

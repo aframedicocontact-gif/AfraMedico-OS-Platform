@@ -83,6 +83,7 @@ export function importAuthorityDiscoveryResults(
       duplicateNames.push(result.organization);
       return;
     }
+    const isTavilyResult = result.sourceType === "Tavily Web Search";
 
     const organization: Organization = {
       id: `authority-import-${Date.now()}-${importedOrganizations.length + 1}`,
@@ -90,7 +91,7 @@ export function importAuthorityDiscoveryResults(
       country: result.country,
       category: result.category,
       status: "research",
-      priority: result.authorityScore >= 85 ? "high" : result.authorityScore >= 70 ? "medium" : "low",
+      priority: isTavilyResult ? "low" : result.authorityScore >= 85 ? "high" : result.authorityScore >= 70 ? "medium" : "low",
       owner: "Discovery",
       contactName: "To qualify",
       email: result.contactEmail,
@@ -100,12 +101,16 @@ export function importAuthorityDiscoveryResults(
       domainRating: 0,
       nextStep: result.suggestedNextAction,
       nextFollowUp: new Date().toISOString().slice(0, 10),
-      notes: `Imported from Authority Discovery. Source: ${result.sourceNote}. Estimated category score: ${result.authorityScore}. Referral value: ${result.referralValue}. Backlink value: ${result.backlinkValue}. Partnership potential: ${result.partnershipPotential}. Domain authority is not verified yet.`,
+      notes: isTavilyResult
+        ? `Imported from Tavily Web Search. Source URL: ${result.sourceUrl || "Not found"}. Snippet: ${result.snippet || "Not found"}. Human verification required before outreach. No authority, backlink, referral, or domain authority metrics have been estimated.`
+        : `Imported from Authority Discovery. Source: ${result.sourceNote}. Estimated category score: ${result.authorityScore}. Referral value: ${result.referralValue}. Backlink value: ${result.backlinkValue}. Partnership potential: ${result.partnershipPotential}. Domain authority is not verified yet.`,
       activity: [
         {
           date: new Date().toISOString().slice(0, 10),
           title: "Imported from Authority Discovery",
-          detail: `Estimated category score ${result.authorityScore}. Status set to research for qualification.`,
+          detail: isTavilyResult
+            ? "Imported from Tavily Web Search. Status set to research for human verification."
+            : `Estimated category score ${result.authorityScore}. Status set to research for qualification.`,
         },
       ],
     };

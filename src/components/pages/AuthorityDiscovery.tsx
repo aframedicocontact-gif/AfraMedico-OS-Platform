@@ -51,7 +51,7 @@ const categories: OrganizationCategory[] = [
 const dataSources: AuthorityDiscoverySourceType[] = [
   "Curated Data",
   "CSV Imported Data",
-  "Real Web + AI Search",
+  "Tavily Web Search",
 ];
 
 export function AuthorityDiscovery({ organizations, onImport, onNavigate }: AuthorityDiscoveryProps) {
@@ -148,8 +148,8 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
       </div>
 
       <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950">
-        Curated and CSV discovery run locally. Real Web + AI Search runs through the secure backend route and requires
-        server-side Vercel environment variables.
+        Curated and CSV discovery run locally. Tavily Web Search runs through the secure backend route and requires
+        server-side Vercel environment variables. No AI scoring is used in this discovery foundation.
       </div>
 
       <Card>
@@ -251,9 +251,9 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
             </div>
           ) : null}
 
-          {parameters.sourceType === "Real Web + AI Search" ? (
+          {parameters.sourceType === "Tavily Web Search" ? (
             <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-              Real Web + AI Search uses POST /api/authority-discovery/search. If server-side provider keys are missing,
+              Tavily Web Search uses POST /api/authority-discovery/search. If server-side provider keys are missing,
               discovery will return a configuration error instead of fake results.
             </div>
           ) : null}
@@ -266,7 +266,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
             <div>
               <CardTitle>Discovery Results</CardTitle>
               <p className="mt-1 text-sm text-muted-foreground">
-                Estimated score based on category, not verified external SEO metrics.
+                Real search results require human verification before outreach. No authority, backlink, or referral value is estimated here.
               </p>
             </div>
           </CardHeader>
@@ -292,7 +292,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
               </Button>
             </div>
             <TableScrollContainer className="w-full shadow-none">
-              <Table className="min-w-[2120px] table-fixed">
+              <Table className="min-w-[2360px] table-fixed">
                 <TableHeader className="sticky top-0 z-10 bg-white">
                   <TableRow className="bg-emerald-50/70">
                     <TableHead className="w-[56px] min-w-[56px] bg-emerald-50">
@@ -307,11 +307,12 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                     <TableHead className="w-[140px] min-w-[140px] bg-emerald-50">Country</TableHead>
                     <TableHead className="w-[200px] min-w-[200px] bg-emerald-50">Category</TableHead>
                     <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">Website</TableHead>
+                    <TableHead className="w-[220px] min-w-[220px] bg-emerald-50">Source URL</TableHead>
+                    <TableHead className="w-[260px] min-w-[260px] bg-emerald-50">Snippet</TableHead>
                     <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">LinkedIn</TableHead>
                     <TableHead className="w-[220px] min-w-[220px] bg-emerald-50">Email</TableHead>
-                    <TableHead className="w-[220px] min-w-[220px] bg-emerald-50">Source</TableHead>
-                    <TableHead className="w-[160px] min-w-[160px] bg-emerald-50">Confidence</TableHead>
-                    <TableHead className="w-[140px] min-w-[140px] bg-emerald-50">Estimated Score</TableHead>
+                    <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">Raw Search Source</TableHead>
+                    <TableHead className="w-[170px] min-w-[170px] bg-emerald-50">Verification Status</TableHead>
                     <TableHead className="w-[240px] min-w-[240px] bg-emerald-50">Suggested Next Step</TableHead>
                     <TableHead className="w-[120px] min-w-[120px] bg-emerald-50">Status</TableHead>
                   </TableRow>
@@ -319,7 +320,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                 <TableBody>
                   {results.length === 0 ? (
                     <TableRow>
-                      <TableCell className="py-8 text-center text-sm text-muted-foreground" colSpan={12}>
+                      <TableCell className="py-8 text-center text-sm text-muted-foreground" colSpan={13}>
                         No real organizations found in configured sources. Import CSV or configure a real search provider.
                       </TableCell>
                     </TableRow>
@@ -343,24 +344,25 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                         <TableCell className="w-[180px] min-w-[180px]">
                           <ExternalFieldLink type="website" value={result.website} />
                         </TableCell>
+                        <TableCell className="w-[220px] min-w-[220px]">
+                          <ExternalFieldLink type="website" value={result.sourceUrl || result.website} />
+                        </TableCell>
+                        <TableCell className="w-[260px] min-w-[260px] break-words text-sm text-muted-foreground">
+                          {result.snippet || "Not found"}
+                        </TableCell>
                         <TableCell className="w-[180px] min-w-[180px]">
                           <ExternalFieldLink type="linkedin" value={result.linkedin} />
                         </TableCell>
                         <TableCell className="w-[220px] min-w-[220px]">
                           <ExternalFieldLink type="email" value={result.contactEmail} />
                         </TableCell>
-                        <TableCell className="w-[220px] min-w-[220px]">
+                        <TableCell className="w-[180px] min-w-[180px]">
                           <div className="font-medium">{result.sourceType}</div>
-                          <div className="text-xs text-muted-foreground">{result.sourceNote}</div>
+                          <div className="text-xs text-muted-foreground">{result.rawSearchSource || result.sourceNote}</div>
                         </TableCell>
-                        <TableCell className="w-[160px] min-w-[160px]">
+                        <TableCell className="w-[170px] min-w-[170px]">
                           <Badge tone={result.confidence === "Verified" ? "success" : result.confidence === "Needs verification" ? "warning" : "muted"}>
                             {result.confidence}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="w-[140px] min-w-[140px]">
-                          <Badge tone={result.authorityScore >= 85 ? "success" : result.authorityScore >= 70 ? "gold" : "muted"}>
-                            {result.authorityScore}
                           </Badge>
                         </TableCell>
                         <TableCell className="w-[240px] min-w-[240px] break-words">{result.suggestedNextAction}</TableCell>

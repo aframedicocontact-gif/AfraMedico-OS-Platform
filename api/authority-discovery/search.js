@@ -1,5 +1,4 @@
-const configuredSearchProvider = "serpapi";
-const configuredAiProvider = "openai";
+const configuredSearchProvider = "tavily";
 
 function sendJson(response, statusCode, payload) {
   response.status(statusCode).json(payload);
@@ -18,7 +17,7 @@ function parseRequestBody(request) {
 }
 
 function sanitizeText(value, fallback = "") {
-  return typeof value === "string" ? value.trim().slice(0, 500) : fallback;
+  return typeof value === "string" ? value.trim().slice(0, 1000) : fallback;
 }
 
 function sanitizeMaxResults(value) {
@@ -27,122 +26,82 @@ function sanitizeMaxResults(value) {
   return Math.max(1, Math.min(Math.floor(parsed), 20));
 }
 
-function normalizeAiResults(value) {
-  if (!value || !Array.isArray(value.results)) return [];
+function safeUrl(value) {
+  const text = sanitizeText(value);
+  if (!text) return "";
 
-  return value.results
-    .filter((item) => item && typeof item.name === "string" && item.name.trim())
-    .map((item) => ({
-      name: sanitizeText(item.name),
-      country: sanitizeText(item.country),
-      category: sanitizeText(item.category),
-      website: item.website ? sanitizeText(item.website) : null,
-      email: item.email ? sanitizeText(item.email) : null,
-      linkedin: item.linkedin ? sanitizeText(item.linkedin) : null,
-      sourceUrl: item.sourceUrl ? sanitizeText(item.sourceUrl) : null,
-      confidence: ["Verified", "Needs verification", "Unknown"].includes(item.confidence)
-        ? item.confidence
-        : "Needs verification",
-      source: "web_search_ai",
-      reason: sanitizeText(item.reason),
-      suggestedNextStep: sanitizeText(item.suggestedNextStep, "Verify source evidence and qualify this organization."),
-    }))
-    .filter((item) => item.sourceUrl || item.website);
-}
-
-async function runSerpApiSearch({ query, country, maxResults, apiKey }) {
-  const searchParams = new URLSearchParams({
-    engine: "google",
-    q: query || `${country} healthcare authority targets`,
-    num: String(maxResults),
-    api_key: apiKey,
-  });
-  const response = await fetch(`https://serpapi.com/search.json?${searchParams.toString()}`);
-
-  if (!response.ok) {
-    throw new Error("Search provider request failed.");
+  try {
+    return new URL(text).toString();
+  } catch {
+    return "";
   }
-
-  const payload = await response.json();
-  const organicResults = Array.isArray(payload.organic_results) ? payload.organic_results : [];
-
-  return organicResults.slice(0, maxResults).map((item) => ({
-    title: sanitizeText(item.title),
-    link: sanitizeText(item.link),
-    snippet: sanitizeText(item.snippet),
-    displayedLink: sanitizeText(item.displayed_link),
-  }));
 }
 
-async function extractOrganizationsWithOpenAi({ searchResults, country, category, treatmentKeyword, apiKey }) {
-  const prompt = {
-    country,
-    category,
-    treatmentKeyword,
-    rules: [
-      "Extract real organizations only from the provided search results.",
-      "Do not invent organizations, websites, emails, LinkedIn URLs, or source URLs.",
-      "Every result must be supported by a provided result link or snippet.",
-      "If an email or LinkedIn URL is not explicitly present, return null.",
-      "If no supported organizations exist, return an empty results array.",
-    ],
-    searchResults,
-    responseShape: {
-      results: [
-        {
-          name: "Organization name",
-          country: "Country",
-          category: "Category",
-          website: "Website or null",
-          email: "Email or null",
-          linkedin: "LinkedIn URL or null",
-          sourceUrl: "Supporting search result URL",
-          confidence: "Verified | Needs verification | Unknown",
-          reason: "Why this organization matches the request",
-          suggestedNextStep: "Recommended next outreach action",
-        },
-      ],
-    },
-  };
+function getWebsiteFromSourceUrl(sourceUrl) {
+  try {
+    const parsed = new URL(sourceUrl);
+    return `${parsed.protocol}//${parsed.hostname}`;
+  } catch {
+    return "";
+  }
+}
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+function cleanTitle(title) {
+  return sanitizeText(title)
+    .replace(/\s*[-|]\s*official\s*site\s*$/i, "")
+    .replace(/\s*[-|]\s*home\s*$/i, "")
+    .replace(/\s*[-|]\s*homepage\s*$/i, "")
+    .trim();
+}
+
+function normalizeTavilyResults({ tavilyResults, country, category }) {
+  return tavilyResults
+    .map((item, index) => {
+      const sourceUrl = safeUrl(item.url);
+      const title = cleanTitle(item.title || item.url || `Search Result ${index + 1}`);
+      const snippet = sanitizeText(item.content || item.snippet || "");
+
+      return {
+        name: title,
+        country,
+        category,
+        website: sourceUrl ? getWebsiteFromSourceUrl(sourceUrl) : null,
+        email: null,
+        linkedin: sourceUrl.includes("linkedin.com") ? sourceUrl : null,
+        sourceUrl: sourceUrl || null,
+        snippet,
+        confidence: "Needs verification",
+        source: "tavily",
+        rawSearchSource: `Tavily result: ${title}`,
+        reason: "Retrieved from Tavily web search. Human verification required before outreach.",
+        suggestedNextStep: "Open source URL, verify organization identity, then qualify for Authority CRM.",
+      };
+    })
+    .filter((item) => item.sourceUrl);
+}
+
+async function runTavilySearch({ query, maxResults, apiKey }) {
+  const response = await fetch("https://api.tavily.com/search", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
-      temperature: 0,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            "You extract structured business records from search results. You must not invent facts. Return JSON only.",
-        },
-        {
-          role: "user",
-          content: JSON.stringify(prompt),
-        },
-      ],
+      api_key: apiKey,
+      query,
+      search_depth: "basic",
+      max_results: maxResults,
+      include_answer: false,
+      include_raw_content: false,
     }),
   });
 
   if (!response.ok) {
-    throw new Error("AI provider request failed.");
+    throw new Error("Tavily search request failed.");
   }
 
   const payload = await response.json();
-  const content = payload.choices?.[0]?.message?.content;
-
-  if (!content) return [];
-
-  try {
-    return normalizeAiResults(JSON.parse(content));
-  } catch {
-    return [];
-  }
+  return Array.isArray(payload.results) ? payload.results : [];
 }
 
 export default async function handler(request, response) {
@@ -151,17 +110,10 @@ export default async function handler(request, response) {
   }
 
   const searchProvider = process.env.SEARCH_PROVIDER || configuredSearchProvider;
-  const aiProvider = process.env.AI_PROVIDER || configuredAiProvider;
-  const serpApiKey = process.env.SERPAPI_KEY;
-  const openAiApiKey = process.env.OPENAI_API_KEY;
+  const tavilyApiKey = process.env.TAVILY_API_KEY;
 
-  if (
-    searchProvider !== configuredSearchProvider ||
-    aiProvider !== configuredAiProvider ||
-    !serpApiKey ||
-    !openAiApiKey
-  ) {
-    return sendJson(response, 503, { error: "Real Web + AI Search is not configured." });
+  if (searchProvider !== configuredSearchProvider || !tavilyApiKey) {
+    return sendJson(response, 503, { error: "Tavily Web Search is not configured." });
   }
 
   const body = parseRequestBody(request);
@@ -176,29 +128,21 @@ export default async function handler(request, response) {
   }
 
   try {
-    const searchResults = await runSerpApiSearch({
-      query,
-      country,
+    const tavilyResults = await runTavilySearch({
+      query: `${query} ${treatmentKeyword}`.trim(),
       maxResults,
-      apiKey: serpApiKey,
+      apiKey: tavilyApiKey,
     });
-
-    if (searchResults.length === 0) {
-      return sendJson(response, 200, { results: [] });
-    }
-
-    const results = await extractOrganizationsWithOpenAi({
-      searchResults,
+    const results = normalizeTavilyResults({
+      tavilyResults,
       country,
       category,
-      treatmentKeyword,
-      apiKey: openAiApiKey,
     });
 
     return sendJson(response, 200, { results });
   } catch (error) {
     return sendJson(response, 502, {
-      error: error instanceof Error ? error.message : "Real Web + AI Search failed.",
+      error: error instanceof Error ? error.message : "Tavily Web Search failed.",
     });
   }
 }

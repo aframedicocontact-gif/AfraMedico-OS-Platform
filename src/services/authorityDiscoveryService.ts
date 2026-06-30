@@ -99,10 +99,10 @@ export const authorityDiscoveryProviders: AuthorityDiscoveryProvider[] = [
     search: csvImportSearch,
   },
   {
-    kind: "Hybrid web search and AI extraction",
-    sourceType: "Real Web + AI Search",
+    kind: "Tavily Web Search",
+    sourceType: "Tavily Web Search",
     isConfigured: true,
-    search: realWebAiSearch,
+    search: tavilyWebSearch,
   },
 ];
 
@@ -156,6 +156,9 @@ function buildResult(
     website: seed.website,
     linkedin: seed.linkedin ?? "",
     contactEmail: "Not found",
+    sourceUrl: seed.website,
+    snippet: "",
+    rawSearchSource: "Curated Data",
     sourceType,
     sourceNote,
     confidence: "Needs verification",
@@ -203,6 +206,9 @@ async function csvImportSearch(parameters: AuthorityDiscoveryParameters) {
         website: row.website,
         linkedin: row.linkedin,
         contactEmail: row.contactEmail || "Not found",
+        sourceUrl: row.website,
+        snippet: row.tags,
+        rawSearchSource: "CSV Imported Data",
         sourceType: "CSV Imported Data",
         sourceNote: "CSV import / needs verification",
         confidence: "Needs verification",
@@ -218,7 +224,7 @@ async function csvImportSearch(parameters: AuthorityDiscoveryParameters) {
     });
 }
 
-type WebAiDiscoveryResponse = {
+type TavilyDiscoveryResponse = {
   results?: Array<{
     name?: string;
     country?: string;
@@ -227,6 +233,8 @@ type WebAiDiscoveryResponse = {
     email?: string | null;
     linkedin?: string | null;
     sourceUrl?: string | null;
+    snippet?: string | null;
+    rawSearchSource?: string | null;
     confidence?: "Verified" | "Needs verification" | "Unknown";
     source?: string;
     reason?: string;
@@ -235,7 +243,7 @@ type WebAiDiscoveryResponse = {
   error?: string;
 };
 
-async function realWebAiSearch(parameters: AuthorityDiscoveryParameters) {
+async function tavilyWebSearch(parameters: AuthorityDiscoveryParameters) {
   const query = [
     parameters.searchText,
     parameters.treatmentKeyword,
@@ -257,10 +265,10 @@ async function realWebAiSearch(parameters: AuthorityDiscoveryParameters) {
       maxResults: parameters.maximumResults,
     }),
   });
-  const payload = (await response.json().catch(() => ({}))) as WebAiDiscoveryResponse;
+  const payload = (await response.json().catch(() => ({}))) as TavilyDiscoveryResponse;
 
   if (!response.ok) {
-    throw new Error(payload.error || "Real Web + AI Search is not configured.");
+    throw new Error(payload.error || "Tavily Web Search is not configured.");
   }
 
   return (payload.results ?? [])
@@ -268,11 +276,10 @@ async function realWebAiSearch(parameters: AuthorityDiscoveryParameters) {
     .slice(0, parameters.maximumResults)
     .map((result, index) => {
       const category = normalizeCategory(result.category || parameters.category);
-      const scored = scoreAuthorityTarget(category, parameters.treatmentKeyword);
       const sourceUrl = result.sourceUrl || result.website || "";
 
       return {
-        id: `web-ai-${slugify(result.name || "organization")}-${index + 1}`,
+        id: `tavily-${slugify(result.name || "organization")}-${index + 1}`,
         organization: result.name || "",
         country: result.country || parameters.country,
         category,
@@ -280,16 +287,18 @@ async function realWebAiSearch(parameters: AuthorityDiscoveryParameters) {
         linkedin: result.linkedin || "",
         contactEmail: result.email || "Not found",
         sourceUrl,
-        sourceType: "Real Web + AI Search",
-        sourceNote: sourceUrl ? `Supported by ${sourceUrl}` : "Supported by search result snippets",
+        snippet: result.snippet || "",
+        rawSearchSource: result.rawSearchSource || "Tavily Web Search",
+        sourceType: "Tavily Web Search",
+        sourceNote: sourceUrl ? `Tavily source: ${sourceUrl}` : "Tavily search result",
         confidence: result.confidence || "Needs verification",
-        authorityType: scored.authorityType,
-        authorityScore: scored.authorityScore,
-        referralValue: scored.referralValue,
-        backlinkValue: scored.backlinkValue,
-        partnershipPotential: scored.partnershipPotential,
-        opportunityType: scored.opportunityType,
-        suggestedNextAction: result.suggestedNextStep || `Verify evidence and qualify ${result.name}.`,
+        authorityType: "Not estimated",
+        authorityScore: 0,
+        referralValue: "Low",
+        backlinkValue: "Low",
+        partnershipPotential: "Low",
+        opportunityType: "Partnership",
+        suggestedNextAction: result.suggestedNextStep || `Verify source URL and qualify ${result.name}.`,
         status: "New",
       } satisfies AuthorityDiscoveryResult;
     });

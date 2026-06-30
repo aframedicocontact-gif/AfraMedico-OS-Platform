@@ -6,7 +6,7 @@ export type AuthorityValueRating = "High" | "Medium" | "Low";
 export type AuthorityDiscoverySourceType =
   | "Curated Data"
   | "CSV Imported Data"
-  | "Real Web + AI Search";
+  | "Tavily Web Search";
 export type AuthorityDiscoveryConfidence = "Verified" | "Needs verification" | "Unknown";
 
 export type AuthorityDiscoveryParameters = {
@@ -22,13 +22,7 @@ export type AuthorityDiscoveryParameters = {
 export type AuthorityProviderKind =
   | "Manual CSV import"
   | "Curated seed list"
-  | "Hybrid web search and AI extraction"
-  | "Google Custom Search"
-  | "Bing Search"
-  | "SerpAPI"
-  | "OpenAI"
-  | "Claude"
-  | "Gemini";
+  | "Tavily Web Search";
 
 export type AuthorityDiscoveryProvider = {
   kind: AuthorityProviderKind;
@@ -46,6 +40,8 @@ export type AuthorityDiscoveryResult = {
   linkedin: string;
   contactEmail: string;
   sourceUrl?: string;
+  snippet?: string;
+  rawSearchSource?: string;
   sourceType: AuthorityDiscoverySourceType;
   sourceNote: string;
   confidence: AuthorityDiscoveryConfidence;

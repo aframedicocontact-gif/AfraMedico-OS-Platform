@@ -79,10 +79,10 @@ export function importAuthorityDiscoveryResults(
       website: result.website,
       linkedin: "https://www.linkedin.com",
       opportunityType: result.opportunityType,
-      domainRating: result.authorityScore,
+      domainRating: 0,
       nextStep: result.suggestedNextAction,
       nextFollowUp: new Date().toISOString().slice(0, 10),
-      notes: `Imported from Authority Discovery. Referral value: ${result.referralValue}. Backlink value: ${result.backlinkValue}. Partnership potential: ${result.partnershipPotential}.`,
+      notes: `Imported from Authority Discovery. Source: ${result.sourceNote}. Estimated category score: ${result.authorityScore}. Referral value: ${result.referralValue}. Backlink value: ${result.backlinkValue}. Partnership potential: ${result.partnershipPotential}. Domain authority is not verified yet.`,
       activity: [
         {
           date: new Date().toISOString().slice(0, 10),

@@ -2,6 +2,7 @@ import { BrainCircuit, Download, Search, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { AppView } from "../../app/App";
 import {
+  authorityDiscoveryProviders,
   getAuthorityDiscoveryHistory,
   runAuthorityDiscovery,
   updateAuthorityDiscoveryImportCount,
@@ -13,6 +14,8 @@ import type {
   AuthorityDiscoveryResult,
   AuthorityDiscoveryStatus,
   AuthorityImportSummary,
+  AuthorityDiscoveryMode,
+  AuthorityDiscoverySourceType,
 } from "../../types/authorityDiscovery";
 import type { Organization, OrganizationCategory } from "../../types/organization";
 import { Badge } from "../ui/badge";
@@ -47,22 +50,32 @@ const categories: OrganizationCategory[] = [
 ];
 
 export function AuthorityDiscovery({ organizations, onImport, onNavigate }: AuthorityDiscoveryProps) {
+  const demoModeAvailable = import.meta.env.DEV;
   const [parameters, setParameters] = useState<AuthorityDiscoveryParameters>({
     country: "Nigeria",
     category: "Teaching Hospitals",
     keyword: "Cancer",
     maximumResults: 25,
+    mode: "real",
+    sourceType: "Curated seed",
+    csvText: "",
   });
   const [results, setResults] = useState<AuthorityDiscoveryResult[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [history, setHistory] = useState<AuthorityDiscoveryHistoryItem[]>(() => getAuthorityDiscoveryHistory());
   const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null);
   const [importSummary, setImportSummary] = useState<AuthorityImportSummary | null>(null);
+  const [providerConfigured, setProviderConfigured] = useState(true);
 
   const selectedResults = useMemo(
     () => results.filter((result) => selectedIds.includes(result.id)),
     [results, selectedIds],
   );
+  const selectableResults = useMemo(
+    () => results.filter((result) => result.status === "New" && result.sourceType !== "Demo data"),
+    [results],
+  );
+  const selectedDemoResults = selectedResults.some((result) => result.sourceType === "Demo data");
 
   async function handleDiscovery() {
     setImportSummary(null);
@@ -70,6 +83,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
     setResults(discovery.results);
     setHistory(discovery.history);
     setActiveHistoryId(discovery.historyItem.id);
+    setProviderConfigured(discovery.providerConfigured);
     setSelectedIds([]);
   }
 
@@ -83,7 +97,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
 
   function toggleAll() {
     setSelectedIds((current) =>
-      current.length === results.length ? [] : results.map((result) => result.id),
+      current.length === selectableResults.length ? [] : selectableResults.map((result) => result.id),
     );
   }
 
@@ -119,6 +133,13 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
             Discover, qualify, and import authority targets into the existing AfraMedico Authority CRM.
           </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Badge tone={parameters.mode === "real" ? "success" : "warning"}>
+              {parameters.mode === "real" ? "Real Data Mode" : "Demo Mode"}
+            </Badge>
+            <Badge tone="info">Source: {parameters.sourceType}</Badge>
+            {parameters.mode === "demo" ? <Badge tone="danger">Demo data</Badge> : null}
+          </div>
         </div>
         <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "organizations" })}>
           Manage Authority CRM
@@ -133,7 +154,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 lg:grid-cols-[180px_220px_1fr_160px_auto]">
+          <div className="grid gap-3 lg:grid-cols-[180px_220px_180px_220px]">
             <Select
               value={parameters.country}
               onChange={(event) => setParameters((current) => ({ ...current, country: event.target.value }))}
@@ -159,6 +180,38 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                 </option>
               ))}
             </Select>
+            <Select
+              value={parameters.mode}
+              onChange={(event) => {
+                const mode = event.target.value as AuthorityDiscoveryMode;
+                setParameters((current) => ({
+                  ...current,
+                  mode,
+                  sourceType: mode === "demo" ? "Demo data" : "Curated seed",
+                }));
+              }}
+            >
+              <option value="real">Real Data Mode</option>
+              {demoModeAvailable ? <option value="demo">Demo Mode (local only)</option> : null}
+            </Select>
+            <Select
+              value={parameters.sourceType}
+              onChange={(event) =>
+                setParameters((current) => ({
+                  ...current,
+                  sourceType: event.target.value as AuthorityDiscoverySourceType,
+                }))
+              }
+              disabled={parameters.mode === "demo"}
+            >
+              {authorityDiscoveryProviders.map((provider) => (
+                <option key={provider.kind} value={provider.sourceType}>
+                  {provider.sourceType}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_160px_auto]">
             <label className="relative">
               <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -184,6 +237,29 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
               Run Discovery
             </Button>
           </div>
+          {parameters.sourceType === "CSV import" && parameters.mode === "real" ? (
+            <div className="mt-3">
+              <label className="text-xs font-medium uppercase text-muted-foreground">
+                CSV real-data input
+              </label>
+              <textarea
+                className="mt-2 min-h-28 w-full rounded-md border p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                placeholder="organization_name,country,category,website,contact_email"
+                value={parameters.csvText}
+                onChange={(event) => setParameters((current) => ({ ...current, csvText: event.target.value }))}
+              />
+            </div>
+          ) : null}
+          {parameters.mode === "real" && parameters.sourceType === "Future web provider" ? (
+            <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+              Real discovery provider is not configured yet.
+            </div>
+          ) : null}
+          {parameters.mode === "demo" ? (
+            <div className="mt-3 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900">
+              Demo Mode is local-development only. Demo results are not real organizations and cannot be imported.
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 
@@ -196,10 +272,10 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                 Discovery Results
               </CardTitle>
               <p className="mt-1 text-sm text-muted-foreground">
-                Deterministic scoring placeholders. External discovery APIs can plug into this layer later.
+                Estimated score based on category, not verified external SEO metrics.
               </p>
             </div>
-            <Button disabled={selectedResults.length === 0} type="button" onClick={handleImport}>
+            <Button disabled={selectedResults.length === 0 || selectedDemoResults} type="button" onClick={handleImport}>
               <Download className="h-4 w-4" />
               Import Selected
             </Button>
@@ -227,6 +303,8 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                     <TableHead>Category</TableHead>
                     <TableHead>Website</TableHead>
                     <TableHead>Contact Email</TableHead>
+                    <TableHead>Source Type</TableHead>
+                    <TableHead>Confidence</TableHead>
                     <TableHead>Authority Type</TableHead>
                     <TableHead>Authority Score</TableHead>
                     <TableHead>Referral Value</TableHead>
@@ -239,8 +317,10 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                 <TableBody>
                   {results.length === 0 ? (
                     <TableRow>
-                      <TableCell className="py-8 text-center text-sm text-muted-foreground" colSpan={13}>
-                        Run discovery to generate AI-scored authority candidates.
+                      <TableCell className="py-8 text-center text-sm text-muted-foreground" colSpan={15}>
+                        {providerConfigured
+                          ? "No real organizations found in configured sources."
+                          : "Real discovery provider is not configured yet."}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -250,7 +330,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                           <input
                             aria-label={`Select ${result.organization}`}
                             checked={selectedIds.includes(result.id)}
-                            disabled={result.status !== "New"}
+                            disabled={result.status !== "New" || result.sourceType === "Demo data"}
                             type="checkbox"
                             onChange={() => toggleSelected(result.id)}
                           />
@@ -260,6 +340,15 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                         <TableCell>{result.category}</TableCell>
                         <TableCell className="text-emerald-800">{result.website}</TableCell>
                         <TableCell>{result.contactEmail}</TableCell>
+                        <TableCell>{result.sourceType}</TableCell>
+                        <TableCell>
+                          <Badge tone={result.confidence === "Verified" ? "success" : result.confidence === "Needs verification" ? "warning" : "muted"}>
+                            {result.confidence}
+                          </Badge>
+                          {result.confidence !== "Verified" ? (
+                            <div className="mt-1 text-xs text-amber-700">{result.sourceNote}</div>
+                          ) : null}
+                        </TableCell>
                         <TableCell>{result.authorityType}</TableCell>
                         <TableCell>
                           <Badge tone={result.authorityScore >= 85 ? "success" : result.authorityScore >= 70 ? "gold" : "muted"}>
@@ -306,6 +395,9 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                     </div>
                     <div className="mt-1 text-muted-foreground">
                       Keyword: {item.parameters.keyword || "Any"} · Max {item.parameters.maximumResults}
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {item.parameters.mode === "real" ? "Real Data Mode" : "Demo Mode"} · {item.parameters.sourceType}
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2">
                       <Badge tone="info">{item.resultCount} results</Badge>

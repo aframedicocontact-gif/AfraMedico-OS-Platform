@@ -13,6 +13,7 @@ import {
   Hospital,
   Layers3,
   ListChecks,
+  LogOut,
   Network,
   ShieldCheck,
   SendToBack,
@@ -34,9 +35,10 @@ type AppShellProps = {
   caseContext?: UnifiedCaseContext;
   currentView: AppView["name"];
   onNavigate: (view: AppView) => void;
+  onSignOut?: () => void;
 };
 
-export function AppShell({ children, caseContext, currentView, onNavigate }: AppShellProps) {
+export function AppShell({ children, caseContext, currentView, onNavigate, onSignOut }: AppShellProps) {
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false);
   const framedChildren = caseContext ? (
     <UnifiedPatientFrame
@@ -247,6 +249,16 @@ export function AppShell({ children, caseContext, currentView, onNavigate }: App
             <p className="font-medium text-white">Sprint 1 prototype</p>
             <p className="mt-1 text-emerald-100">Frontend only. Local JSON data.</p>
           </div>
+          {onSignOut ? (
+            <button
+              className="mt-3 flex w-full items-center gap-2 rounded-md border border-white/10 px-3 py-2 text-sm text-emerald-50 hover:bg-white/10"
+              type="button"
+              onClick={onSignOut}
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </button>
+          ) : null}
         </div>
       </aside>
       <main className="relative z-0 min-w-0 overflow-x-hidden lg:pl-72">
@@ -268,6 +280,15 @@ export function AppShell({ children, caseContext, currentView, onNavigate }: App
               <p className="font-medium text-foreground">Business Growth OS</p>
               <p>Internal growth workspace</p>
             </div>
+            {onSignOut ? (
+              <button
+                className="rounded-md border px-3 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-50 lg:hidden"
+                type="button"
+                onClick={onSignOut}
+              >
+                Sign out
+              </button>
+            ) : null}
           </div>
         </header>
         <div className="mx-auto max-w-[1600px] min-w-0 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">

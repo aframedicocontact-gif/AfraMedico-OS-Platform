@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "../components/layout/AppShell";
 import type { UnifiedCaseContext } from "../components/context/UnifiedPatientContext";
 import { AddLead } from "../components/pages/AddLead";
@@ -44,6 +44,8 @@ import { ReferralDashboard } from "../components/pages/ReferralDashboard";
 import { ReferralDetails } from "../components/pages/ReferralDetails";
 import { ReferralPipeline } from "../components/pages/ReferralPipeline";
 import { ResetPasswordPage } from "../components/pages/ResetPasswordPage";
+import { useAuth } from "../contexts/AuthContext";
+import { supabaseConfig } from "../lib/supabaseClient";
 import { getPasswordRecoveryTokensFromLocation } from "../services/authService";
 import organizationsJson from "../data/organizations.json";
 import leadsJson from "../data/leads.json";
@@ -142,6 +144,16 @@ const finance = financeJson as FinanceData;
 
 export function App() {
   const [view, setView] = useState<AppView>(() => getInitialView());
+  const { isAuthenticated, loading: authLoading, signOut } = useAuth();
+  const authRequired = supabaseConfig.isConfigured;
+  const publicView = isPublicView(view.name);
+
+  useEffect(() => {
+    if (authRequired && !authLoading && !isAuthenticated && !publicView) {
+      window.history.replaceState({}, "", "/login");
+      setView({ name: "login" });
+    }
+  }, [authLoading, authRequired, isAuthenticated, publicView]);
 
   const selectedOrganization = useMemo(() => {
     if (view.name !== "organization-details") {
@@ -285,12 +297,37 @@ export function App() {
     setView({ name: "login" });
   }
 
+  async function handleSignOut() {
+    await signOut();
+    openLogin();
+  }
+
   if (view.name === "login") {
     return <LoginPage onSignedIn={openMissionControl} />;
   }
 
   if (view.name === "reset-password") {
     return <ResetPasswordPage onComplete={openLogin} />;
+  }
+
+  if (authRequired && authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+        <div className="w-full max-w-md rounded-lg border bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
+            AfraMedico OS Platform
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold text-emerald-950">Checking access</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Verifying your Supabase session before opening the internal workspace.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (authRequired && !isAuthenticated) {
+    return <LoginPage onSignedIn={openMissionControl} />;
   }
 
   function navigateFromShell(nextView: AppView) {
@@ -315,7 +352,12 @@ export function App() {
   }
 
   return (
-    <AppShell caseContext={usesCaseContextFrame(view.name) ? unifiedCaseContext : undefined} currentView={view.name} onNavigate={navigateFromShell}>
+    <AppShell
+      caseContext={usesCaseContextFrame(view.name) ? unifiedCaseContext : undefined}
+      currentView={view.name}
+      onNavigate={navigateFromShell}
+      onSignOut={handleSignOut}
+    >
       {view.name === "dashboard" ? (
         <MissionControl
           leads={leads}
@@ -563,6 +605,10 @@ function hasPasswordRecoveryRoute() {
     pathname === "/auth/callback" ||
     Boolean(getPasswordRecoveryTokensFromLocation())
   );
+}
+
+function isPublicView(viewName: AppView["name"]) {
+  return viewName === "login" || viewName === "reset-password";
 }
 
 function usesCaseContextFrame(viewName: AppView["name"]) {

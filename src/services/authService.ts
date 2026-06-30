@@ -172,8 +172,30 @@ export async function signOut() {
 
 export async function getSession() {
   const session = readStoredSession();
-  notifyAuthListeners("SESSION_LOADED", session);
-  return session;
+
+  if (!session?.access_token || !supabaseConfig.isConfigured) {
+    notifyAuthListeners("SESSION_LOADED", session);
+    return session;
+  }
+
+  const response = await fetch(authUrl("/user"), {
+    headers: authHeaders(session.access_token),
+  });
+
+  if (!response.ok) {
+    storeSession(null);
+    notifyAuthListeners("SESSION_LOADED", null);
+    return null;
+  }
+
+  const validatedSession = {
+    ...session,
+    user: (await response.json()) as AuthUser,
+  };
+
+  storeSession(validatedSession);
+  notifyAuthListeners("SESSION_LOADED", validatedSession);
+  return validatedSession;
 }
 
 export async function getCurrentUser() {

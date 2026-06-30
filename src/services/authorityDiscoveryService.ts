@@ -5,6 +5,7 @@ import type {
   AuthorityDiscoveryProvider,
   AuthorityDiscoveryResult,
   AuthorityDiscoverySourceType,
+  AuthorityDiscoveryDiagnostics,
 } from "../types/authorityDiscovery";
 import type { OrganizationCategory } from "../types/organization";
 
@@ -250,7 +251,21 @@ type TavilyDiscoveryResponse = {
   }>;
   error?: string;
   warning?: string;
+  diagnostics?: AuthorityDiscoveryDiagnostics;
 };
+
+class AuthorityDiscoveryProviderError extends Error {
+  diagnostics?: AuthorityDiscoveryDiagnostics;
+
+  constructor(message: string, diagnostics?: AuthorityDiscoveryDiagnostics) {
+    super(message);
+    this.name = "AuthorityDiscoveryProviderError";
+    this.diagnostics = diagnostics;
+  }
+}
+
+let lastAuthorityDiscoveryDiagnostics: AuthorityDiscoveryDiagnostics | null = null;
+let lastAuthorityDiscoveryWarning = "";
 
 function getWebsiteFromUrl(value: string) {
   try {
@@ -284,10 +299,13 @@ async function tavilyWebSearch(parameters: AuthorityDiscoveryParameters) {
     }),
   });
   const payload = (await response.json().catch(() => ({}))) as TavilyDiscoveryResponse;
+  lastAuthorityDiscoveryDiagnostics = payload.diagnostics ?? null;
+  lastAuthorityDiscoveryWarning = payload.warning ?? "";
 
   if (!response.ok) {
-    throw new Error(
+    throw new AuthorityDiscoveryProviderError(
       payload.error || "Tavily Web Search is not configured. Add TAVILY_API_KEY in Vercel environment variables.",
+      payload.diagnostics,
     );
   }
 
@@ -415,11 +433,20 @@ export async function runAuthorityDiscovery(parameters: AuthorityDiscoveryParame
   const provider = authorityDiscoveryProviders.find((item) => item.sourceType === parameters.sourceType);
   let results: AuthorityDiscoveryResult[] = [];
   let errorMessage = "";
+  let diagnostics: AuthorityDiscoveryDiagnostics | null = null;
+  let warningMessage = "";
+
+  lastAuthorityDiscoveryDiagnostics = null;
+  lastAuthorityDiscoveryWarning = "";
 
   try {
     results = provider?.isConfigured ? await provider.search(normalizedParameters) : [];
+    diagnostics = lastAuthorityDiscoveryDiagnostics;
+    warningMessage = lastAuthorityDiscoveryWarning;
   } catch (error) {
     errorMessage = error instanceof Error ? error.message : "Authority discovery failed.";
+    diagnostics = error instanceof AuthorityDiscoveryProviderError ? error.diagnostics ?? null : lastAuthorityDiscoveryDiagnostics;
+    warningMessage = lastAuthorityDiscoveryWarning;
   }
 
   const historyItem: AuthorityDiscoveryHistoryItem = {
@@ -438,5 +465,7 @@ export async function runAuthorityDiscovery(parameters: AuthorityDiscoveryParame
     results,
     providerConfigured: Boolean(provider?.isConfigured),
     errorMessage,
+    warningMessage,
+    diagnostics,
   };
 }

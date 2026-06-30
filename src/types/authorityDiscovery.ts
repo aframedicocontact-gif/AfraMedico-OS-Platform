@@ -74,6 +74,18 @@ export type AuthorityDiscoveryHistoryItem = {
   importedCount: number;
 };
 
+export type AuthorityDiscoveryDiagnostics = {
+  providerUsed?: string;
+  tavilyResultsCount?: number;
+  normalizedResultsCount?: number;
+  openAiEnabled?: boolean;
+  openAiAnalysisAttempted?: boolean;
+  openAiResultsCount?: number;
+  fallbackUsed?: boolean;
+  errorCode?: string | null;
+  safeMessage?: string;
+};
+
 export type AuthorityImportSummary = {
   importedOrganizations: number;
   duplicateOrganizations: number;

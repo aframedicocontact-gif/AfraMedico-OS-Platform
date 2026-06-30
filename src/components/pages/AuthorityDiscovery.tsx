@@ -1,4 +1,4 @@
-import { Download, Search, ShieldCheck } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Download, Loader2, Search, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { AppView } from "../../app/App";
 import {
@@ -13,6 +13,7 @@ import type {
   AuthorityDiscoveryResult,
   AuthorityDiscoverySourceType,
   AuthorityDiscoveryStatus,
+  AuthorityDiscoveryDiagnostics,
   AuthorityImportSummary,
 } from "../../types/authorityDiscovery";
 import type { Organization, OrganizationCategory } from "../../types/organization";
@@ -54,6 +55,25 @@ const dataSources: AuthorityDiscoverySourceType[] = [
   "Tavily Web Search",
 ];
 
+type DiscoveryProgressStatus = "Pending" | "In progress" | "Done" | "Failed" | "Fallback";
+type DiscoveryProgressStep = {
+  label: string;
+  status: DiscoveryProgressStatus;
+};
+
+const discoveryStepLabels = [
+  "Preparing search query",
+  "Contacting Tavily Web Search",
+  "Receiving web results",
+  "Running OpenAI analysis",
+  "Preparing discovery table",
+  "Complete",
+];
+
+function createProgressSteps(status: DiscoveryProgressStatus = "Pending"): DiscoveryProgressStep[] {
+  return discoveryStepLabels.map((label) => ({ label, status }));
+}
+
 export function AuthorityDiscovery({ organizations, onImport, onNavigate }: AuthorityDiscoveryProps) {
   const [parameters, setParameters] = useState<AuthorityDiscoveryParameters>({
     searchText: "",
@@ -70,6 +90,11 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
   const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null);
   const [importSummary, setImportSummary] = useState<AuthorityImportSummary | null>(null);
   const [discoveryError, setDiscoveryError] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchStartedAt, setSearchStartedAt] = useState("");
+  const [progressSteps, setProgressSteps] = useState<DiscoveryProgressStep[]>(() => createProgressSteps());
+  const [diagnostics, setDiagnostics] = useState<AuthorityDiscoveryDiagnostics | null>(null);
+  const [safeMessage, setSafeMessage] = useState("");
 
   const selectedResults = useMemo(
     () => results.filter((result) => selectedIds.includes(result.id)),
@@ -83,12 +108,29 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
   async function handleDiscovery() {
     setImportSummary(null);
     setDiscoveryError("");
+    setSafeMessage("");
+    setDiagnostics(null);
+    setIsSearching(true);
+    setSearchStartedAt(new Date().toISOString());
+    setProgressSteps([
+      { label: "Preparing search query", status: "Done" },
+      { label: "Contacting Tavily Web Search", status: parameters.sourceType === "Tavily Web Search" ? "In progress" : "Done" },
+      { label: "Receiving web results", status: parameters.sourceType === "Tavily Web Search" ? "Pending" : "Done" },
+      { label: "Running OpenAI analysis", status: parameters.sourceType === "Tavily Web Search" ? "Pending" : "Done" },
+      { label: "Preparing discovery table", status: "Pending" },
+      { label: "Complete", status: "Pending" },
+    ]);
+
     const discovery = await runAuthorityDiscovery(parameters);
     setResults(discovery.results);
     setHistory(discovery.history);
     setActiveHistoryId(discovery.historyItem.id);
     setSelectedIds([]);
     setDiscoveryError(discovery.errorMessage);
+    setDiagnostics(discovery.diagnostics);
+    setSafeMessage(discovery.errorMessage || discovery.warningMessage || discovery.diagnostics?.safeMessage || "");
+    setProgressSteps(buildFinalProgressSteps(parameters.sourceType, discovery.errorMessage, discovery.results.length, discovery.diagnostics));
+    setIsSearching(false);
   }
 
   function toggleSelected(resultId: string) {
@@ -233,8 +275,9 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                 </option>
               ))}
             </Select>
-            <Button type="button" onClick={() => void handleDiscovery()}>
-              Run Discovery
+            <Button disabled={isSearching} type="button" onClick={() => void handleDiscovery()}>
+              {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {isSearching ? "Searching..." : "Run Discovery"}
             </Button>
           </div>
 
@@ -260,6 +303,18 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
           ) : null}
         </CardContent>
       </Card>
+
+      {(isSearching || searchStartedAt || diagnostics || safeMessage) ? (
+        <DiscoveryProgressPanel
+          diagnostics={diagnostics}
+          isSearching={isSearching}
+          provider={parameters.sourceType}
+          resultsCount={results.length}
+          safeMessage={safeMessage}
+          searchStartedAt={searchStartedAt}
+          steps={progressSteps}
+        />
+      ) : null}
 
       <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <Card className="min-w-0">
@@ -330,9 +385,15 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                   {results.length === 0 ? (
                     <TableRow>
                       <TableCell className="py-8 text-center text-sm text-muted-foreground" colSpan={21}>
-                        {parameters.sourceType === "Tavily Web Search"
-                          ? "No real organizations found from Tavily for this search."
-                          : "No real organizations found in configured sources. Import CSV or configure a real search provider."}
+                        <div className="mx-auto max-w-2xl space-y-2">
+                          <p className="font-medium text-emerald-950">No results were returned.</p>
+                          <p>
+                            {safeMessage ||
+                              (parameters.sourceType === "Tavily Web Search"
+                                ? "No real organizations found from Tavily for this search."
+                                : "No real organizations found in configured sources. Import CSV or configure a real search provider.")}
+                          </p>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -444,6 +505,126 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+}
+
+function buildFinalProgressSteps(
+  sourceType: AuthorityDiscoverySourceType,
+  errorMessage: string,
+  resultCount: number,
+  diagnostics: AuthorityDiscoveryDiagnostics | null,
+): DiscoveryProgressStep[] {
+  if (sourceType !== "Tavily Web Search") {
+    return discoveryStepLabels.map((label) => ({
+      label,
+      status: errorMessage ? "Failed" : "Done",
+    }));
+  }
+
+  const hasError = Boolean(errorMessage);
+  const tavilyCount = diagnostics?.tavilyResultsCount ?? 0;
+  const fallbackUsed = Boolean(diagnostics?.fallbackUsed);
+  const openAiAttempted = Boolean(diagnostics?.openAiAnalysisAttempted);
+  const openAiEnabled = Boolean(diagnostics?.openAiEnabled);
+  const tavilyZero = diagnostics?.errorCode === "TAVILY_ZERO_RESULTS";
+
+  return [
+    { label: "Preparing search query", status: "Done" },
+    { label: "Contacting Tavily Web Search", status: hasError ? "Failed" : "Done" },
+    { label: "Receiving web results", status: hasError || tavilyZero ? "Failed" : tavilyCount > 0 ? "Done" : resultCount > 0 ? "Done" : "Failed" },
+    {
+      label: "Running OpenAI analysis",
+      status: hasError
+        ? "Failed"
+        : openAiAttempted && !fallbackUsed
+          ? "Done"
+          : openAiEnabled || fallbackUsed
+            ? "Fallback"
+            : "Fallback",
+    },
+    { label: "Preparing discovery table", status: hasError ? "Failed" : "Done" },
+    { label: "Complete", status: hasError || tavilyZero ? "Failed" : fallbackUsed ? "Fallback" : "Done" },
+  ];
+}
+
+function DiscoveryProgressPanel({
+  diagnostics,
+  isSearching,
+  provider,
+  resultsCount,
+  safeMessage,
+  searchStartedAt,
+  steps,
+}: {
+  diagnostics: AuthorityDiscoveryDiagnostics | null;
+  isSearching: boolean;
+  provider: AuthorityDiscoverySourceType;
+  resultsCount: number;
+  safeMessage: string;
+  searchStartedAt: string;
+  steps: DiscoveryProgressStep[];
+}) {
+  const completedSteps = steps.filter((step) => ["Done", "Fallback"].includes(step.status)).length;
+  const progressPercent = Math.round((completedSteps / steps.length) * 100);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          {isSearching ? <Loader2 className="h-4 w-4 animate-spin text-emerald-700" /> : <ShieldCheck className="h-4 w-4 text-emerald-700" />}
+          Discovery Status
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+          <div className="h-full rounded-full bg-emerald-600 transition-all" style={{ width: `${progressPercent}%` }} />
+        </div>
+        <div className="grid gap-3 lg:grid-cols-3">
+          {steps.map((step) => (
+            <div key={step.label} className="flex items-center gap-3 rounded-md border bg-white p-3 text-sm">
+              <ProgressIcon status={step.status} />
+              <div>
+                <p className="font-medium text-emerald-950">{step.label}</p>
+                <p className="text-xs text-muted-foreground">{step.status}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="grid gap-3 rounded-lg border bg-slate-50 p-4 text-sm md:grid-cols-2 xl:grid-cols-4">
+          <DiagnosticItem label="Search started" value={searchStartedAt ? new Date(searchStartedAt).toLocaleString() : "Not started"} />
+          <DiagnosticItem label="Provider selected" value={provider} />
+          <DiagnosticItem label="Results found" value={`${resultsCount}`} />
+          <DiagnosticItem label="Tavily raw results" value={`${diagnostics?.tavilyResultsCount ?? 0}`} />
+          <DiagnosticItem label="AI extracted" value={`${diagnostics?.openAiResultsCount ?? 0}`} />
+          <DiagnosticItem label="OpenAI enabled" value={diagnostics?.openAiEnabled ? "Yes" : "No"} />
+          <DiagnosticItem label="Fallback used" value={diagnostics?.fallbackUsed ? "Yes" : "No"} />
+          <DiagnosticItem label="Error code" value={diagnostics?.errorCode || "None"} />
+        </div>
+        {safeMessage ? (
+          <div className="flex gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{safeMessage}</span>
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ProgressIcon({ status }: { status: DiscoveryProgressStatus }) {
+  if (status === "In progress") return <Loader2 className="h-4 w-4 animate-spin text-emerald-700" />;
+  if (status === "Done") return <CheckCircle2 className="h-4 w-4 text-emerald-700" />;
+  if (status === "Fallback") return <AlertTriangle className="h-4 w-4 text-amber-600" />;
+  if (status === "Failed") return <AlertTriangle className="h-4 w-4 text-red-600" />;
+  return <span className="h-4 w-4 rounded-full border border-slate-300" />;
+}
+
+function DiagnosticItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs font-medium uppercase text-muted-foreground">{label}</p>
+      <p className="mt-1 font-semibold text-emerald-950">{value}</p>
     </div>
   );
 }

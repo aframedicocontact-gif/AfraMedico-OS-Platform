@@ -1,237 +1,332 @@
-# AfraMedico Business Growth OS - Architecture
+# Architecture
 
-This document describes the current prototype architecture. It should evolve with the product and remain aligned with the implemented modules.
+AfraMedico OS Platform / ICOS is a React/Vite frontend with local JSON fallback, a frozen Supabase backend foundation, and Vercel serverless API routes for secure provider integrations.
 
-## Current Architecture Stage
-
-The current system is a frontend-only clickable prototype.
-
-It uses:
-
-- React
-- TypeScript
-- Tailwind CSS
-- shadcn-style UI primitives
-- Local JSON data
-
-It does not use:
-
-- Backend services
-- Supabase
-- Authentication
-- APIs
-- SQL
-- Migrations
-
-## Project Boundary
-
-AfraMedico Business Growth OS is separate from the public AfraMedico website. The prototype must not depend on or modify the public website.
-
-The current app is an internal operations workspace for:
-
-- Authority growth operations
-- Referral partner management
-- Lead and patient intake workflows
-- Referral protection
-- Case-level operational control
-
-## Frontend Structure
-
-Current implementation is organized around:
-
-- `src/app` for application composition and routing state
-- `src/components/layout` for the shared shell and navigation
-- `src/components/pages` for page-level screens
-- `src/components/ui` for reusable UI primitives
-- `src/components/leads`, `src/components/referrals`, and `src/components/protection` for module-specific UI helpers
-- `src/data` for local JSON prototype data
-- `src/types` for TypeScript data models
-- `src/styles` for global styling
-
-## Data Layer
-
-The prototype data layer is local JSON only.
-
-Current data files:
-
-- `src/data/organizations.json`
-- `src/data/referral-partners.json`
-- `src/data/leads.json`
-- `src/data/referral-protection.json`
-- `src/data/case-profiles.json`
-
-The JSON files represent prototype data contracts. They should be kept close to the future database model but must remain simple enough for UX validation.
-
-## Type Layer
-
-Current type files:
-
-- `src/types/organization.ts`
-- `src/types/referralPartner.ts`
-- `src/types/lead.ts`
-- `src/types/referralProtection.ts`
-- `src/types/caseProfile.ts`
-
-Types define the expected shape of local JSON records and help keep pages consistent while the system remains frontend-only.
-
-## Navigation Model
-
-The app uses a shared internal sidebar and top workspace shell.
-
-Current navigation includes:
-
-- Dashboard
-- Authority CRM
-- Referral Partners
-- Lead Management
-- Referral Protection
-- Case Profile
-- Countries
-- Organizations
-- Contacts
-- Activities
-- Tasks
-- Reports
-- Settings
-
-Some navigation items are placeholders or coming-soon items. This is acceptable during prototype validation.
-
-## Module Relationship Model
-
-The long-term business architecture is centered on Patient and Case.
+## High-Level Architecture
 
 ```text
-Patient
-  -> Case
-    -> Lead Management
-    -> Medical Review
-    -> Hospital Referrals
-    -> Hospital Quotes
-    -> Referral Protection
-    -> Patient Journey
-    -> Timeline
-    -> Audit Trail
-    -> Files
-    -> Notes
-    -> Tasks
+Browser
+  |
+  | React / Vite UI
+  | local JSON + localStorage fallback
+  |
+  +--> Supabase client wrapper
+  |      |
+  |      +--> Supabase Development Backend
+  |
+  +--> Vercel Serverless API
+         |
+         +--> Tavily Search API
+         +--> OpenAI API
 ```
 
-Key principle:
+## Frontend Architecture
 
-- Patient is the person.
-- Case is the treatment journey.
-- Lead is an intake/opportunity workflow that may create or connect to a Case.
-- Referral Protection preserves commercial and legal evidence around the Patient and Case.
-- Case Profile is the operational single source of truth.
+Main app:
 
-## Protection and Clinical Review Boundary
+```text
+src/app/App.tsx
+```
 
-Early Hospital Registration and Medical Review are separate workflows.
+Layout:
 
-- Early Hospital Registration belongs to Referral Protection and Hospital Referrals.
-- Early Hospital Registration protects referral and commission rights.
-- Early Hospital Registration can happen before Medical Review when minimum patient data exists.
-- Medical Review belongs to the Case.
-- Medical Review prepares a hospital-ready clinical package.
-- Medical Review is required before sending full clinical documentation or requesting a detailed treatment quote.
-- Medical Review must not block early hospital registration.
+```text
+src/components/layout/AppShell.tsx
+```
 
-## Patient and Case Model
+Page modules:
 
-Patient fields currently established conceptually:
+```text
+src/components/pages/
+```
 
-- Patient ID
-- Full name
-- Date of birth
-- Country
-- Phone / WhatsApp
-- Email
-- Primary Partner Attribution
-- First Referral Date
-- Lifetime Partner Owner
-- Ownership Status
-- Admin Override Reason
-- Audit Trail
+Service layer:
 
-Case fields currently established conceptually:
+```text
+src/services/
+```
 
-- Case ID
-- Patient ID
-- Treatment Requested
-- Medical Condition
-- Destination
-- Case Status
-- Created Date
-- Closed Date
-- Reopened Date
-- Assigned Coordinator
-- Related Hospital Referrals
-- Related Quotes
-- Related Medical Review
-- Related Patient Journey
+Shared utilities:
 
-## UI System
+```text
+src/lib/
+```
 
-Visual direction:
+The app currently uses a hybrid model:
 
-- Enterprise SaaS style
-- Emerald and deep green foundation
-- White and light gray surfaces
-- Subtle gold accents
-- Dense but readable operational screens
-- Dashboard cards, tables, filters, timelines, badges, and Kanban boards
+- some screens are frontend prototype/local JSON
+- some services are live-ready for Supabase
+- some workflows use local storage for development persistence
+- Authority Discovery uses a secure serverless API for Tavily/OpenAI
 
-Shared UI primitives currently include:
+## Routing and Auth Guard
 
-- Badge
-- Button
-- Card
-- Input
-- Select
-- Table
-- Kanban Board
+Routes are represented by the `AppView` union in `src/app/App.tsx`.
 
-Kanban-style pipeline pages should use fixed-width columns with horizontal scrolling to preserve readability.
+Public routes:
 
-## Audit and Evidence Architecture
+- `/login`
+- `/reset-password`
+- `/auth/callback`
 
-Audit and evidence are cross-cutting concepts, especially for Referral Protection, Commission Ownership, Case Profile, and future Attribution Protection.
+Internal routes should require Supabase Auth session.
 
-Important events should be append-only in concept:
+Implemented source files:
 
-- No overwriting referral attempts
-- No deleting ownership decisions
-- No hiding duplicate review history
-- No replacing attribution history with a single final value
+- `src/services/authService.ts`
+- `src/contexts/AuthContext.tsx`
+- `src/components/auth/ProtectedRoute.tsx`
+- `src/components/pages/LoginPage.tsx`
+- `src/components/pages/ResetPasswordPage.tsx`
 
-Even in the frontend prototype, the UI should communicate this append-only mindset.
+Deployment status of the auth guard should be verified after each Vercel deployment.
 
-## Future Backend Readiness
+## Supabase Architecture
 
-When backend work is approved, the likely architecture should preserve the frontend contracts already validated here.
+Backend Foundation v1.0 is defined in:
 
-Future backend concerns may include:
+```text
+supabase/migrations/
+```
 
-- Supabase database
-- Authentication and roles
-- Row-level access policies
-- File storage
-- Audit log tables
-- Import jobs
-- Notifications
-- API boundaries
-- Data validation
+Migration order:
 
-These are intentionally out of scope for the current prototype.
+1. `20260627130000_icos_saas_foundation.sql`
+2. `20260627143000_case_workspace_foundation.sql`
+3. `20260627160000_clinical_decision_foundation.sql`
+4. `20260627180000_hospital_referral_foundation.sql`
+5. `20260627190000_patient_travel_coordination_foundation.sql`
+6. `20260627200000_finance_commission_foundation.sql`
+7. `20260627210000_authentication_operational_access_foundation.sql`
+8. `20260627220000_backend_foundation_hardening_1.sql`
 
-## Living Documentation Rule
+Backend Foundation v1.0 status:
 
-When a module, business rule, field, status, or workflow changes, update:
+```text
+Frozen
+```
 
-- `Business-Rules.md`
-- `Architecture.md`
-- `Modules.md`
-- `Roadmap.md`
-- `Future-Ideas.md`
+Development project:
 
-Architecture documentation should remain synchronized with the working prototype.
+```text
+AfraMedico OS - Development
+Project ID: sblaedmxxquiavmfdmwq
+```
+
+## Auth and RLS Model
+
+The backend is SaaS-ready and organization-scoped.
+
+Core tenant field:
+
+```text
+organization_id
+```
+
+RLS depends on:
+
+```text
+auth.jwt().app_metadata.organization_id
+```
+
+Important rule:
+
+- `organization_id` must be trusted app metadata, not user-editable metadata.
+
+Operational access tables include:
+
+- roles
+- permissions
+- role permissions
+- organization users
+- user role assignments
+- departments
+- operational teams
+- team members
+- user sessions
+- access audit log
+
+Current limitation:
+
+- permission structure exists, but complete permission-aware frontend enforcement is future work.
+
+## Vercel Serverless API Architecture
+
+Current API route:
+
+```text
+api/authority-discovery/search.js
+```
+
+Current backend service:
+
+```text
+api/authority-discovery/services/openaiOrganizationAnalysisService.js
+```
+
+The API route is responsible for:
+
+1. validating request method and input
+2. reading server-side environment variables
+3. calling Tavily Search
+4. sending useful snippets to OpenAI
+5. normalizing organization intelligence
+6. returning structured JSON to the frontend
+
+Secrets must remain server-side.
+
+## Authority Discovery Architecture
+
+Authority Discovery is implemented in:
+
+```text
+src/components/pages/AuthorityDiscovery.tsx
+src/services/authorityDiscoveryService.ts
+src/services/authorityImportService.ts
+src/types/authorityDiscovery.ts
+```
+
+Provider modes:
+
+- Curated Data
+- CSV Imported Data
+- Tavily Web Search
+
+Workflow:
+
+```text
+Search inputs
+  |
+  +--> Curated local provider
+  |
+  +--> CSV local provider
+  |
+  +--> Tavily Web Search
+          |
+          +--> POST /api/authority-discovery/search
+          +--> Tavily
+          +--> OpenAI Intelligence Layer
+          +--> Structured Discovery Results
+```
+
+Authority Discovery preserves:
+
+- horizontal scrolling
+- checkbox per row
+- select all
+- import selected
+- clickable website/source/email/LinkedIn fields
+- duplicate prevention by website and organization name
+
+## Tavily Provider Architecture
+
+Tavily is called only from the serverless backend route.
+
+Required server-side variables:
+
+```text
+SEARCH_PROVIDER=tavily
+TAVILY_API_KEY=
+```
+
+The frontend never sees `TAVILY_API_KEY`.
+
+Tavily results provide:
+
+- source URL
+- title
+- snippet/content
+
+Every Tavily-backed discovery result must include a source URL.
+
+## OpenAI Provider Architecture
+
+OpenAI is called only from the serverless backend route.
+
+Required server-side variables:
+
+```text
+AI_PROVIDER=openai
+OPENAI_API_KEY=
+```
+
+The OpenAI prompt is evidence-bound:
+
+- JSON only
+- no invented organizations
+- no invented websites
+- no invented email addresses
+- no invented LinkedIn URLs
+- unsupported fields return `null`
+- AI summary maximum 120 words
+
+Token optimization:
+
+- Tavily results are deduplicated
+- only compact title, URL, and snippet data is sent
+- identical analyses are cached in memory during runtime lifetime
+
+Current limitation:
+
+- OpenAI runtime output quality must be verified with real provider keys.
+- Cost should be verified against current OpenAI pricing.
+
+## Local Storage vs Live Backend
+
+Local JSON/local storage is still used by several frontend modules.
+
+Examples:
+
+- Authority CRM seed data: `src/data/organizations.json`
+- Authority Discovery import/history: local storage through service layer
+- Outreach/relationship/opportunity services: development/local service patterns
+
+Live-ready Supabase service files:
+
+- `src/services/organizationService.ts`
+- `src/services/patientService.ts`
+- `src/services/caseService.ts`
+- `src/services/timelineService.ts`
+- `src/services/operationalWorkflowService.ts`
+
+Current principle:
+
+- Do not remove mock fallback all at once.
+- Replace local data module by module after auth/RLS and organization context are stable.
+
+## Security Notes
+
+Never expose these in browser code:
+
+- Supabase service role key
+- `TAVILY_API_KEY`
+- `OPENAI_API_KEY`
+- passwords
+- production data exports
+
+Frontend-safe variables use `VITE_` and are visible to the browser.
+
+Server-only provider keys must not use `VITE_`.
+
+Required safeguards before production:
+
+- verify auth guard on Vercel
+- verify RLS with real authenticated sessions
+- configure Supabase Storage and document privacy policies
+- add consent and PHI handling
+- add backup/disaster recovery runbooks
+- add production monitoring
+- audit serverless API rate limits and abuse controls
+
+## Known Architecture Limitations
+
+- Full role/permission enforcement is not complete.
+- Imported Authority CRM records are not persisted to Supabase yet.
+- Tavily/OpenAI provider behavior needs live verification.
+- Clinical AI/OCR is not connected.
+- Finance/payment integrations are not connected.
+- Travel booking integrations are intentionally not implemented.
+
+## Next Recommended Architecture Step
+
+Create a backend persistence design for Authority CRM and Authority Discovery imports before saving Tavily/OpenAI intelligence into Supabase.

@@ -138,3 +138,34 @@ Bug fixes and maintenance.
 ## Business Principle
 
 "The repository documents not only the evolution of software, but also the evolution of ideas, architecture, and operational knowledge."
+
+---
+
+## Documentation Audit Update
+
+Date: 2026-06-30
+
+This audit fills missing historical documentation across frontend, backend, deployment, authentication, Authority CRM, and Authority Discovery work.
+
+### Historical Items Added To Master Docs
+
+- Backend Foundation v1.0 freeze and eight Supabase migrations.
+- Supabase setup, RLS dependency, and development admin provisioning.
+- Frontend-backend connection through Supabase client and service layer.
+- Authentication foundation, password recovery, and internal auth guard.
+- Organization, Patient, Case, Case Detail Workspace, Timeline integration, and first operational workflow.
+- Authority CRM evolution from local list to discovery, outreach, and opportunity intelligence.
+- Fake-data cleanup and real-only discovery source rules.
+- Clickable external links and enterprise horizontal table scrolling.
+- Tavily Web Search provider through a secure Vercel serverless API route.
+- OpenAI Intelligence Layer for evidence-bound organization extraction.
+
+### New Master Documentation
+
+- `docs/PROJECT-DEVELOPMENT-HISTORY.md`
+- `docs/README-OPERATIONS.md`
+- `docs/ARCHITECTURE.md`
+
+### Notes
+
+Several early sprint dates and deployment verification states are marked `Needs verification` because they were not fully recoverable from the current file contents alone.

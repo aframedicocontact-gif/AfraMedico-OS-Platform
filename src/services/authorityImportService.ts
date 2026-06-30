@@ -10,6 +10,23 @@ function normalize(value: string) {
   return value.trim().toLowerCase().replace(/\/+$/, "");
 }
 
+function isCleanAuthorityOrganization(organization: Organization) {
+  const searchable = [
+    organization.name,
+    organization.website,
+    organization.email,
+    organization.notes,
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  if (!organization.name.trim() || !organization.website.trim()) return false;
+  if (searchable.includes("example")) return false;
+  if (searchable.includes("demo data") || searchable.includes("demo ")) return false;
+  if (searchable.includes("mock") || searchable.includes("placeholder")) return false;
+  return true;
+}
+
 function readImportedOrganizations() {
   if (typeof window === "undefined") return [];
 
@@ -34,6 +51,7 @@ export function getImportedAuthorityOrganizations() {
 }
 
 export function mergeImportedAuthorityOrganizations(baseOrganizations: Organization[]) {
+  const cleanImportedOrganizations = readImportedOrganizations().filter(isCleanAuthorityOrganization);
   const baseKeys = new Set([
     ...baseOrganizations.map((organization) => normalize(organization.website)),
     ...baseOrganizations.map((organization) => normalize(organization.name)),
@@ -41,7 +59,7 @@ export function mergeImportedAuthorityOrganizations(baseOrganizations: Organizat
 
   return [
     ...baseOrganizations,
-    ...readImportedOrganizations().filter(
+    ...cleanImportedOrganizations.filter(
       (organization) =>
         !baseKeys.has(normalize(organization.website)) &&
         !baseKeys.has(normalize(organization.name)),

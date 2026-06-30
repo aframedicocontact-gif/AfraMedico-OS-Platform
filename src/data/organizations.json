@@ -4,33 +4,23 @@
     "name": "Nigerian Medical Association",
     "country": "Nigeria",
     "category": "Medical Associations",
-    "status": "in-discussion",
+    "status": "research",
     "priority": "high",
     "owner": "Growth",
-    "contactName": "National Secretariat",
-    "email": "info@nigeriannma.org",
+    "contactName": "To verify",
+    "email": "Not found",
     "website": "https://nigeriannma.org",
-    "linkedin": "https://www.linkedin.com/company/nigerian-medical-association",
+    "linkedin": "",
     "opportunityType": "Partnership",
-    "domainRating": 63,
-    "nextStep": "Send authority partnership brief for medical tourism education",
-    "nextFollowUp": "2026-06-25",
-    "notes": "High-trust national association. Best fit for credibility, expert review, and physician-facing education.",
+    "domainRating": 0,
+    "nextStep": "Verify contact path and qualify for authority partnership outreach",
+    "nextFollowUp": "2026-07-05",
+    "notes": "Curated seed / needs verification. Email and external SEO metrics have not been verified.",
     "activity": [
       {
-        "date": "2026-06-18",
-        "title": "Target added",
-        "detail": "Added as top-priority Nigeria authority target."
-      },
-      {
-        "date": "2026-06-21",
-        "title": "Initial outreach drafted",
-        "detail": "Prepared positioning around patient education and clinical authority."
-      },
-      {
-        "date": "2026-06-24",
-        "title": "Follow-up queued",
-        "detail": "Next step is a concise partnership brief."
+        "date": "2026-06-30",
+        "title": "Curated seed added",
+        "detail": "Added as a real curated organization. Contact details still need verification."
       }
     ]
   },
@@ -41,21 +31,21 @@
     "category": "Universities",
     "status": "research",
     "priority": "high",
-    "owner": "Editorial",
-    "contactName": "College of Medicine communications",
-    "email": "info@unilag.edu.ng",
+    "owner": "Growth",
+    "contactName": "To verify",
+    "email": "Not found",
     "website": "https://unilag.edu.ng",
-    "linkedin": "https://www.linkedin.com/school/university-of-lagos",
+    "linkedin": "",
     "opportunityType": "Research collaboration",
-    "domainRating": 72,
-    "nextStep": "Identify medicine faculty contact and relevant public health program",
-    "nextFollowUp": "2026-06-28",
-    "notes": "Potential academic authority source for evidence-led Africa healthcare content.",
+    "domainRating": 0,
+    "nextStep": "Verify medicine or public health contact path",
+    "nextFollowUp": "2026-07-05",
+    "notes": "Curated seed / needs verification. Email and external SEO metrics have not been verified.",
     "activity": [
       {
-        "date": "2026-06-19",
-        "title": "Research started",
-        "detail": "Marked as a university authority target for Nigeria."
+        "date": "2026-06-30",
+        "title": "Curated seed added",
+        "detail": "Added as a real curated organization. Contact details still need verification."
       }
     ]
   },
@@ -64,283 +54,173 @@
     "name": "Lagos University Teaching Hospital",
     "country": "Nigeria",
     "category": "Teaching Hospitals",
-    "status": "contacted",
+    "status": "research",
     "priority": "high",
-    "owner": "Partnerships",
-    "contactName": "Corporate affairs office",
-    "email": "info@luth.gov.ng",
+    "owner": "Growth",
+    "contactName": "To verify",
+    "email": "Not found",
     "website": "https://luth.gov.ng",
-    "linkedin": "https://www.linkedin.com/company/lagos-university-teaching-hospital",
+    "linkedin": "",
     "opportunityType": "Expert citation",
-    "domainRating": 55,
-    "nextStep": "Ask for appropriate clinical reviewer contact",
-    "nextFollowUp": "2026-06-26",
-    "notes": "Strong fit for doctor-reviewed material and hospital authority references.",
+    "domainRating": 0,
+    "nextStep": "Verify clinical affairs or communications contact path",
+    "nextFollowUp": "2026-07-05",
+    "notes": "Curated seed / needs verification. Email and external SEO metrics have not been verified.",
     "activity": [
       {
-        "date": "2026-06-20",
-        "title": "Contacted",
-        "detail": "Sent initial note to public contact channel."
-      },
-      {
-        "date": "2026-06-23",
-        "title": "Internal review",
-        "detail": "Prepared list of pages where expert citation would matter."
+        "date": "2026-06-30",
+        "title": "Curated seed added",
+        "detail": "Added as a real curated organization. Contact details still need verification."
       }
     ]
   },
   {
     "id": "org-004",
-    "name": "Ghana Medical Association",
-    "country": "Ghana",
-    "category": "Medical Associations",
-    "status": "contacted",
+    "name": "National Hospital Abuja",
+    "country": "Nigeria",
+    "category": "Teaching Hospitals",
+    "status": "research",
     "priority": "high",
     "owner": "Growth",
-    "contactName": "Secretariat",
-    "email": "info@ghanamedassn.org",
-    "website": "https://ghanamedassn.org",
-    "linkedin": "https://www.linkedin.com/company/ghana-medical-association",
-    "opportunityType": "Partnership",
-    "domainRating": 59,
-    "nextStep": "Follow up on patient education partnership angle",
-    "nextFollowUp": "2026-06-25",
-    "notes": "Important Ghana authority target for trust building and medical community validation.",
+    "contactName": "To verify",
+    "email": "Not found",
+    "website": "https://nationalhospital.gov.ng",
+    "linkedin": "",
+    "opportunityType": "Expert citation",
+    "domainRating": 0,
+    "nextStep": "Verify hospital communications or clinical contact path",
+    "nextFollowUp": "2026-07-05",
+    "notes": "Curated seed / needs verification. Email and external SEO metrics have not been verified.",
     "activity": [
       {
-        "date": "2026-06-17",
-        "title": "Qualified",
-        "detail": "Added after Ghana authority mapping."
-      },
-      {
-        "date": "2026-06-22",
-        "title": "Outreach sent",
-        "detail": "Sent a short introduction to the association contact address."
+        "date": "2026-06-30",
+        "title": "Curated seed added",
+        "detail": "Added as a real curated organization. Contact details still need verification."
       }
     ]
   },
   {
     "id": "org-005",
-    "name": "Korle Bu Teaching Hospital",
-    "country": "Ghana",
+    "name": "University College Hospital Ibadan",
+    "country": "Nigeria",
     "category": "Teaching Hospitals",
-    "status": "in-discussion",
+    "status": "research",
     "priority": "high",
-    "owner": "Partnerships",
-    "contactName": "Public relations unit",
-    "email": "info@kbth.gov.gh",
-    "website": "https://kbth.gov.gh",
-    "linkedin": "https://www.linkedin.com/company/korle-bu-teaching-hospital",
+    "owner": "Growth",
+    "contactName": "To verify",
+    "email": "Not found",
+    "website": "https://uch-ibadan.org.ng",
+    "linkedin": "",
     "opportunityType": "Expert citation",
-    "domainRating": 58,
-    "nextStep": "Prepare reviewer request for oncology and surgery pages",
-    "nextFollowUp": "2026-06-27",
-    "notes": "High-value teaching hospital authority for Ghana-specific healthcare credibility.",
+    "domainRating": 0,
+    "nextStep": "Verify hospital communications or clinical contact path",
+    "nextFollowUp": "2026-07-05",
+    "notes": "Curated seed / needs verification. Email and external SEO metrics have not been verified.",
     "activity": [
       {
-        "date": "2026-06-20",
-        "title": "Target qualified",
-        "detail": "Matched to Ghana treatment authority opportunities."
-      },
-      {
-        "date": "2026-06-24",
-        "title": "Discussion opened",
-        "detail": "Moved from contacted to in discussion after contact path was identified."
+        "date": "2026-06-30",
+        "title": "Curated seed added",
+        "detail": "Added as a real curated organization. Contact details still need verification."
       }
     ]
   },
   {
     "id": "org-006",
-    "name": "BusinessDay Nigeria",
-    "country": "Nigeria",
-    "category": "News Media",
-    "status": "backlink-secured",
-    "priority": "medium",
-    "owner": "PR",
-    "contactName": "Health desk",
-    "email": "editor@businessday.ng",
-    "website": "https://businessday.ng",
-    "linkedin": "https://www.linkedin.com/company/businessday-nigeria",
-    "opportunityType": "Editorial mention",
-    "domainRating": 78,
-    "nextStep": "Track placement quality and note referring page",
-    "nextFollowUp": "2026-06-30",
-    "notes": "Useful business and health readership. Backlink secured in prototype data for dashboard validation.",
+    "name": "Ghana Medical Association",
+    "country": "Ghana",
+    "category": "Medical Associations",
+    "status": "research",
+    "priority": "high",
+    "owner": "Growth",
+    "contactName": "To verify",
+    "email": "Not found",
+    "website": "https://ghanamedassn.org",
+    "linkedin": "",
+    "opportunityType": "Partnership",
+    "domainRating": 0,
+    "nextStep": "Verify contact path and qualify for authority partnership outreach",
+    "nextFollowUp": "2026-07-05",
+    "notes": "Curated seed / needs verification. Email and external SEO metrics have not been verified.",
     "activity": [
       {
-        "date": "2026-06-18",
-        "title": "Pitch sent",
-        "detail": "Shared medical tourism trend angle for Nigeria audience."
-      },
-      {
-        "date": "2026-06-24",
-        "title": "Backlink secured",
-        "detail": "Marked as secured so the KPI and pipeline states can be reviewed."
+        "date": "2026-06-30",
+        "title": "Curated seed added",
+        "detail": "Added as a real curated organization. Contact details still need verification."
       }
     ]
   },
   {
     "id": "org-007",
-    "name": "The Guardian Nigeria",
-    "country": "Nigeria",
-    "category": "News Media",
-    "status": "contacted",
-    "priority": "medium",
-    "owner": "PR",
-    "contactName": "Features editor",
-    "email": "editor@guardian.ng",
-    "website": "https://guardian.ng",
-    "linkedin": "https://www.linkedin.com/company/guardian-newspapers-limited",
-    "opportunityType": "Editorial mention",
-    "domainRating": 82,
-    "nextStep": "Send concise health consumer angle",
-    "nextFollowUp": "2026-06-26",
-    "notes": "Strong media authority. Best for awareness and earned-media credibility.",
+    "name": "University of Ghana",
+    "country": "Ghana",
+    "category": "Universities",
+    "status": "research",
+    "priority": "high",
+    "owner": "Growth",
+    "contactName": "To verify",
+    "email": "Not found",
+    "website": "https://ug.edu.gh",
+    "linkedin": "",
+    "opportunityType": "Research collaboration",
+    "domainRating": 0,
+    "nextStep": "Verify medicine, public health, or research contact path",
+    "nextFollowUp": "2026-07-05",
+    "notes": "Curated seed / needs verification. Email and external SEO metrics have not been verified.",
     "activity": [
       {
-        "date": "2026-06-21",
-        "title": "Media target added",
-        "detail": "Added to Nigeria outreach list."
-      },
-      {
-        "date": "2026-06-23",
-        "title": "Contacted",
-        "detail": "Initial editorial pitch sent."
+        "date": "2026-06-30",
+        "title": "Curated seed added",
+        "detail": "Added as a real curated organization. Contact details still need verification."
       }
     ]
   },
   {
     "id": "org-008",
-    "name": "Cancer Society of Ghana",
+    "name": "Korle Bu Teaching Hospital",
     "country": "Ghana",
-    "category": "NGOs",
-    "status": "partner",
-    "priority": "medium",
+    "category": "Teaching Hospitals",
+    "status": "research",
+    "priority": "high",
     "owner": "Growth",
-    "contactName": "Programs team",
-    "email": "info@cancersocietygh.org",
-    "website": "https://cancersocietygh.org",
-    "linkedin": "https://www.linkedin.com/company/cancer-society-of-ghana",
-    "opportunityType": "Partnership",
-    "domainRating": 44,
-    "nextStep": "Draft co-branded patient education topic list",
-    "nextFollowUp": "2026-07-02",
-    "notes": "Good NGO fit for patient education and cancer-care resource credibility.",
+    "contactName": "To verify",
+    "email": "Not found",
+    "website": "https://kbth.gov.gh",
+    "linkedin": "",
+    "opportunityType": "Expert citation",
+    "domainRating": 0,
+    "nextStep": "Verify hospital communications or clinical contact path",
+    "nextFollowUp": "2026-07-05",
+    "notes": "Curated seed / needs verification. Email and external SEO metrics have not been verified.",
     "activity": [
       {
-        "date": "2026-06-16",
-        "title": "Intro call",
-        "detail": "Validated patient education alignment."
-      },
-      {
-        "date": "2026-06-25",
-        "title": "Partner status",
-        "detail": "Marked as partner for prototype workflow validation."
+        "date": "2026-06-30",
+        "title": "Curated seed added",
+        "detail": "Added as a real curated organization. Contact details still need verification."
       }
     ]
   },
   {
     "id": "org-009",
-    "name": "Kenya Medical Association",
-    "country": "Kenya",
-    "category": "Medical Associations",
-    "status": "research",
-    "priority": "medium",
-    "owner": "Growth",
-    "contactName": "Secretariat",
-    "email": "info@kma.co.ke",
-    "website": "https://kma.co.ke",
-    "linkedin": "https://www.linkedin.com/company/kenya-medical-association",
-    "opportunityType": "Partnership",
-    "domainRating": 57,
-    "nextStep": "Map relevant committees and contact path",
-    "nextFollowUp": "2026-07-01",
-    "notes": "Useful Kenya expansion target for association-level authority.",
-    "activity": [
-      {
-        "date": "2026-06-22",
-        "title": "Added to pipeline",
-        "detail": "Entered as Kenya market authority target."
-      }
-    ]
-  },
-  {
-    "id": "org-010",
-    "name": "Uganda Cancer Institute",
-    "country": "Uganda",
+    "name": "Komfo Anokye Teaching Hospital",
+    "country": "Ghana",
     "category": "Teaching Hospitals",
-    "status": "rejected",
-    "priority": "low",
-    "owner": "Editorial",
-    "contactName": "Information desk",
-    "email": "info@uci.or.ug",
-    "website": "https://uci.or.ug",
-    "linkedin": "https://www.linkedin.com/company/uganda-cancer-institute",
-    "opportunityType": "Expert citation",
-    "domainRating": 49,
-    "nextStep": "Revisit after oncology content scope is clearer",
-    "nextFollowUp": "2026-07-10",
-    "notes": "Not an immediate fit for current sprint, but useful later for oncology authority mapping.",
-    "activity": [
-      {
-        "date": "2026-06-21",
-        "title": "Reviewed",
-        "detail": "Qualified as relevant but not immediate."
-      },
-      {
-        "date": "2026-06-25",
-        "title": "Rejected for now",
-        "detail": "Paused from active outreach until oncology workflow is better defined."
-      }
-    ]
-  },
-  {
-    "id": "org-011",
-    "name": "Tanzania Health Directory",
-    "country": "Tanzania",
-    "category": "Business Directories",
     "status": "research",
-    "priority": "low",
-    "owner": "SEO",
-    "contactName": "Directory submissions",
-    "email": "listings@example.co.tz",
-    "website": "https://example.co.tz",
-    "linkedin": "https://www.linkedin.com",
-    "opportunityType": "Directory listing",
-    "domainRating": 36,
-    "nextStep": "Check listing requirements and outbound link policy",
-    "nextFollowUp": "2026-07-03",
-    "notes": "Prototype row for Tanzania and directory category coverage.",
+    "priority": "high",
+    "owner": "Growth",
+    "contactName": "To verify",
+    "email": "Not found",
+    "website": "https://kath.gov.gh",
+    "linkedin": "",
+    "opportunityType": "Expert citation",
+    "domainRating": 0,
+    "nextStep": "Verify hospital communications or clinical contact path",
+    "nextFollowUp": "2026-07-05",
+    "notes": "Curated seed / needs verification. Email and external SEO metrics have not been verified.",
     "activity": [
       {
-        "date": "2026-06-24",
-        "title": "Directory candidate added",
-        "detail": "Added for category coverage in dashboard breakdown."
-      }
-    ]
-  },
-  {
-    "id": "org-012",
-    "name": "Africa Health Insights Blog",
-    "country": "Kenya",
-    "category": "Health Blogs",
-    "status": "contacted",
-    "priority": "low",
-    "owner": "SEO",
-    "contactName": "Editorial team",
-    "email": "hello@examplehealthblog.org",
-    "website": "https://examplehealthblog.org",
-    "linkedin": "https://www.linkedin.com",
-    "opportunityType": "Backlink",
-    "domainRating": 41,
-    "nextStep": "Follow up with guest contribution outline",
-    "nextFollowUp": "2026-06-25",
-    "notes": "Useful low-friction backlink target for healthcare education content.",
-    "activity": [
-      {
-        "date": "2026-06-23",
-        "title": "Contacted",
-        "detail": "Sent guest contribution idea."
+        "date": "2026-06-30",
+        "title": "Curated seed added",
+        "detail": "Added as a real curated organization. Contact details still need verification."
       }
     ]
   }

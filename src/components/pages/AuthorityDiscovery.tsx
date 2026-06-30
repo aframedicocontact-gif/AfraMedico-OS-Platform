@@ -51,13 +51,8 @@ const categories: OrganizationCategory[] = [
 const dataSources: AuthorityDiscoverySourceType[] = [
   "Curated Data",
   "CSV Imported Data",
-  "External Search API",
-  "AI Search",
+  "Real Web + AI Search",
 ];
-
-function isProviderUnavailable(sourceType: AuthorityDiscoverySourceType) {
-  return sourceType === "External Search API" || sourceType === "AI Search";
-}
 
 export function AuthorityDiscovery({ organizations, onImport, onNavigate }: AuthorityDiscoveryProps) {
   const [parameters, setParameters] = useState<AuthorityDiscoveryParameters>({
@@ -74,7 +69,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
   const [history, setHistory] = useState<AuthorityDiscoveryHistoryItem[]>(() => getAuthorityDiscoveryHistory());
   const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null);
   const [importSummary, setImportSummary] = useState<AuthorityImportSummary | null>(null);
-  const providerUnavailable = isProviderUnavailable(parameters.sourceType);
+  const [discoveryError, setDiscoveryError] = useState("");
 
   const selectedResults = useMemo(
     () => results.filter((result) => selectedIds.includes(result.id)),
@@ -87,11 +82,13 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
 
   async function handleDiscovery() {
     setImportSummary(null);
+    setDiscoveryError("");
     const discovery = await runAuthorityDiscovery(parameters);
     setResults(discovery.results);
     setHistory(discovery.history);
     setActiveHistoryId(discovery.historyItem.id);
     setSelectedIds([]);
+    setDiscoveryError(discovery.errorMessage);
   }
 
   function toggleSelected(resultId: string) {
@@ -151,7 +148,8 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
       </div>
 
       <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950">
-        Current discovery uses curated and CSV data only. AI/web search requires API configuration.
+        Curated and CSV discovery run locally. Real Web + AI Search runs through the secure backend route and requires
+        server-side Vercel environment variables.
       </div>
 
       <Card>
@@ -231,7 +229,6 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
               {dataSources.map((source) => (
                 <option key={source} value={source}>
                   {source}
-                  {isProviderUnavailable(source) ? " (Not configured)" : ""}
                 </option>
               ))}
             </Select>
@@ -254,9 +251,10 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
             </div>
           ) : null}
 
-          {providerUnavailable ? (
+          {parameters.sourceType === "Real Web + AI Search" ? (
             <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-              Real external search provider is not configured yet.
+              Real Web + AI Search uses POST /api/authority-discovery/search. If server-side provider keys are missing,
+              discovery will return a configuration error instead of fake results.
             </div>
           ) : null}
         </CardContent>
@@ -277,6 +275,11 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
               <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
                 Imported {importSummary.importedOrganizations} organizations. Skipped{" "}
                 {importSummary.duplicateOrganizations} duplicates.
+              </div>
+            ) : null}
+            {discoveryError ? (
+              <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                {discoveryError}
               </div>
             ) : null}
             <div className="mb-3 flex flex-col gap-2 rounded-md border bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">

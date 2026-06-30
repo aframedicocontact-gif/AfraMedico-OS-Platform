@@ -6,8 +6,7 @@ export type AuthorityValueRating = "High" | "Medium" | "Low";
 export type AuthorityDiscoverySourceType =
   | "Curated Data"
   | "CSV Imported Data"
-  | "External Search API"
-  | "AI Search";
+  | "Real Web + AI Search";
 export type AuthorityDiscoveryConfidence = "Verified" | "Needs verification" | "Unknown";
 
 export type AuthorityDiscoveryParameters = {
@@ -23,6 +22,7 @@ export type AuthorityDiscoveryParameters = {
 export type AuthorityProviderKind =
   | "Manual CSV import"
   | "Curated seed list"
+  | "Hybrid web search and AI extraction"
   | "Google Custom Search"
   | "Bing Search"
   | "SerpAPI"
@@ -45,6 +45,7 @@ export type AuthorityDiscoveryResult = {
   website: string;
   linkedin: string;
   contactEmail: string;
+  sourceUrl?: string;
   sourceType: AuthorityDiscoverySourceType;
   sourceNote: string;
   confidence: AuthorityDiscoveryConfidence;

@@ -99,40 +99,10 @@ export const authorityDiscoveryProviders: AuthorityDiscoveryProvider[] = [
     search: csvImportSearch,
   },
   {
-    kind: "Google Custom Search",
-    sourceType: "External Search API",
-    isConfigured: false,
-    search: async () => [],
-  },
-  {
-    kind: "Bing Search",
-    sourceType: "External Search API",
-    isConfigured: false,
-    search: async () => [],
-  },
-  {
-    kind: "SerpAPI",
-    sourceType: "External Search API",
-    isConfigured: false,
-    search: async () => [],
-  },
-  {
-    kind: "OpenAI",
-    sourceType: "AI Search",
-    isConfigured: false,
-    search: async () => [],
-  },
-  {
-    kind: "Claude",
-    sourceType: "AI Search",
-    isConfigured: false,
-    search: async () => [],
-  },
-  {
-    kind: "Gemini",
-    sourceType: "AI Search",
-    isConfigured: false,
-    search: async () => [],
+    kind: "Hybrid web search and AI extraction",
+    sourceType: "Real Web + AI Search",
+    isConfigured: true,
+    search: realWebAiSearch,
   },
 ];
 
@@ -248,6 +218,83 @@ async function csvImportSearch(parameters: AuthorityDiscoveryParameters) {
     });
 }
 
+type WebAiDiscoveryResponse = {
+  results?: Array<{
+    name?: string;
+    country?: string;
+    category?: OrganizationCategory;
+    website?: string | null;
+    email?: string | null;
+    linkedin?: string | null;
+    sourceUrl?: string | null;
+    confidence?: "Verified" | "Needs verification" | "Unknown";
+    source?: string;
+    reason?: string;
+    suggestedNextStep?: string;
+  }>;
+  error?: string;
+};
+
+async function realWebAiSearch(parameters: AuthorityDiscoveryParameters) {
+  const query = [
+    parameters.searchText,
+    parameters.treatmentKeyword,
+    parameters.category,
+    parameters.country,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const response = await fetch("/api/authority-discovery/search", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      country: parameters.country,
+      category: parameters.category,
+      treatmentKeyword: parameters.treatmentKeyword,
+      query,
+      maxResults: parameters.maximumResults,
+    }),
+  });
+  const payload = (await response.json().catch(() => ({}))) as WebAiDiscoveryResponse;
+
+  if (!response.ok) {
+    throw new Error(payload.error || "Real Web + AI Search is not configured.");
+  }
+
+  return (payload.results ?? [])
+    .filter((result) => result.name && result.country && result.category)
+    .slice(0, parameters.maximumResults)
+    .map((result, index) => {
+      const category = normalizeCategory(result.category || parameters.category);
+      const scored = scoreAuthorityTarget(category, parameters.treatmentKeyword);
+      const sourceUrl = result.sourceUrl || result.website || "";
+
+      return {
+        id: `web-ai-${slugify(result.name || "organization")}-${index + 1}`,
+        organization: result.name || "",
+        country: result.country || parameters.country,
+        category,
+        website: result.website || "",
+        linkedin: result.linkedin || "",
+        contactEmail: result.email || "Not found",
+        sourceUrl,
+        sourceType: "Real Web + AI Search",
+        sourceNote: sourceUrl ? `Supported by ${sourceUrl}` : "Supported by search result snippets",
+        confidence: result.confidence || "Needs verification",
+        authorityType: scored.authorityType,
+        authorityScore: scored.authorityScore,
+        referralValue: scored.referralValue,
+        backlinkValue: scored.backlinkValue,
+        partnershipPotential: scored.partnershipPotential,
+        opportunityType: scored.opportunityType,
+        suggestedNextAction: result.suggestedNextStep || `Verify evidence and qualify ${result.name}.`,
+        status: "New",
+      } satisfies AuthorityDiscoveryResult;
+    });
+}
+
 function parseCsv(csvText: string) {
   const lines = csvText
     .split(/\r?\n/)
@@ -322,7 +369,14 @@ export async function runAuthorityDiscovery(parameters: AuthorityDiscoveryParame
   const resultLimit = Math.max(1, Math.min(parameters.maximumResults, 100));
   const normalizedParameters = { ...parameters, maximumResults: resultLimit };
   const provider = authorityDiscoveryProviders.find((item) => item.sourceType === parameters.sourceType);
-  const results = provider?.isConfigured ? await provider.search(normalizedParameters) : [];
+  let results: AuthorityDiscoveryResult[] = [];
+  let errorMessage = "";
+
+  try {
+    results = provider?.isConfigured ? await provider.search(normalizedParameters) : [];
+  } catch (error) {
+    errorMessage = error instanceof Error ? error.message : "Authority discovery failed.";
+  }
 
   const historyItem: AuthorityDiscoveryHistoryItem = {
     id: `history-${Date.now()}`,
@@ -339,5 +393,6 @@ export async function runAuthorityDiscovery(parameters: AuthorityDiscoveryParame
     history,
     results,
     providerConfigured: Boolean(provider?.isConfigured),
+    errorMessage,
   };
 }

@@ -26,9 +26,9 @@ begin;
 with bootstrap_values as (
   select
     'e3b2dddc-9874-4911-b0f0-9dab1dd69248'::uuid as organization_id,
-    '30e81532-184d-4cfa-9b81-cfa42b76df0c'::uuid as auth_user_id,
-    'aframedico.contact@gmail.com'::text as admin_email,
-    'AfraMedico Development Admin'::text as admin_name
+    'AUTH_USER_ID'::uuid as auth_user_id,
+    'ADMIN_EMAIL'::text as admin_email,
+    'ADMIN_NAME'::text as admin_name
 ),
 target_organization as (
   select o.id

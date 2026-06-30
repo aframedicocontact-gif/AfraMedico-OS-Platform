@@ -95,7 +95,7 @@ export function importAuthorityDiscoveryResults(
       contactName: "To qualify",
       email: result.contactEmail,
       website: result.website,
-      linkedin: "https://www.linkedin.com",
+      linkedin: result.linkedin,
       opportunityType: result.opportunityType,
       domainRating: 0,
       nextStep: result.suggestedNextAction,
@@ -105,7 +105,7 @@ export function importAuthorityDiscoveryResults(
         {
           date: new Date().toISOString().slice(0, 10),
           title: "Imported from Authority Discovery",
-          detail: `AI-assisted score ${result.authorityScore}. Status set to research for qualification.`,
+          detail: `Estimated category score ${result.authorityScore}. Status set to research for qualification.`,
         },
       ],
     };

@@ -15,6 +15,7 @@ type CuratedSeedOrganization = {
   country: string;
   category: OrganizationCategory;
   website: string;
+  linkedin?: string;
   tags: string[];
 };
 
@@ -24,49 +25,49 @@ const curatedSeedOrganizations: CuratedSeedOrganization[] = [
     country: "Nigeria",
     category: "Medical Associations",
     website: "https://nigeriannma.org",
-    tags: ["medical association", "physicians", "professional association", "health"],
+    tags: ["medical association", "physicians", "professional association", "health", "medical tourism"],
   },
   {
     organization: "University of Lagos",
     country: "Nigeria",
     category: "Universities",
     website: "https://unilag.edu.ng",
-    tags: ["university", "college of medicine", "academic", "research"],
+    tags: ["university", "college of medicine", "academic", "research", "medical education"],
   },
   {
     organization: "Lagos University Teaching Hospital",
     country: "Nigeria",
     category: "Teaching Hospitals",
     website: "https://luth.gov.ng",
-    tags: ["teaching hospital", "cancer", "oncology", "surgery", "specialist care"],
+    tags: ["teaching hospital", "cancer", "oncology", "surgery", "cardiology", "specialist care"],
   },
   {
     organization: "National Hospital Abuja",
     country: "Nigeria",
     category: "Teaching Hospitals",
     website: "https://nationalhospital.gov.ng",
-    tags: ["hospital", "government hospital", "cancer", "specialist care", "abuja"],
+    tags: ["hospital", "government hospital", "cancer", "oncology", "cardiology", "specialist care"],
   },
   {
     organization: "University College Hospital Ibadan",
     country: "Nigeria",
     category: "Teaching Hospitals",
     website: "https://uch-ibadan.org.ng",
-    tags: ["teaching hospital", "university college hospital", "cancer", "ibadan", "specialist care"],
+    tags: ["teaching hospital", "university college hospital", "cancer", "oncology", "ibadan", "specialist care"],
   },
   {
     organization: "Ghana Medical Association",
     country: "Ghana",
     category: "Medical Associations",
     website: "https://ghanamedassn.org",
-    tags: ["medical association", "physicians", "professional association", "health"],
+    tags: ["medical association", "physicians", "professional association", "health", "medical tourism"],
   },
   {
     organization: "University of Ghana",
     country: "Ghana",
     category: "Universities",
     website: "https://ug.edu.gh",
-    tags: ["university", "academic", "research", "medical school"],
+    tags: ["university", "academic", "research", "medical school", "medical education"],
   },
   {
     organization: "Korle Bu Teaching Hospital",
@@ -84,50 +85,52 @@ const curatedSeedOrganizations: CuratedSeedOrganization[] = [
   },
 ];
 
-const demoCategoryTerms: Record<OrganizationCategory, string[]> = {
-  "Teaching Hospitals": ["Teaching Hospital", "University Hospital", "Specialist Hospital", "Federal Medical Centre"],
-  "Medical Associations": ["Medical Association", "Physicians Association", "Specialist Society", "Doctors Network"],
-  Universities: ["College of Medicine", "University", "Medical School", "Public Health Institute"],
-  NGOs: ["Cancer Foundation", "Health Initiative", "Patient Support NGO", "Care Alliance"],
-  "Health Blogs": ["Health Review", "Medical Insights", "Wellness Journal", "Care Blog"],
-  "News Media": ["Health Desk", "Medical News", "Business Health", "Daily Health"],
-  "Business Directories": ["Health Directory", "Medical Listings", "Care Directory", "Provider Index"],
-};
-
 export const authorityDiscoveryProviders: AuthorityDiscoveryProvider[] = [
   {
     kind: "Curated seed list",
-    sourceType: "Curated seed",
+    sourceType: "Curated Data",
     isConfigured: true,
     search: curatedSeedSearch,
   },
   {
     kind: "Manual CSV import",
-    sourceType: "CSV import",
+    sourceType: "CSV Imported Data",
     isConfigured: true,
     search: csvImportSearch,
   },
   {
-    kind: "Public web search provider",
-    sourceType: "Future web provider",
+    kind: "Google Custom Search",
+    sourceType: "External Search API",
     isConfigured: false,
     search: async () => [],
   },
   {
-    kind: "OpenAlex",
-    sourceType: "Future web provider",
+    kind: "Bing Search",
+    sourceType: "External Search API",
     isConfigured: false,
     search: async () => [],
   },
   {
-    kind: "PubMed",
-    sourceType: "Future web provider",
+    kind: "SerpAPI",
+    sourceType: "External Search API",
     isConfigured: false,
     search: async () => [],
   },
   {
-    kind: "Crossref",
-    sourceType: "Future web provider",
+    kind: "OpenAI",
+    sourceType: "AI Search",
+    isConfigured: false,
+    search: async () => [],
+  },
+  {
+    kind: "Claude",
+    sourceType: "AI Search",
+    isConfigured: false,
+    search: async () => [],
+  },
+  {
+    kind: "Gemini",
+    sourceType: "AI Search",
     isConfigured: false,
     search: async () => [],
   },
@@ -160,14 +163,10 @@ function writeDiscoveryHistory(history: AuthorityDiscoveryHistoryItem[]) {
   window.localStorage.setItem(discoveryHistoryKey, JSON.stringify(history));
 }
 
-function matchesKeyword(seed: CuratedSeedOrganization, keyword: string) {
-  const normalizedKeyword = keyword.trim().toLowerCase();
-  if (!normalizedKeyword) return true;
-
-  return [seed.organization, seed.category, ...seed.tags]
-    .join(" ")
-    .toLowerCase()
-    .includes(normalizedKeyword);
+function matchesText(values: Array<string | undefined>, text: string) {
+  const normalized = text.trim().toLowerCase();
+  if (!normalized) return true;
+  return values.filter(Boolean).join(" ").toLowerCase().includes(normalized);
 }
 
 function buildResult(
@@ -175,9 +174,9 @@ function buildResult(
   sourceType: AuthorityDiscoverySourceType,
   sourceNote: string,
   index: number,
-  keyword: string,
+  treatmentKeyword: string,
 ): AuthorityDiscoveryResult {
-  const scored = scoreAuthorityTarget(seed.category, keyword);
+  const scored = scoreAuthorityTarget(seed.category, treatmentKeyword);
 
   return {
     id: `${slugify(sourceType)}-${slugify(seed.organization)}-${index}`,
@@ -185,6 +184,7 @@ function buildResult(
     country: seed.country,
     category: seed.category,
     website: seed.website,
+    linkedin: seed.linkedin ?? "",
     contactEmail: "Not found",
     sourceType,
     sourceNote,
@@ -204,10 +204,11 @@ async function curatedSeedSearch(parameters: AuthorityDiscoveryParameters) {
   return curatedSeedOrganizations
     .filter((seed) => seed.country === parameters.country)
     .filter((seed) => seed.category === parameters.category)
-    .filter((seed) => matchesKeyword(seed, parameters.keyword))
+    .filter((seed) => matchesText([seed.organization, seed.category, seed.website, ...seed.tags], parameters.searchText))
+    .filter((seed) => matchesText([seed.organization, seed.category, ...seed.tags], parameters.treatmentKeyword))
     .slice(0, parameters.maximumResults)
     .map((seed, index) =>
-      buildResult(seed, "Curated seed", "Curated seed / needs verification", index + 1, parameters.keyword),
+      buildResult(seed, "Curated Data", "Curated seed / needs verification", index + 1, parameters.treatmentKeyword),
     );
 }
 
@@ -218,10 +219,11 @@ async function csvImportSearch(parameters: AuthorityDiscoveryParameters) {
     .filter((row) => row.organization && row.country && row.category && row.website)
     .filter((row) => row.country === parameters.country)
     .filter((row) => row.category === parameters.category)
-    .filter((row) => matchesCsvKeyword(row, parameters.keyword))
+    .filter((row) => matchesText([row.organization, row.category, row.website, row.contactEmail, row.linkedin], parameters.searchText))
+    .filter((row) => matchesText([row.organization, row.category, row.tags], parameters.treatmentKeyword))
     .slice(0, parameters.maximumResults)
     .map((row, index) => {
-      const scored = scoreAuthorityTarget(row.category, parameters.keyword);
+      const scored = scoreAuthorityTarget(row.category, parameters.treatmentKeyword);
 
       return {
         id: `csv-import-${slugify(row.organization)}-${index + 1}`,
@@ -229,8 +231,9 @@ async function csvImportSearch(parameters: AuthorityDiscoveryParameters) {
         country: row.country,
         category: row.category,
         website: row.website,
+        linkedin: row.linkedin,
         contactEmail: row.contactEmail || "Not found",
-        sourceType: "CSV import",
+        sourceType: "CSV Imported Data",
         sourceNote: "CSV import / needs verification",
         confidence: "Needs verification",
         authorityType: scored.authorityType,
@@ -258,7 +261,7 @@ function parseCsv(csvText: string) {
   const hasHeader = firstCells.some((cell) => cell.toLowerCase().includes("organization"));
   const headers = hasHeader
     ? firstCells.map((cell) => cell.toLowerCase().replace(/[^a-z0-9]+/g, "_"))
-    : ["organization_name", "country", "category", "website", "contact_email"];
+    : ["organization_name", "country", "category", "website", "contact_email", "linkedin", "tags"];
   const dataLines = hasHeader ? restLines : lines;
 
   return dataLines.map((line) => {
@@ -271,6 +274,8 @@ function parseCsv(csvText: string) {
       category: normalizeCategory(record.category || ""),
       website: record.website || "",
       contactEmail: record.contact_email || record.email || "",
+      linkedin: record.linkedin || record.linkedin_url || "",
+      tags: record.tags || record.treatment_focus || record.specialty || "",
     };
   });
 }
@@ -288,51 +293,6 @@ function normalizeCategory(value: string): OrganizationCategory {
   if (normalized.includes("blog")) return "Health Blogs";
   if (normalized.includes("media") || normalized.includes("news")) return "News Media";
   return "Business Directories";
-}
-
-function matchesCsvKeyword(
-  row: { organization: string; category: OrganizationCategory },
-  keyword: string,
-) {
-  const normalizedKeyword = keyword.trim().toLowerCase();
-  if (!normalizedKeyword) return true;
-  return [row.organization, row.category].join(" ").toLowerCase().includes(normalizedKeyword);
-}
-
-function runDemoDiscovery(parameters: AuthorityDiscoveryParameters) {
-  const resultLimit = Math.max(1, Math.min(parameters.maximumResults, 25));
-  const terms = demoCategoryTerms[parameters.category];
-  const keyword = parameters.keyword.trim() || "Medical";
-
-  return Array.from({ length: resultLimit }, (_, index) => {
-    const term = terms[index % terms.length];
-    const scored = scoreAuthorityTarget(parameters.category, keyword);
-    const sequence = index + 1;
-    const organization =
-      sequence === 1
-        ? `Demo ${parameters.country} ${keyword} ${term}`
-        : `Demo ${parameters.country} ${term} ${keyword} Network ${sequence}`;
-
-    return {
-      id: `demo-discovery-${Date.now()}-${sequence}`,
-      organization,
-      country: parameters.country,
-      category: parameters.category,
-      website: "",
-      contactEmail: "Not found",
-      sourceType: "Demo data",
-      sourceNote: "Demo data / not real organization",
-      confidence: "Unknown",
-      authorityType: scored.authorityType,
-      authorityScore: Math.max(35, scored.authorityScore - Math.floor(index / 6)),
-      referralValue: scored.referralValue,
-      backlinkValue: scored.backlinkValue,
-      partnershipPotential: scored.partnershipPotential,
-      opportunityType: scored.opportunityType,
-      suggestedNextAction: "Demo only. Do not import into production CRM.",
-      status: "New",
-    } satisfies AuthorityDiscoveryResult;
-  });
 }
 
 export function getAuthorityDiscoveryHistory() {
@@ -362,12 +322,7 @@ export async function runAuthorityDiscovery(parameters: AuthorityDiscoveryParame
   const resultLimit = Math.max(1, Math.min(parameters.maximumResults, 100));
   const normalizedParameters = { ...parameters, maximumResults: resultLimit };
   const provider = authorityDiscoveryProviders.find((item) => item.sourceType === parameters.sourceType);
-  const results =
-    parameters.mode === "demo"
-      ? runDemoDiscovery(normalizedParameters)
-      : provider?.isConfigured
-        ? await provider.search(normalizedParameters)
-        : [];
+  const results = provider?.isConfigured ? await provider.search(normalizedParameters) : [];
 
   const historyItem: AuthorityDiscoveryHistoryItem = {
     id: `history-${Date.now()}`,
@@ -383,6 +338,6 @@ export async function runAuthorityDiscovery(parameters: AuthorityDiscoveryParame
     historyItem,
     history,
     results,
-    providerConfigured: parameters.mode === "demo" ? true : Boolean(provider?.isConfigured),
+    providerConfigured: Boolean(provider?.isConfigured),
   };
 }

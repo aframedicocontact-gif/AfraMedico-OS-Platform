@@ -3,20 +3,19 @@ import type { OrganizationCategory, OpportunityType } from "./organization";
 export type AuthorityDiscoveryStatus = "New" | "Imported" | "Duplicate";
 
 export type AuthorityValueRating = "High" | "Medium" | "Low";
-export type AuthorityDiscoveryMode = "real" | "demo";
 export type AuthorityDiscoverySourceType =
-  | "Curated seed"
-  | "CSV import"
-  | "Future web provider"
-  | "Demo data";
+  | "Curated Data"
+  | "CSV Imported Data"
+  | "External Search API"
+  | "AI Search";
 export type AuthorityDiscoveryConfidence = "Verified" | "Needs verification" | "Unknown";
 
 export type AuthorityDiscoveryParameters = {
+  searchText: string;
   country: string;
   category: OrganizationCategory;
-  keyword: string;
+  treatmentKeyword: string;
   maximumResults: number;
-  mode: AuthorityDiscoveryMode;
   sourceType: AuthorityDiscoverySourceType;
   csvText?: string;
 };
@@ -24,10 +23,12 @@ export type AuthorityDiscoveryParameters = {
 export type AuthorityProviderKind =
   | "Manual CSV import"
   | "Curated seed list"
-  | "Public web search provider"
-  | "OpenAlex"
-  | "PubMed"
-  | "Crossref";
+  | "Google Custom Search"
+  | "Bing Search"
+  | "SerpAPI"
+  | "OpenAI"
+  | "Claude"
+  | "Gemini";
 
 export type AuthorityDiscoveryProvider = {
   kind: AuthorityProviderKind;
@@ -42,6 +43,7 @@ export type AuthorityDiscoveryResult = {
   country: string;
   category: OrganizationCategory;
   website: string;
+  linkedin: string;
   contactEmail: string;
   sourceType: AuthorityDiscoverySourceType;
   sourceNote: string;

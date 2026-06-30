@@ -18,7 +18,9 @@ export async function runAuthHealthCheck(): Promise<AuthHealthCheckResult> {
       authClientResponds: false,
       isAuthenticated: false,
       status: "not_configured",
-      message: "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY before testing auth.",
+      message:
+        supabaseConfig.configurationError ??
+        "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY before testing auth.",
     };
   }
 

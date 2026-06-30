@@ -2,8 +2,10 @@ type QueryParams = Record<string, string | number | boolean | undefined>;
 
 export type SupabaseClientConfig = {
   url: string;
+  rawUrl: string;
   anonKey: string;
   isConfigured: boolean;
+  configurationError: string | null;
 };
 
 export type SupabaseQueryResult<T> = {
@@ -16,10 +18,49 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim() ?? "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() ?? "";
 const sessionStorageKey = "aframedico.supabase.session";
 
+function normalizeSupabaseUrl(rawUrl: string) {
+  const value = rawUrl.trim().replace(/^['"]|['"]$/g, "").replace(/\/+$/, "");
+
+  if (!value) {
+    return { url: "", error: null };
+  }
+
+  const withProtocol =
+    value.startsWith("http://") || value.startsWith("https://")
+      ? value
+      : value.includes(".")
+        ? `https://${value}`
+        : `https://${value}.supabase.co`;
+
+  try {
+    const parsedUrl = new URL(withProtocol);
+    if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
+      return {
+        url: "",
+        error: "VITE_SUPABASE_URL must use http or https.",
+      };
+    }
+
+    return {
+      url: parsedUrl.toString().replace(/\/+$/, ""),
+      error: null,
+    };
+  } catch {
+    return {
+      url: "",
+      error: "VITE_SUPABASE_URL is not a valid Supabase URL or project reference.",
+    };
+  }
+}
+
+const normalizedSupabaseUrl = normalizeSupabaseUrl(supabaseUrl);
+
 export const supabaseConfig: SupabaseClientConfig = {
-  url: supabaseUrl,
+  url: normalizedSupabaseUrl.url,
+  rawUrl: supabaseUrl,
   anonKey: supabaseAnonKey,
-  isConfigured: Boolean(supabaseUrl && supabaseAnonKey),
+  isConfigured: Boolean(normalizedSupabaseUrl.url && supabaseAnonKey && !normalizedSupabaseUrl.error),
+  configurationError: normalizedSupabaseUrl.error,
 };
 
 function buildRestUrl(tableName: string, queryParams: QueryParams = {}) {

@@ -23,9 +23,11 @@ export async function runBackendHealthCheck(): Promise<BackendHealthCheckResult>
       environmentConfigured,
       organizationsQuerySucceeded: false,
       organizationCount: null,
-      error: "Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY.",
+      error: supabaseConfig.configurationError ?? "Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY.",
       status: "not_configured",
-      message: "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY before testing the backend connection.",
+      message:
+        supabaseConfig.configurationError ??
+        "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY before testing the backend connection.",
     };
   }
 

@@ -65,7 +65,7 @@ export async function runRlsHealthCheck(): Promise<RlsHealthCheckResult> {
       organizationId: null,
       canReadOrganizations: false,
       canReadCases: false,
-      errors: ["Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY."],
+      errors: [supabaseConfig.configurationError ?? "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY."],
       status: "not_configured",
     };
   }

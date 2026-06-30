@@ -87,6 +87,8 @@ export function AppShell({ children, caseContext, currentView, onNavigate, onSig
             active={
               currentView === "organizations" ||
               currentView === "enterprise-task-board" ||
+              currentView === "opportunity-dashboard" ||
+              currentView === "revenue-pipeline" ||
               currentView === "authority-discovery" ||
               currentView === "organization-details" ||
               currentView === "outreach-workspace" ||

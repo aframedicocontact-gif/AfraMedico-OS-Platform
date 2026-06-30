@@ -37,6 +37,7 @@ import { OrganizationDetails } from "../components/pages/OrganizationDetails";
 import { OrganizationsList } from "../components/pages/OrganizationsList";
 import { OrganizationsPage } from "../components/pages/OrganizationsPage";
 import { OpportunityIntelligence } from "../components/pages/OpportunityIntelligence";
+import { OpportunityIntelligenceDashboard } from "../components/pages/OpportunityIntelligenceDashboard";
 import { OutreachWorkspace } from "../components/pages/OutreachWorkspace";
 import { OperationsCenter } from "../components/pages/OperationsCenter";
 import { PartnerDirectory } from "../components/pages/PartnerDirectory";
@@ -48,6 +49,7 @@ import { ReferralDashboard } from "../components/pages/ReferralDashboard";
 import { ReferralDetails } from "../components/pages/ReferralDetails";
 import { ReferralPipeline } from "../components/pages/ReferralPipeline";
 import { ResetPasswordPage } from "../components/pages/ResetPasswordPage";
+import { RevenuePipeline } from "../components/pages/RevenuePipeline";
 import { useAuth } from "../contexts/AuthContext";
 import { supabaseConfig } from "../lib/supabaseClient";
 import { mergeImportedAuthorityOrganizations } from "../services/authorityImportService";
@@ -83,6 +85,8 @@ export type AppView =
   | { name: "case-detail"; caseId: string }
   | { name: "organizations" }
   | { name: "enterprise-task-board" }
+  | { name: "opportunity-dashboard" }
+  | { name: "revenue-pipeline" }
   | { name: "authority-discovery" }
   | { name: "organization-details"; organizationId: string }
   | { name: "outreach-workspace"; organizationId: string }
@@ -394,6 +398,12 @@ export function App() {
       ) : null}
       {view.name === "enterprise-task-board" ? (
         <EnterpriseTaskBoard organizations={organizations} onNavigate={setView} />
+      ) : null}
+      {view.name === "opportunity-dashboard" ? (
+        <OpportunityIntelligenceDashboard organizations={organizations} />
+      ) : null}
+      {view.name === "revenue-pipeline" ? (
+        <RevenuePipeline organizations={organizations} />
       ) : null}
       {view.name === "authority-discovery" ? (
         <AuthorityDiscovery

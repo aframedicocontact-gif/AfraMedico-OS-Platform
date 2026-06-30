@@ -262,30 +262,33 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
         </CardContent>
       </Card>
 
-      <div className="grid gap-5 xl:grid-cols-[1fr_320px]">
-        <Card>
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <Card className="min-w-0">
+          <CardHeader>
             <div>
               <CardTitle>Discovery Results</CardTitle>
               <p className="mt-1 text-sm text-muted-foreground">
                 Estimated score based on category, not verified external SEO metrics.
               </p>
             </div>
-            <Button disabled={selectedResults.length === 0} type="button" onClick={handleImport}>
-              <Download className="h-4 w-4" />
-              Import Selected
-            </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-w-0">
             {importSummary ? (
               <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
-                {importSummary.importedOrganizations} organizations imported to Authority CRM
-                {importSummary.duplicateOrganizations > 0
-                  ? ` - Skipped ${importSummary.duplicateOrganizations} duplicate(s).`
-                  : "."}
+                Imported {importSummary.importedOrganizations} organizations. Skipped{" "}
+                {importSummary.duplicateOrganizations} duplicates.
               </div>
             ) : null}
-            <TableScrollContainer className="shadow-none">
+            <div className="mb-3 flex flex-col gap-2 rounded-md border bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm text-muted-foreground">
+                {selectedResults.length} selected from {selectableResults.length} import-ready results.
+              </div>
+              <Button disabled={selectedResults.length === 0} type="button" onClick={handleImport}>
+                <Download className="h-4 w-4" />
+                Import Selected
+              </Button>
+            </div>
+            <TableScrollContainer className="w-full shadow-none">
               <Table className="min-w-[2120px] table-fixed">
                 <TableHeader className="sticky top-0 z-10 bg-white">
                   <TableRow className="bg-emerald-50/70">

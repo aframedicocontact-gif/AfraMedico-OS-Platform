@@ -9,7 +9,7 @@ export function TableScrollContainer({ className, ...props }: HTMLAttributes<HTM
   return (
     <div
       className={cn(
-        "max-w-full overflow-x-auto rounded-lg border bg-white shadow-sm [scrollbar-color:theme(colors.emerald.700)_theme(colors.emerald.50)] [scrollbar-width:thin]",
+        "min-w-0 max-w-full overflow-x-auto rounded-lg border bg-white shadow-sm [scrollbar-color:theme(colors.emerald.700)_theme(colors.emerald.50)] [scrollbar-width:thin]",
         className,
       )}
       {...props}

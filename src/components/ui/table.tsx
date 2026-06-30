@@ -5,6 +5,18 @@ export function Table({ className, ...props }: HTMLAttributes<HTMLTableElement>)
   return <table className={cn("w-full caption-bottom text-sm", className)} {...props} />;
 }
 
+export function TableScrollContainer({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn(
+        "max-w-full overflow-x-auto rounded-lg border bg-white shadow-sm [scrollbar-color:theme(colors.emerald.700)_theme(colors.emerald.50)] [scrollbar-width:thin]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
 export function TableHeader({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
   return <thead className={cn("[&_tr]:border-b", className)} {...props} />;
 }

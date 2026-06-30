@@ -29,6 +29,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableScrollContainer,
 } from "../ui/table";
 
 type AuthorityDiscoveryProps = {
@@ -284,11 +285,11 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                   : "."}
               </div>
             ) : null}
-            <div className="overflow-x-auto rounded-lg border">
-              <Table className="min-w-[1280px]">
-                <TableHeader>
+            <TableScrollContainer className="shadow-none">
+              <Table className="min-w-[2120px] table-fixed">
+                <TableHeader className="sticky top-0 z-10 bg-white">
                   <TableRow className="bg-emerald-50/70">
-                    <TableHead>
+                    <TableHead className="w-[56px] min-w-[56px] bg-emerald-50">
                       <input
                         aria-label="Select all results"
                         checked={selectableResults.length > 0 && selectedIds.length === selectableResults.length}
@@ -296,17 +297,17 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                         onChange={toggleAll}
                       />
                     </TableHead>
-                    <TableHead>Organization</TableHead>
-                    <TableHead>Country</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Website</TableHead>
-                    <TableHead>LinkedIn</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead>Confidence</TableHead>
-                    <TableHead>Estimated Score</TableHead>
-                    <TableHead>Suggested Next Step</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead className="w-[260px] min-w-[260px] bg-emerald-50">Organization</TableHead>
+                    <TableHead className="w-[140px] min-w-[140px] bg-emerald-50">Country</TableHead>
+                    <TableHead className="w-[200px] min-w-[200px] bg-emerald-50">Category</TableHead>
+                    <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">Website</TableHead>
+                    <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">LinkedIn</TableHead>
+                    <TableHead className="w-[220px] min-w-[220px] bg-emerald-50">Email</TableHead>
+                    <TableHead className="w-[220px] min-w-[220px] bg-emerald-50">Source</TableHead>
+                    <TableHead className="w-[160px] min-w-[160px] bg-emerald-50">Confidence</TableHead>
+                    <TableHead className="w-[140px] min-w-[140px] bg-emerald-50">Estimated Score</TableHead>
+                    <TableHead className="w-[240px] min-w-[240px] bg-emerald-50">Suggested Next Step</TableHead>
+                    <TableHead className="w-[120px] min-w-[120px] bg-emerald-50">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -319,7 +320,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                   ) : (
                     results.map((result) => (
                       <TableRow key={result.id}>
-                        <TableCell>
+                        <TableCell className="w-[56px] min-w-[56px]">
                           <input
                             aria-label={`Select ${result.organization}`}
                             checked={selectedIds.includes(result.id)}
@@ -328,34 +329,36 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                             onChange={() => toggleSelected(result.id)}
                           />
                         </TableCell>
-                        <TableCell className="font-medium text-emerald-950">{result.organization}</TableCell>
-                        <TableCell>{result.country}</TableCell>
-                        <TableCell>{result.category}</TableCell>
-                        <TableCell>
+                        <TableCell className="w-[260px] min-w-[260px] font-medium text-emerald-950">
+                          {result.organization}
+                        </TableCell>
+                        <TableCell className="w-[140px] min-w-[140px]">{result.country}</TableCell>
+                        <TableCell className="w-[200px] min-w-[200px]">{result.category}</TableCell>
+                        <TableCell className="w-[180px] min-w-[180px]">
                           <ExternalFieldLink type="website" value={result.website} />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[180px] min-w-[180px]">
                           <ExternalFieldLink type="linkedin" value={result.linkedin} />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[220px] min-w-[220px]">
                           <ExternalFieldLink type="email" value={result.contactEmail} />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[220px] min-w-[220px]">
                           <div className="font-medium">{result.sourceType}</div>
                           <div className="text-xs text-muted-foreground">{result.sourceNote}</div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[160px] min-w-[160px]">
                           <Badge tone={result.confidence === "Verified" ? "success" : result.confidence === "Needs verification" ? "warning" : "muted"}>
                             {result.confidence}
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[140px] min-w-[140px]">
                           <Badge tone={result.authorityScore >= 85 ? "success" : result.authorityScore >= 70 ? "gold" : "muted"}>
                             {result.authorityScore}
                           </Badge>
                         </TableCell>
-                        <TableCell className="max-w-96">{result.suggestedNextAction}</TableCell>
-                        <TableCell>
+                        <TableCell className="w-[240px] min-w-[240px] break-words">{result.suggestedNextAction}</TableCell>
+                        <TableCell className="w-[120px] min-w-[120px]">
                           <Badge tone={result.status === "Imported" ? "success" : result.status === "Duplicate" ? "warning" : "info"}>
                             {result.status}
                           </Badge>
@@ -365,7 +368,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                   )}
                 </TableBody>
               </Table>
-            </div>
+            </TableScrollContainer>
           </CardContent>
         </Card>
 

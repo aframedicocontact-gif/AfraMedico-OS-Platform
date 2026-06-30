@@ -13,6 +13,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableScrollContainer,
 } from "../ui/table";
 import type {
   Organization,
@@ -192,19 +193,19 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
-        <Table className="min-w-[1200px]">
-          <TableHeader>
+      <TableScrollContainer>
+        <Table className="min-w-[1780px] table-fixed">
+          <TableHeader className="sticky top-0 z-10 bg-white">
             <TableRow className="bg-emerald-50/70">
-              <TableHead>Organization</TableHead>
-              <TableHead>Country</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Priority</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Opportunity</TableHead>
-              <TableHead>Contact Email</TableHead>
-              <TableHead>Website</TableHead>
-              <TableHead>Next Step</TableHead>
+              <TableHead className="w-[260px] min-w-[260px] bg-emerald-50">Organization</TableHead>
+              <TableHead className="w-[140px] min-w-[140px] bg-emerald-50">Country</TableHead>
+              <TableHead className="w-[210px] min-w-[210px] bg-emerald-50">Category</TableHead>
+              <TableHead className="w-[130px] min-w-[130px] bg-emerald-50">Priority</TableHead>
+              <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">Status</TableHead>
+              <TableHead className="w-[220px] min-w-[220px] bg-emerald-50">Opportunity</TableHead>
+              <TableHead className="w-[220px] min-w-[220px] bg-emerald-50">Contact Email</TableHead>
+              <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">Website</TableHead>
+              <TableHead className="w-[240px] min-w-[240px] bg-emerald-50">Next Step</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -219,31 +220,31 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
                   })
                 }
               >
-                <TableCell>
+                <TableCell className="w-[260px] min-w-[260px]">
                   <div className="font-medium text-emerald-950">{organization.name}</div>
                   <div className="text-xs text-muted-foreground">DR {organization.domainRating}</div>
                 </TableCell>
-                <TableCell>{organization.country}</TableCell>
-                <TableCell>{organization.category}</TableCell>
-                <TableCell>
+                <TableCell className="w-[140px] min-w-[140px]">{organization.country}</TableCell>
+                <TableCell className="w-[210px] min-w-[210px]">{organization.category}</TableCell>
+                <TableCell className="w-[130px] min-w-[130px]">
                   <PriorityBadge priority={organization.priority} />
                 </TableCell>
-                <TableCell>
+                <TableCell className="w-[180px] min-w-[180px]">
                   <StatusBadge status={organization.status} />
                 </TableCell>
-                <TableCell>{organization.opportunityType}</TableCell>
-                <TableCell className="text-sm">
+                <TableCell className="w-[220px] min-w-[220px]">{organization.opportunityType}</TableCell>
+                <TableCell className="w-[220px] min-w-[220px] text-sm">
                   <ExternalFieldLink type="email" value={organization.email} />
                 </TableCell>
-                <TableCell className="text-sm">
+                <TableCell className="w-[180px] min-w-[180px] text-sm">
                   <ExternalFieldLink type="website" value={organization.website} />
                 </TableCell>
-                <TableCell className="max-w-80">{organization.nextStep}</TableCell>
+                <TableCell className="w-[240px] min-w-[240px] break-words">{organization.nextStep}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </div>
+      </TableScrollContainer>
     </div>
   );
 }

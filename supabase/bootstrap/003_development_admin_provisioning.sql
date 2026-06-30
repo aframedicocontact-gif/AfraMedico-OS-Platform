@@ -1,25 +1,24 @@
--- Development Admin Provisioning Template
+-- Development Admin Provisioning Script
 --
--- TEMPLATE ONLY.
--- Do not commit real passwords, service role keys, access tokens, or secrets.
--- Do not run this against production.
+-- READY TO RUN IN THE APPROVED DEVELOPMENT SUPABASE PROJECT ONLY.
+--
+-- This script only inserts/updates records and updates auth.users.raw_app_meta_data.
+-- It does not create tables.
+-- It does not alter tables.
+-- It does not drop tables.
+-- It does not truncate tables.
 --
 -- Approved Development organization:
 -- Organization ID: e3b2dddc-9874-4911-b0f0-9dab1dd69248
 -- Slug: aframedico
 -- Plan: cloud
 --
--- Replace placeholders before running in the approved development Supabase project:
--- AUTH_USER_ID
--- ADMIN_EMAIL
--- ADMIN_NAME
---
 -- Prerequisite:
--- Create the Supabase Auth user manually first, then copy auth.users.id into
--- AUTH_USER_ID. This template does not create an Auth user or password.
+-- The Supabase Auth user must already exist:
+-- AUTH_USER_ID: 30e81532-184d-4cfa-9b81-cfa42b76df0c
 --
 -- Role behavior:
--- This template assigns an existing active admin role if one is present.
+-- This script assigns an existing active admin role if one is present.
 -- It does not create roles or permissions.
 
 begin;
@@ -27,9 +26,9 @@ begin;
 with bootstrap_values as (
   select
     'e3b2dddc-9874-4911-b0f0-9dab1dd69248'::uuid as organization_id,
-    'AUTH_USER_ID'::uuid as auth_user_id,
-    'ADMIN_EMAIL'::text as admin_email,
-    'ADMIN_NAME'::text as admin_name
+    '30e81532-184d-4cfa-9b81-cfa42b76df0c'::uuid as auth_user_id,
+    'aframedico.contact@gmail.com'::text as admin_email,
+    'AfraMedico Development Admin'::text as admin_name
 ),
 target_organization as (
   select o.id
@@ -187,4 +186,4 @@ commit;
 -- left join public.roles r
 --   on r.id = ura.role_id
 --  and r.organization_id = ura.organization_id
--- where au.id = 'AUTH_USER_ID'::uuid;
+-- where au.id = '30e81532-184d-4cfa-9b81-cfa42b76df0c'::uuid;

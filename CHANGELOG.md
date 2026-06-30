@@ -169,3 +169,21 @@ This audit fills missing historical documentation across frontend, backend, depl
 ### Notes
 
 Several early sprint dates and deployment verification states are marked `Needs verification` because they were not fully recoverable from the current file contents alone.
+
+---
+
+## Product Roadmap Update
+
+Date: 2026-06-30
+
+Added the long-term product roadmap for AfraMedico Business Growth OS / ICOS:
+
+- Version 1.0: Foundation
+- Version 1.1: Revenue Engine
+- Version 1.2: SEO & Authority Intelligence
+- Version 2.0: AI Business Agent
+- Version 3.0: Autonomous Growth OS
+
+Created:
+
+- `docs/PRODUCT-ROADMAP.md`

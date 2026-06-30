@@ -1,4 +1,4 @@
-import { FileSpreadsheet, Plus, Search, Sparkles } from "lucide-react";
+import { FileSpreadsheet, KanbanSquare, Plus, Search, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { AppView } from "../../app/App";
 import { ExternalFieldLink } from "../common/ExternalFieldLink";
@@ -118,6 +118,10 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "enterprise-task-board" })}>
+            <KanbanSquare className="h-4 w-4" />
+            Task Board
+          </Button>
           <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "authority-discovery" })}>
             <Sparkles className="h-4 w-4" />
             Authority Discovery

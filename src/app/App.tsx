@@ -20,6 +20,7 @@ import {
 import { CommissionOwnership } from "../components/pages/CommissionOwnership";
 import { CsvImport } from "../components/pages/CsvImport";
 import { DuplicateReviewCenter } from "../components/pages/DuplicateReviewCenter";
+import { EnterpriseTaskBoard } from "../components/pages/EnterpriseTaskBoard";
 import { FinanceCommissionCenter } from "../components/pages/FinanceCommissionCenter";
 import { HealthcareProviderNetwork } from "../components/pages/HealthcareProviderNetwork";
 import { HospitalReferrals } from "../components/pages/HospitalReferrals";
@@ -81,6 +82,7 @@ export type AppView =
   | { name: "cases" }
   | { name: "case-detail"; caseId: string }
   | { name: "organizations" }
+  | { name: "enterprise-task-board" }
   | { name: "authority-discovery" }
   | { name: "organization-details"; organizationId: string }
   | { name: "outreach-workspace"; organizationId: string }
@@ -389,6 +391,9 @@ export function App() {
       ) : null}
       {view.name === "organizations" ? (
         <OrganizationsList organizations={organizations} onNavigate={setView} />
+      ) : null}
+      {view.name === "enterprise-task-board" ? (
+        <EnterpriseTaskBoard organizations={organizations} onNavigate={setView} />
       ) : null}
       {view.name === "authority-discovery" ? (
         <AuthorityDiscovery

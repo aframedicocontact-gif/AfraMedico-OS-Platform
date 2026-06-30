@@ -6,6 +6,7 @@ export type OutreachTab =
   | "Meetings"
   | "Documents"
   | "Notes"
+  | "AI Assistant"
   | "History";
 
 export type PartnershipStage =

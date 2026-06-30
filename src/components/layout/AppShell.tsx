@@ -86,6 +86,7 @@ export function AppShell({ children, caseContext, currentView, onNavigate, onSig
           <NavButton
             active={
               currentView === "organizations" ||
+              currentView === "enterprise-task-board" ||
               currentView === "authority-discovery" ||
               currentView === "organization-details" ||
               currentView === "outreach-workspace" ||

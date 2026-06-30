@@ -23,6 +23,7 @@ import type {
 } from "../../types/outreach";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { AiOutreachAssistant } from "../outreach/AiOutreachAssistant";
 import { ExternalFieldLink } from "../common/ExternalFieldLink";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
@@ -34,7 +35,7 @@ type OutreachWorkspaceProps = {
   onNavigate: (view: AppView) => void;
 };
 
-const tabs: OutreachTab[] = ["Overview", "Contacts", "Communications", "Tasks", "Meetings", "Documents", "Notes", "History"];
+const tabs: OutreachTab[] = ["Overview", "Contacts", "Communications", "Tasks", "Meetings", "Documents", "Notes", "AI Assistant", "History"];
 const stages: PartnershipStage[] = [
   "Discovered",
   "Qualified",
@@ -128,6 +129,9 @@ export function OutreachWorkspace({ organization, onNavigate }: OutreachWorkspac
       ) : null}
       {activeTab === "Notes" ? (
         <NotesTab workspace={workspace} onChange={setWorkspace} />
+      ) : null}
+      {activeTab === "AI Assistant" ? (
+        <AiOutreachAssistant organization={organization} />
       ) : null}
       {activeTab === "History" ? (
         <HistoryTab workspace={workspace} />

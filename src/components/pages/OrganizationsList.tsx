@@ -50,6 +50,7 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState("all");
   const [category, setCategory] = useState<"all" | OrganizationCategory>("all");
+  const [treatmentKeyword, setTreatmentKeyword] = useState("");
   const [priority, setPriority] = useState<"all" | OrganizationPriority>("all");
   const [status, setStatus] = useState<"all" | OrganizationStatus>("all");
 
@@ -61,6 +62,31 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
       const matchesCategory = category === "all" || organization.category === category;
       const matchesPriority = priority === "all" || organization.priority === priority;
       const matchesStatus = status === "all" || organization.status === status;
+      const normalizedTreatmentKeyword = treatmentKeyword.trim().toLowerCase();
+      const metadata = organization as Organization & {
+        specialty?: string;
+        treatment_focus?: string;
+        opportunity?: string;
+        tags?: string[] | string;
+        importedMetadata?: Record<string, unknown>;
+        imported_metadata?: Record<string, unknown>;
+      };
+      const matchesTreatmentKeyword =
+        normalizedTreatmentKeyword.length === 0 ||
+        [
+          metadata.specialty,
+          metadata.treatment_focus,
+          organization.notes,
+          metadata.opportunity,
+          organization.opportunityType,
+          Array.isArray(metadata.tags) ? metadata.tags.join(" ") : metadata.tags,
+          metadata.importedMetadata ? Object.values(metadata.importedMetadata).join(" ") : undefined,
+          metadata.imported_metadata ? Object.values(metadata.imported_metadata).join(" ") : undefined,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedTreatmentKeyword);
       const matchesQuery =
         normalizedQuery.length === 0 ||
         [
@@ -76,9 +102,9 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
           .toLowerCase()
           .includes(normalizedQuery);
 
-      return matchesCountry && matchesCategory && matchesPriority && matchesStatus && matchesQuery;
+      return matchesCountry && matchesCategory && matchesTreatmentKeyword && matchesPriority && matchesStatus && matchesQuery;
     });
-  }, [category, country, organizations, priority, query, status]);
+  }, [category, country, organizations, priority, query, status, treatmentKeyword]);
 
   return (
     <div className="space-y-5">
@@ -107,7 +133,7 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
       </div>
 
       <div className="rounded-lg border bg-white p-4 shadow-sm">
-        <div className="grid gap-3 xl:grid-cols-[1.4fr_repeat(4,180px)]">
+        <div className="grid gap-3 xl:grid-cols-[1.4fr_repeat(5,180px)]">
           <label className="relative">
             <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -136,6 +162,12 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
               </option>
             ))}
           </Select>
+          <Input
+            aria-label="Treatment / Keyword"
+            placeholder="Treatment / Keyword"
+            value={treatmentKeyword}
+            onChange={(event) => setTreatmentKeyword(event.target.value)}
+          />
           <Select
             value={priority}
             onChange={(event) => setPriority(event.target.value as "all" | OrganizationPriority)}

@@ -23,6 +23,13 @@ export type AuthSession = {
 export type AuthChangeEvent = "SIGNED_IN" | "SIGNED_OUT" | "SESSION_LOADED";
 export type AuthChangeCallback = (event: AuthChangeEvent, session: AuthSession | null) => void;
 
+export type PasswordRecoveryTokens = {
+  accessToken: string;
+  refreshToken: string | null;
+  tokenType: string | null;
+  type: string | null;
+};
+
 const authListeners = new Set<AuthChangeCallback>();
 
 function authUrl(path: string) {
@@ -66,6 +73,31 @@ function notifyAuthListeners(event: AuthChangeEvent, session: AuthSession | null
   authListeners.forEach((listener) => listener(event, session));
 }
 
+function parseRecoveryParams(value: string) {
+  const normalized = value.replace(/^[#?/]+/, "");
+  if (!normalized) return null;
+
+  const params = new URLSearchParams(normalized);
+  const accessToken = params.get("access_token");
+
+  if (!accessToken) return null;
+
+  return {
+    accessToken,
+    refreshToken: params.get("refresh_token"),
+    tokenType: params.get("token_type"),
+    type: params.get("type"),
+  };
+}
+
+export function getPasswordRecoveryTokensFromLocation(location: Location = window.location) {
+  return (
+    parseRecoveryParams(location.hash) ??
+    parseRecoveryParams(location.search) ??
+    parseRecoveryParams(location.pathname)
+  );
+}
+
 export async function signInWithEmailPassword(email: string, password: string) {
   if (!supabaseConfig.isConfigured) {
     throw new Error("Supabase environment variables are not configured.");
@@ -98,6 +130,30 @@ export async function signInWithEmailPassword(email: string, password: string) {
   notifyAuthListeners("SIGNED_IN", session);
 
   return session;
+}
+
+export async function updatePasswordWithRecoveryToken(accessToken: string, password: string) {
+  if (!supabaseConfig.isConfigured) {
+    throw new Error("Supabase environment variables are not configured.");
+  }
+
+  const response = await fetch(authUrl("/user"), {
+    method: "PUT",
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({ password }),
+  });
+
+  const responseText = await response.text();
+  const body = responseText ? JSON.parse(responseText) : null;
+
+  if (!response.ok) {
+    throw new Error(body?.msg ?? body?.message ?? "Unable to update password.");
+  }
+
+  storeSession(null);
+  notifyAuthListeners("SIGNED_OUT", null);
+
+  return body;
 }
 
 export async function signOut() {

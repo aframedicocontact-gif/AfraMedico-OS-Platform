@@ -43,6 +43,8 @@ import { ProtectionDashboard } from "../components/pages/ProtectionDashboard";
 import { ReferralDashboard } from "../components/pages/ReferralDashboard";
 import { ReferralDetails } from "../components/pages/ReferralDetails";
 import { ReferralPipeline } from "../components/pages/ReferralPipeline";
+import { ResetPasswordPage } from "../components/pages/ResetPasswordPage";
+import { getPasswordRecoveryTokensFromLocation } from "../services/authService";
 import organizationsJson from "../data/organizations.json";
 import leadsJson from "../data/leads.json";
 import referralPartnersJson from "../data/referral-partners.json";
@@ -66,6 +68,7 @@ import type { ReferralPartner } from "../types/referralPartner";
 
 export type AppView =
   | { name: "login" }
+  | { name: "reset-password" }
   | { name: "dashboard" }
   | { name: "platform-organizations" }
   | { name: "patients" }
@@ -277,8 +280,17 @@ export function App() {
     setView({ name: "dashboard" });
   }
 
+  function openLogin() {
+    window.history.replaceState({}, "", "/login");
+    setView({ name: "login" });
+  }
+
   if (view.name === "login") {
     return <LoginPage onSignedIn={openMissionControl} />;
+  }
+
+  if (view.name === "reset-password") {
+    return <ResetPasswordPage onComplete={openLogin} />;
   }
 
   function navigateFromShell(nextView: AppView) {
@@ -513,6 +525,10 @@ export function App() {
 }
 
 function getInitialView(): AppView {
+  if (hasPasswordRecoveryRoute()) {
+    return { name: "reset-password" };
+  }
+
   if (window.location.pathname === "/login") {
     return { name: "login" };
   }
@@ -537,6 +553,16 @@ function getInitialView(): AppView {
   }
 
   return { name: "dashboard" };
+}
+
+function hasPasswordRecoveryRoute() {
+  const pathname = window.location.pathname;
+
+  return (
+    pathname === "/reset-password" ||
+    pathname === "/auth/callback" ||
+    Boolean(getPasswordRecoveryTokensFromLocation())
+  );
 }
 
 function usesCaseContextFrame(viewName: AppView["name"]) {

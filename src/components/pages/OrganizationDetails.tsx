@@ -1,9 +1,10 @@
-import { ArrowLeft, CalendarClock, ExternalLink, Linkedin, Mail, Pencil } from "lucide-react";
+import { ArrowLeft, BrainCircuit, CalendarClock, ExternalLink, Handshake, Linkedin, Mail, Pencil } from "lucide-react";
 import type { ReactNode } from "react";
 import type { AppView } from "../../app/App";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { getOpportunityProfile } from "../../services/opportunityService";
 import type {
   Organization,
   OrganizationPriority,
@@ -25,6 +26,8 @@ const statusLabels: Record<OrganizationStatus, string> = {
 };
 
 export function OrganizationDetails({ organization, onNavigate }: OrganizationDetailsProps) {
+  const opportunityProfile = getOpportunityProfile(organization);
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -44,10 +47,27 @@ export function OrganizationDetails({ organization, onNavigate }: OrganizationDe
             {organization.category} target in {organization.country} for {organization.opportunityType.toLowerCase()}.
           </p>
         </div>
-        <Button variant="secondary" type="button">
-          <Pencil className="h-4 w-4" />
-          Edit prototype
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            onClick={() => onNavigate({ name: "outreach-workspace", organizationId: organization.id })}
+          >
+            <Handshake className="h-4 w-4" />
+            Outreach Workspace
+          </Button>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => onNavigate({ name: "opportunity-intelligence", organizationId: organization.id })}
+          >
+            <BrainCircuit className="h-4 w-4" />
+            Opportunity Intelligence
+          </Button>
+          <Button variant="secondary" type="button">
+            <Pencil className="h-4 w-4" />
+            Edit prototype
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1fr_360px]">
@@ -63,6 +83,21 @@ export function OrganizationDetails({ organization, onNavigate }: OrganizationDe
               <Field label="Priority" value={<PriorityBadge priority={organization.priority} />} />
               <Field label="Status" value={<StatusBadge status={organization.status} />} />
               <Field label="Domain Authority / DR" value={organization.domainRating} />
+              <Field
+                label="Opportunity Indicators"
+                value={
+                  <div className="flex flex-wrap gap-2">
+                    {opportunityProfile.indicators.length > 0
+                      ? opportunityProfile.indicators.map((indicator) => (
+                          <Badge key={indicator} tone={indicator === "Quick Win" ? "gold" : "info"}>
+                            {indicator}
+                          </Badge>
+                        ))
+                      : <Badge tone="muted">Needs qualification</Badge>}
+                  </div>
+                }
+                wide
+              />
               <Field label="Notes" value={organization.notes} wide />
             </CardContent>
           </Card>

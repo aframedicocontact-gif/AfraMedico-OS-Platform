@@ -35,6 +35,8 @@ import { MissionControl } from "../components/pages/MissionControl";
 import { OrganizationDetails } from "../components/pages/OrganizationDetails";
 import { OrganizationsList } from "../components/pages/OrganizationsList";
 import { OrganizationsPage } from "../components/pages/OrganizationsPage";
+import { OpportunityIntelligence } from "../components/pages/OpportunityIntelligence";
+import { OutreachWorkspace } from "../components/pages/OutreachWorkspace";
 import { OperationsCenter } from "../components/pages/OperationsCenter";
 import { PartnerDirectory } from "../components/pages/PartnerDirectory";
 import { PartnerProfile } from "../components/pages/PartnerProfile";
@@ -81,6 +83,8 @@ export type AppView =
   | { name: "organizations" }
   | { name: "authority-discovery" }
   | { name: "organization-details"; organizationId: string }
+  | { name: "outreach-workspace"; organizationId: string }
+  | { name: "opportunity-intelligence"; organizationId: string }
   | { name: "add-organization" }
   | { name: "csv-import" }
   | { name: "referral-dashboard" }
@@ -162,7 +166,11 @@ export function App() {
   }, [authLoading, authRequired, isAuthenticated, publicView]);
 
   const selectedOrganization = useMemo(() => {
-    if (view.name !== "organization-details") {
+    if (
+      view.name !== "organization-details" &&
+      view.name !== "outreach-workspace" &&
+      view.name !== "opportunity-intelligence"
+    ) {
       return organizations[0];
     }
 
@@ -394,6 +402,12 @@ export function App() {
           organization={selectedOrganization}
           onNavigate={setView}
         />
+      ) : null}
+      {view.name === "outreach-workspace" ? (
+        <OutreachWorkspace organization={selectedOrganization} onNavigate={setView} />
+      ) : null}
+      {view.name === "opportunity-intelligence" ? (
+        <OpportunityIntelligence organization={selectedOrganization} onNavigate={setView} />
       ) : null}
       {view.name === "add-organization" ? (
         <AddOrganization onNavigate={setView} />

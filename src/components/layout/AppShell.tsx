@@ -88,6 +88,8 @@ export function AppShell({ children, caseContext, currentView, onNavigate, onSig
               currentView === "organizations" ||
               currentView === "authority-discovery" ||
               currentView === "organization-details" ||
+              currentView === "outreach-workspace" ||
+              currentView === "opportunity-intelligence" ||
               currentView === "add-organization" ||
               currentView === "csv-import"
             }

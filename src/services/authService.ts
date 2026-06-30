@@ -71,10 +71,12 @@ export async function signInWithEmailPassword(email: string, password: string) {
     throw new Error("Supabase environment variables are not configured.");
   }
 
+  const normalizedEmail = email.trim().toLowerCase();
+
   const response = await fetch(authUrl("/token?grant_type=password"), {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email: normalizedEmail, password }),
   });
 
   const body = await response.json();

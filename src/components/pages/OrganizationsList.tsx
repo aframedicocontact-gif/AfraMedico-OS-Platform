@@ -1,4 +1,4 @@
-import { FileSpreadsheet, Plus, Search } from "lucide-react";
+import { FileSpreadsheet, Plus, Search, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { AppView } from "../../app/App";
 import { Badge } from "../ui/badge";
@@ -90,6 +90,10 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "authority-discovery" })}>
+            <Sparkles className="h-4 w-4" />
+            Authority Discovery
+          </Button>
           <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "csv-import" })}>
             <FileSpreadsheet className="h-4 w-4" />
             Import CSV

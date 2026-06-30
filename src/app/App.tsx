@@ -4,6 +4,7 @@ import type { UnifiedCaseContext } from "../components/context/UnifiedPatientCon
 import { AddLead } from "../components/pages/AddLead";
 import { AddOrganization } from "../components/pages/AddOrganization";
 import { AddPartner } from "../components/pages/AddPartner";
+import { AuthorityDiscovery } from "../components/pages/AuthorityDiscovery";
 import { CasesPage } from "../components/pages/CasesPage";
 import { CaseDetailPage } from "../components/pages/CaseDetailPage";
 import { CaseProfile } from "../components/pages/CaseProfile";
@@ -46,6 +47,7 @@ import { ReferralPipeline } from "../components/pages/ReferralPipeline";
 import { ResetPasswordPage } from "../components/pages/ResetPasswordPage";
 import { useAuth } from "../contexts/AuthContext";
 import { supabaseConfig } from "../lib/supabaseClient";
+import { mergeImportedAuthorityOrganizations } from "../services/authorityImportService";
 import { getPasswordRecoveryTokensFromLocation } from "../services/authService";
 import organizationsJson from "../data/organizations.json";
 import leadsJson from "../data/leads.json";
@@ -77,6 +79,7 @@ export type AppView =
   | { name: "cases" }
   | { name: "case-detail"; caseId: string }
   | { name: "organizations" }
+  | { name: "authority-discovery" }
   | { name: "organization-details"; organizationId: string }
   | { name: "add-organization" }
   | { name: "csv-import" }
@@ -131,7 +134,7 @@ export type AppView =
   | { name: "finance-revenue-protection" }
   | { name: "finance-audit-trail" };
 
-const organizations = organizationsJson as Organization[];
+const baseOrganizations = organizationsJson as Organization[];
 const referralPartners = referralPartnersJson as ReferralPartner[];
 const leads = leadsJson as Lead[];
 const protectionCases = referralProtectionJson as ProtectedReferralCase[];
@@ -144,6 +147,9 @@ const finance = financeJson as FinanceData;
 
 export function App() {
   const [view, setView] = useState<AppView>(() => getInitialView());
+  const [organizations, setOrganizations] = useState<Organization[]>(() =>
+    mergeImportedAuthorityOrganizations(baseOrganizations),
+  );
   const { isAuthenticated, loading: authLoading, signOut } = useAuth();
   const authRequired = supabaseConfig.isConfigured;
   const publicView = isPublicView(view.name);
@@ -164,7 +170,7 @@ export function App() {
       organizations.find((organization) => organization.id === view.organizationId) ??
       organizations[0]
     );
-  }, [view]);
+  }, [organizations, view]);
 
   const selectedReferralPartner = useMemo(() => {
     if (view.name !== "referral-partner-profile") {
@@ -375,6 +381,13 @@ export function App() {
       ) : null}
       {view.name === "organizations" ? (
         <OrganizationsList organizations={organizations} onNavigate={setView} />
+      ) : null}
+      {view.name === "authority-discovery" ? (
+        <AuthorityDiscovery
+          organizations={organizations}
+          onImport={setOrganizations}
+          onNavigate={setView}
+        />
       ) : null}
       {view.name === "organization-details" ? (
         <OrganizationDetails

@@ -49,6 +49,16 @@ export type Organization = {
   nextFollowUp: string;
   notes: string;
   activity: ActivityItem[];
+  description?: string;
+  medicalSpecialty?: string;
+  treatmentFocus?: string;
+  organizationType?: string;
+  partnershipType?: string;
+  confidence?: string;
+  verificationStatus?: string;
+  sourceUrl?: string;
+  contactPage?: string;
+  aiSummary?: string;
 };
 
 export type OrganizationPlan = "cloud" | "enterprise" | "trial" | "internal";

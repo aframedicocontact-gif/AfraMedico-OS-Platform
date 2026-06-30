@@ -149,7 +149,8 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
 
       <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950">
         Curated and CSV discovery run locally. Tavily Web Search runs through the secure backend route and requires
-        server-side Vercel environment variables. No AI scoring is used in this discovery foundation.
+        server-side Vercel environment variables. OpenAI intelligence runs server-side only and extracts factual fields
+        from Tavily evidence.
       </div>
 
       <Card>
@@ -292,7 +293,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
               </Button>
             </div>
             <TableScrollContainer className="w-full shadow-none">
-              <Table className="min-w-[2360px] table-fixed">
+              <Table className="min-w-[3660px] table-fixed">
                 <TableHeader className="sticky top-0 z-10 bg-white">
                   <TableRow className="bg-emerald-50/70">
                     <TableHead className="w-[56px] min-w-[56px] bg-emerald-50">
@@ -306,9 +307,17 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                     <TableHead className="w-[260px] min-w-[260px] bg-emerald-50">Organization</TableHead>
                     <TableHead className="w-[140px] min-w-[140px] bg-emerald-50">Country</TableHead>
                     <TableHead className="w-[200px] min-w-[200px] bg-emerald-50">Category</TableHead>
+                    <TableHead className="w-[260px] min-w-[260px] bg-emerald-50">Description</TableHead>
+                    <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">Organization Type</TableHead>
+                    <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">Medical Specialty</TableHead>
+                    <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">Treatment Focus</TableHead>
+                    <TableHead className="w-[200px] min-w-[200px] bg-emerald-50">Partnership Type</TableHead>
+                    <TableHead className="w-[130px] min-w-[130px] bg-emerald-50">Confidence</TableHead>
                     <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">Website</TableHead>
+                    <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">Contact Page</TableHead>
                     <TableHead className="w-[220px] min-w-[220px] bg-emerald-50">Source URL</TableHead>
                     <TableHead className="w-[260px] min-w-[260px] bg-emerald-50">Snippet</TableHead>
+                    <TableHead className="w-[300px] min-w-[300px] bg-emerald-50">AI Summary</TableHead>
                     <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">LinkedIn</TableHead>
                     <TableHead className="w-[220px] min-w-[220px] bg-emerald-50">Email</TableHead>
                     <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">Raw Search Source</TableHead>
@@ -320,7 +329,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                 <TableBody>
                   {results.length === 0 ? (
                     <TableRow>
-                      <TableCell className="py-8 text-center text-sm text-muted-foreground" colSpan={13}>
+                      <TableCell className="py-8 text-center text-sm text-muted-foreground" colSpan={21}>
                         {parameters.sourceType === "Tavily Web Search"
                           ? "No real organizations found from Tavily for this search."
                           : "No real organizations found in configured sources. Import CSV or configure a real search provider."}
@@ -343,14 +352,32 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                         </TableCell>
                         <TableCell className="w-[140px] min-w-[140px]">{result.country}</TableCell>
                         <TableCell className="w-[200px] min-w-[200px]">{result.category}</TableCell>
+                        <TableCell className="w-[260px] min-w-[260px] break-words text-sm">
+                          {result.description || "Not found"}
+                        </TableCell>
+                        <TableCell className="w-[180px] min-w-[180px]">{result.organizationType || "Unknown"}</TableCell>
+                        <TableCell className="w-[180px] min-w-[180px]">{result.primaryMedicalSpecialty || "Unknown"}</TableCell>
+                        <TableCell className="w-[180px] min-w-[180px]">{result.treatmentFocus || "Unknown"}</TableCell>
+                        <TableCell className="w-[200px] min-w-[200px]">{result.partnershipType || "Unknown"}</TableCell>
+                        <TableCell className="w-[130px] min-w-[130px]">
+                          <Badge tone={result.aiConfidence === "High" ? "success" : result.aiConfidence === "Medium" ? "gold" : "muted"}>
+                            {result.aiConfidence || "Unknown"}
+                          </Badge>
+                        </TableCell>
                         <TableCell className="w-[180px] min-w-[180px]">
                           <ExternalFieldLink type="website" value={result.website} />
+                        </TableCell>
+                        <TableCell className="w-[180px] min-w-[180px]">
+                          <ExternalFieldLink type="website" value={result.contactPage || ""} />
                         </TableCell>
                         <TableCell className="w-[220px] min-w-[220px]">
                           <ExternalFieldLink type="website" value={result.sourceUrl || result.website} />
                         </TableCell>
                         <TableCell className="w-[260px] min-w-[260px] break-words text-sm text-muted-foreground">
                           {result.snippet || "Not found"}
+                        </TableCell>
+                        <TableCell className="w-[300px] min-w-[300px] break-words text-sm">
+                          {result.aiSummary || "Not found"}
                         </TableCell>
                         <TableCell className="w-[180px] min-w-[180px]">
                           <ExternalFieldLink type="linkedin" value={result.linkedin} />
@@ -364,7 +391,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                         </TableCell>
                         <TableCell className="w-[170px] min-w-[170px]">
                           <Badge tone={result.confidence === "Verified" ? "success" : result.confidence === "Needs verification" ? "warning" : "muted"}>
-                            {result.confidence}
+                            {result.verificationStatus || result.confidence}
                           </Badge>
                         </TableCell>
                         <TableCell className="w-[240px] min-w-[240px] break-words">{result.suggestedNextAction}</TableCell>

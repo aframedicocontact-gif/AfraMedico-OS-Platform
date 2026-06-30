@@ -1,4 +1,7 @@
+import { analyzeOrganizationsWithOpenAi } from "./services/openaiOrganizationAnalysisService.js";
+
 const configuredSearchProvider = "tavily";
+const configuredAiProvider = "openai";
 
 function sendJson(response, statusCode, payload) {
   response.status(statusCode).json(payload);
@@ -75,6 +78,7 @@ function normalizeTavilyResults({ tavilyResults, country, category }) {
         rawSearchSource: `Tavily result: ${title}`,
         reason: "Retrieved from Tavily web search. Human verification required before outreach.",
         suggestedNextStep: "Open source URL, verify organization identity, then qualify for Authority CRM.",
+        aiSummary: null,
       };
     })
     .filter((item) => item.sourceUrl);
@@ -110,11 +114,19 @@ export default async function handler(request, response) {
   }
 
   const searchProvider = process.env.SEARCH_PROVIDER || configuredSearchProvider;
+  const aiProvider = process.env.AI_PROVIDER || configuredAiProvider;
   const tavilyApiKey = process.env.TAVILY_API_KEY;
+  const openAiApiKey = process.env.OPENAI_API_KEY;
 
   if (searchProvider !== configuredSearchProvider || !tavilyApiKey) {
     return sendJson(response, 503, {
       error: "Tavily Web Search is not configured. Add TAVILY_API_KEY in Vercel environment variables.",
+    });
+  }
+
+  if (aiProvider !== configuredAiProvider || !openAiApiKey) {
+    return sendJson(response, 503, {
+      error: "OpenAI Intelligence Layer is not configured. Add OPENAI_API_KEY in Vercel environment variables.",
     });
   }
 
@@ -135,10 +147,12 @@ export default async function handler(request, response) {
       maxResults,
       apiKey: tavilyApiKey,
     });
-    const results = normalizeTavilyResults({
-      tavilyResults,
+    const results = await analyzeOrganizationsWithOpenAi({
+      searchResults: tavilyResults,
       country,
       category,
+      treatmentKeyword,
+      apiKey: openAiApiKey,
     });
 
     return sendJson(response, 200, { results });

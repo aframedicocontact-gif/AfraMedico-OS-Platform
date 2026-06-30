@@ -235,8 +235,15 @@ type TavilyDiscoveryResponse = {
     sourceUrl?: string | null;
     snippet?: string | null;
     rawSearchSource?: string | null;
-    verificationStatus?: "Verified" | "Needs verification" | "Unknown";
-    confidence?: "Verified" | "Needs verification" | "Unknown";
+    verificationStatus?: "Verified" | "Needs Manual Review" | "Insufficient Evidence";
+    confidence?: "High" | "Medium" | "Low";
+    organizationType?: string | null;
+    description?: string | null;
+    primaryMedicalSpecialty?: string | null;
+    treatmentFocus?: string | null;
+    partnershipType?: string | null;
+    contactPage?: string | null;
+    aiSummary?: string | null;
     source?: string;
     reason?: string;
     suggestedNextStep?: string;
@@ -292,9 +299,23 @@ async function tavilyWebSearch(parameters: AuthorityDiscoveryParameters) {
         sourceUrl,
         snippet: result.snippet || "",
         rawSearchSource: result.rawSearchSource || "Tavily Web Search",
+        description: result.description || "",
+        organizationType: result.organizationType || "Unknown",
+        primaryMedicalSpecialty: result.primaryMedicalSpecialty || "Unknown",
+        treatmentFocus: result.treatmentFocus || "Unknown",
+        partnershipType: result.partnershipType || "Unknown",
+        aiConfidence: result.confidence || "Low",
+        verificationStatus:
+          result.verificationStatus === "Verified" ||
+          result.verificationStatus === "Needs Manual Review" ||
+          result.verificationStatus === "Insufficient Evidence"
+            ? result.verificationStatus
+            : "Needs Manual Review",
+        contactPage: result.contactPage || "",
+        aiSummary: result.aiSummary || "",
         sourceType: "Tavily Web Search",
         sourceNote: sourceUrl ? `Tavily source: ${sourceUrl}` : "Tavily search result",
-        confidence: result.verificationStatus || result.confidence || "Needs verification",
+        confidence: result.verificationStatus === "Verified" ? "Verified" : "Needs verification",
         authorityType: "Not estimated",
         authorityScore: 0,
         referralValue: "Low",

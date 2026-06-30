@@ -102,8 +102,32 @@ export function importAuthorityDiscoveryResults(
       nextStep: result.suggestedNextAction,
       nextFollowUp: new Date().toISOString().slice(0, 10),
       notes: isTavilyResult
-        ? `Imported from Tavily Web Search. Source URL: ${result.sourceUrl || "Not found"}. Snippet: ${result.snippet || "Not found"}. Human verification required before outreach. No authority, backlink, referral, or domain authority metrics have been estimated.`
+        ? [
+            `Imported from Tavily Web Search and server-side OpenAI intelligence.`,
+            `Description: ${result.description || "Not found"}.`,
+            `Organization type: ${result.organizationType || "Unknown"}.`,
+            `Medical specialty: ${result.primaryMedicalSpecialty || "Unknown"}.`,
+            `Treatment focus: ${result.treatmentFocus || "Unknown"}.`,
+            `Partnership type: ${result.partnershipType || "Unknown"}.`,
+            `Confidence: ${result.aiConfidence || "Unknown"}.`,
+            `Verification status: ${result.verificationStatus || "Needs Manual Review"}.`,
+            `Source URL: ${result.sourceUrl || "Not found"}.`,
+            `Contact page: ${result.contactPage || "Not found"}.`,
+            `AI summary: ${result.aiSummary || "Not found"}.`,
+            `Snippet: ${result.snippet || "Not found"}.`,
+            `No authority, backlink, referral, or domain authority metrics have been estimated.`,
+          ].join(" ")
         : `Imported from Authority Discovery. Source: ${result.sourceNote}. Estimated category score: ${result.authorityScore}. Referral value: ${result.referralValue}. Backlink value: ${result.backlinkValue}. Partnership potential: ${result.partnershipPotential}. Domain authority is not verified yet.`,
+      description: result.description,
+      medicalSpecialty: result.primaryMedicalSpecialty,
+      treatmentFocus: result.treatmentFocus,
+      organizationType: result.organizationType,
+      partnershipType: result.partnershipType,
+      confidence: result.aiConfidence,
+      verificationStatus: result.verificationStatus,
+      sourceUrl: result.sourceUrl,
+      contactPage: result.contactPage,
+      aiSummary: result.aiSummary,
       activity: [
         {
           date: new Date().toISOString().slice(0, 10),

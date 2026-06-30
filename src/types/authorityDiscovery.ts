@@ -8,6 +8,8 @@ export type AuthorityDiscoverySourceType =
   | "CSV Imported Data"
   | "Tavily Web Search";
 export type AuthorityDiscoveryConfidence = "Verified" | "Needs verification" | "Unknown";
+export type AuthorityIntelligenceConfidence = "High" | "Medium" | "Low" | "Unknown";
+export type AuthorityVerificationStatus = "Verified" | "Needs Manual Review" | "Insufficient Evidence";
 
 export type AuthorityDiscoveryParameters = {
   searchText: string;
@@ -42,6 +44,15 @@ export type AuthorityDiscoveryResult = {
   sourceUrl?: string;
   snippet?: string;
   rawSearchSource?: string;
+  description?: string;
+  organizationType?: string;
+  primaryMedicalSpecialty?: string;
+  treatmentFocus?: string;
+  partnershipType?: string;
+  aiConfidence?: AuthorityIntelligenceConfidence;
+  verificationStatus?: AuthorityVerificationStatus;
+  contactPage?: string;
+  aiSummary?: string;
   sourceType: AuthorityDiscoverySourceType;
   sourceNote: string;
   confidence: AuthorityDiscoveryConfidence;

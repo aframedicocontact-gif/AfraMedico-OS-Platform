@@ -70,8 +70,8 @@ function normalizeTavilyResults({ tavilyResults, country, category }) {
         linkedin: sourceUrl.includes("linkedin.com") ? sourceUrl : null,
         sourceUrl: sourceUrl || null,
         snippet,
-        confidence: "Needs verification",
-        source: "tavily",
+        verificationStatus: "Needs verification",
+        source: "tavily_web_search",
         rawSearchSource: `Tavily result: ${title}`,
         reason: "Retrieved from Tavily web search. Human verification required before outreach.",
         suggestedNextStep: "Open source URL, verify organization identity, then qualify for Authority CRM.",
@@ -113,7 +113,9 @@ export default async function handler(request, response) {
   const tavilyApiKey = process.env.TAVILY_API_KEY;
 
   if (searchProvider !== configuredSearchProvider || !tavilyApiKey) {
-    return sendJson(response, 503, { error: "Tavily Web Search is not configured." });
+    return sendJson(response, 503, {
+      error: "Tavily Web Search is not configured. Add TAVILY_API_KEY in Vercel environment variables.",
+    });
   }
 
   const body = parseRequestBody(request);

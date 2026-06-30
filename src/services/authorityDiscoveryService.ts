@@ -235,6 +235,7 @@ type TavilyDiscoveryResponse = {
     sourceUrl?: string | null;
     snippet?: string | null;
     rawSearchSource?: string | null;
+    verificationStatus?: "Verified" | "Needs verification" | "Unknown";
     confidence?: "Verified" | "Needs verification" | "Unknown";
     source?: string;
     reason?: string;
@@ -268,7 +269,9 @@ async function tavilyWebSearch(parameters: AuthorityDiscoveryParameters) {
   const payload = (await response.json().catch(() => ({}))) as TavilyDiscoveryResponse;
 
   if (!response.ok) {
-    throw new Error(payload.error || "Tavily Web Search is not configured.");
+    throw new Error(
+      payload.error || "Tavily Web Search is not configured. Add TAVILY_API_KEY in Vercel environment variables.",
+    );
   }
 
   return (payload.results ?? [])
@@ -291,7 +294,7 @@ async function tavilyWebSearch(parameters: AuthorityDiscoveryParameters) {
         rawSearchSource: result.rawSearchSource || "Tavily Web Search",
         sourceType: "Tavily Web Search",
         sourceNote: sourceUrl ? `Tavily source: ${sourceUrl}` : "Tavily search result",
-        confidence: result.confidence || "Needs verification",
+        confidence: result.verificationStatus || result.confidence || "Needs verification",
         authorityType: "Not estimated",
         authorityScore: 0,
         referralValue: "Low",

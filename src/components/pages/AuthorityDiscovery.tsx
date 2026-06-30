@@ -321,7 +321,9 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                   {results.length === 0 ? (
                     <TableRow>
                       <TableCell className="py-8 text-center text-sm text-muted-foreground" colSpan={13}>
-                        No real organizations found in configured sources. Import CSV or configure a real search provider.
+                        {parameters.sourceType === "Tavily Web Search"
+                          ? "No real organizations found from Tavily for this search."
+                          : "No real organizations found in configured sources. Import CSV or configure a real search provider."}
                       </TableCell>
                     </TableRow>
                   ) : (

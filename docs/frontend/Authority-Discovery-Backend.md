@@ -56,7 +56,7 @@ Every Tavily result must include the original source URL and should be manually 
 If Tavily is not configured, the backend returns:
 
 ```text
-503 Tavily Web Search is not configured.
+503 Tavily Web Search is not configured. Add TAVILY_API_KEY in Vercel environment variables.
 ```
 
 The frontend displays the error and does not generate fake organizations.

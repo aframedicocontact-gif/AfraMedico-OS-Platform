@@ -27,6 +27,27 @@ type OrganizationsListProps = {
   onNavigate: (view: AppView) => void;
 };
 
+type SortColumn =
+  | "organization"
+  | "country"
+  | "category"
+  | "priority"
+  | "status"
+  | "opportunity"
+  | "domainRating"
+  | "createdDate"
+  | "updatedDate"
+  | "contactEmail"
+  | "website"
+  | "nextStep";
+
+type SortDirection = "asc" | "desc";
+
+type SortRule = {
+  column: SortColumn;
+  direction: SortDirection;
+};
+
 const countries = ["Nigeria", "Ghana", "Kenya", "Uganda", "Tanzania", "South Africa"];
 const categories: OrganizationCategory[] = [
   "Universities",
@@ -54,11 +75,12 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
   const [treatmentKeyword, setTreatmentKeyword] = useState("");
   const [priority, setPriority] = useState<"all" | OrganizationPriority>("all");
   const [status, setStatus] = useState<"all" | OrganizationStatus>("all");
+  const [sortRules, setSortRules] = useState<SortRule[]>([]);
 
   const filteredOrganizations = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return organizations.filter((organization) => {
+    const filtered = organizations.filter((organization) => {
       const matchesCountry = country === "all" || organization.country === country;
       const matchesCategory = category === "all" || organization.category === category;
       const matchesPriority = priority === "all" || organization.priority === priority;
@@ -105,7 +127,29 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
 
       return matchesCountry && matchesCategory && matchesTreatmentKeyword && matchesPriority && matchesStatus && matchesQuery;
     });
-  }, [category, country, organizations, priority, query, status, treatmentKeyword]);
+
+    if (sortRules.length === 0) return filtered;
+
+    return [...filtered].sort((first, second) => compareOrganizations(first, second, sortRules));
+  }, [category, country, organizations, priority, query, sortRules, status, treatmentKeyword]);
+
+  function toggleSort(column: SortColumn) {
+    setSortRules((current) => {
+      const existing = current.find((rule) => rule.column === column);
+
+      if (!existing) {
+        return [...current, { column, direction: "asc" }];
+      }
+
+      if (existing.direction === "asc") {
+        return current.map((rule) =>
+          rule.column === column ? { ...rule, direction: "desc" } : rule,
+        );
+      }
+
+      return current.filter((rule) => rule.column !== column);
+    });
+  }
 
   return (
     <div className="space-y-5">
@@ -206,18 +250,21 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
       </div>
 
       <TableScrollContainer>
-        <Table className="min-w-[1780px] table-fixed">
+        <Table className="min-w-[2320px] table-fixed">
           <TableHeader className="sticky top-0 z-10 bg-white">
             <TableRow className="bg-emerald-50/70">
-              <TableHead className="w-[260px] min-w-[260px] bg-emerald-50">Organization</TableHead>
-              <TableHead className="w-[140px] min-w-[140px] bg-emerald-50">Country</TableHead>
-              <TableHead className="w-[210px] min-w-[210px] bg-emerald-50">Category</TableHead>
-              <TableHead className="w-[130px] min-w-[130px] bg-emerald-50">Priority</TableHead>
-              <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">Status</TableHead>
-              <TableHead className="w-[220px] min-w-[220px] bg-emerald-50">Opportunity</TableHead>
-              <TableHead className="w-[220px] min-w-[220px] bg-emerald-50">Contact Email</TableHead>
-              <TableHead className="w-[180px] min-w-[180px] bg-emerald-50">Website</TableHead>
-              <TableHead className="w-[240px] min-w-[240px] bg-emerald-50">Next Step</TableHead>
+              <SortableTableHead className="w-[260px] min-w-[260px]" column="organization" label="Organization" sortRules={sortRules} onSort={toggleSort} />
+              <SortableTableHead className="w-[140px] min-w-[140px]" column="country" label="Country" sortRules={sortRules} onSort={toggleSort} />
+              <SortableTableHead className="w-[210px] min-w-[210px]" column="category" label="Category" sortRules={sortRules} onSort={toggleSort} />
+              <SortableTableHead className="w-[130px] min-w-[130px]" column="priority" label="Priority" sortRules={sortRules} onSort={toggleSort} />
+              <SortableTableHead className="w-[180px] min-w-[180px]" column="status" label="Status" sortRules={sortRules} onSort={toggleSort} />
+              <SortableTableHead className="w-[220px] min-w-[220px]" column="opportunity" label="Opportunity" sortRules={sortRules} onSort={toggleSort} />
+              <SortableTableHead className="w-[130px] min-w-[130px]" column="domainRating" label="Domain Rating" sortRules={sortRules} onSort={toggleSort} />
+              <SortableTableHead className="w-[150px] min-w-[150px]" column="createdDate" label="Created Date" sortRules={sortRules} onSort={toggleSort} />
+              <SortableTableHead className="w-[150px] min-w-[150px]" column="updatedDate" label="Updated Date" sortRules={sortRules} onSort={toggleSort} />
+              <SortableTableHead className="w-[220px] min-w-[220px]" column="contactEmail" label="Contact Email" sortRules={sortRules} onSort={toggleSort} />
+              <SortableTableHead className="w-[180px] min-w-[180px]" column="website" label="Website" sortRules={sortRules} onSort={toggleSort} />
+              <SortableTableHead className="w-[240px] min-w-[240px]" column="nextStep" label="Next Step" sortRules={sortRules} onSort={toggleSort} />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -245,6 +292,9 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
                   <StatusBadge status={organization.status} />
                 </TableCell>
                 <TableCell className="w-[220px] min-w-[220px]">{organization.opportunityType}</TableCell>
+                <TableCell className="w-[130px] min-w-[130px]">{organization.domainRating}</TableCell>
+                <TableCell className="w-[150px] min-w-[150px]">{getOrganizationCreatedDate(organization)}</TableCell>
+                <TableCell className="w-[150px] min-w-[150px]">{getOrganizationUpdatedDate(organization)}</TableCell>
                 <TableCell className="w-[220px] min-w-[220px] text-sm">
                   <ExternalFieldLink type="email" value={organization.email} />
                 </TableCell>
@@ -264,6 +314,120 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
 function PriorityBadge({ priority }: { priority: OrganizationPriority }) {
   const tone = priority === "high" ? "danger" : priority === "medium" ? "warning" : "muted";
   return <Badge tone={tone}>{priority}</Badge>;
+}
+
+function SortableTableHead({
+  className,
+  column,
+  label,
+  sortRules,
+  onSort,
+}: {
+  className: string;
+  column: SortColumn;
+  label: string;
+  sortRules: SortRule[];
+  onSort: (column: SortColumn) => void;
+}) {
+  const sortIndex = sortRules.findIndex((rule) => rule.column === column);
+  const activeRule = sortIndex >= 0 ? sortRules[sortIndex] : null;
+  const indicator = activeRule ? (activeRule.direction === "asc" ? "▲" : "▼") : "▲▼";
+
+  return (
+    <TableHead className={`${className} bg-emerald-50`}>
+      <button
+        className="flex w-full items-center justify-between gap-2 text-left text-xs font-medium text-muted-foreground hover:text-emerald-950"
+        type="button"
+        onClick={() => onSort(column)}
+      >
+        <span>{label}</span>
+        <span className="flex items-center gap-1 text-[10px]">
+          {activeRule ? <span className="rounded bg-emerald-100 px-1 text-emerald-800">{sortIndex + 1}</span> : null}
+          <span>{indicator}</span>
+        </span>
+      </button>
+    </TableHead>
+  );
+}
+
+function compareOrganizations(first: Organization, second: Organization, sortRules: SortRule[]) {
+  for (const rule of sortRules) {
+    const firstValue = getSortValue(first, rule.column);
+    const secondValue = getSortValue(second, rule.column);
+    const comparison = compareValues(firstValue, secondValue);
+
+    if (comparison !== 0) {
+      return rule.direction === "asc" ? comparison : -comparison;
+    }
+  }
+
+  return 0;
+}
+
+function compareValues(first: string | number, second: string | number) {
+  if (typeof first === "number" && typeof second === "number") {
+    return first - second;
+  }
+
+  return String(first).localeCompare(String(second), undefined, {
+    numeric: true,
+    sensitivity: "base",
+  });
+}
+
+function getSortValue(organization: Organization, column: SortColumn) {
+  switch (column) {
+    case "organization":
+      return organization.name;
+    case "country":
+      return organization.country;
+    case "category":
+      return organization.category;
+    case "priority":
+      return priorityRank(organization.priority);
+    case "status":
+      return statusLabels[organization.status];
+    case "opportunity":
+      return organization.opportunityType;
+    case "domainRating":
+      return organization.domainRating;
+    case "createdDate":
+      return Date.parse(getOrganizationCreatedDate(organization)) || 0;
+    case "updatedDate":
+      return Date.parse(getOrganizationUpdatedDate(organization)) || 0;
+    case "contactEmail":
+      return organization.email;
+    case "website":
+      return organization.website;
+    case "nextStep":
+      return organization.nextStep;
+    default:
+      return "";
+  }
+}
+
+function priorityRank(priority: OrganizationPriority) {
+  if (priority === "high") return 1;
+  if (priority === "medium") return 2;
+  return 3;
+}
+
+function getOrganizationCreatedDate(organization: Organization) {
+  const metadata = organization as Organization & {
+    createdAt?: string;
+    created_at?: string;
+  };
+
+  return metadata.createdAt || metadata.created_at || organization.activity.at(-1)?.date || organization.activity[0]?.date || "";
+}
+
+function getOrganizationUpdatedDate(organization: Organization) {
+  const metadata = organization as Organization & {
+    updatedAt?: string;
+    updated_at?: string;
+  };
+
+  return metadata.updatedAt || metadata.updated_at || organization.activity[0]?.date || getOrganizationCreatedDate(organization);
 }
 
 function StatusBadge({ status }: { status: OrganizationStatus }) {

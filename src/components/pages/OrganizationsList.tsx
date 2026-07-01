@@ -89,7 +89,11 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
       const metadata = organization as Organization & {
         specialty?: string;
         treatment_focus?: string;
+        treatmentFocus?: string;
+        medicalSpecialty?: string;
         opportunity?: string;
+        description?: string;
+        aiSummary?: string;
         tags?: string[] | string;
         importedMetadata?: Record<string, unknown>;
         imported_metadata?: Record<string, unknown>;
@@ -99,9 +103,14 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
         [
           metadata.specialty,
           metadata.treatment_focus,
+          metadata.treatmentFocus,
+          metadata.medicalSpecialty,
           organization.notes,
           metadata.opportunity,
           organization.opportunityType,
+          organization.category,
+          metadata.description,
+          metadata.aiSummary,
           Array.isArray(metadata.tags) ? metadata.tags.join(" ") : metadata.tags,
           metadata.importedMetadata ? Object.values(metadata.importedMetadata).join(" ") : undefined,
           metadata.imported_metadata ? Object.values(metadata.imported_metadata).join(" ") : undefined,
@@ -197,7 +206,7 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
               className="pl-9"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search organization, email, website, opportunity"
+              placeholder="Search organization"
             />
           </label>
           <Select value={country} onChange={(event) => setCountry(event.target.value)}>
@@ -331,17 +340,18 @@ function SortableTableHead({
 }) {
   const sortIndex = sortRules.findIndex((rule) => rule.column === column);
   const activeRule = sortIndex >= 0 ? sortRules[sortIndex] : null;
-  const indicator = activeRule ? (activeRule.direction === "asc" ? "▲" : "▼") : "▲▼";
+  const indicator = activeRule ? (activeRule.direction === "asc" ? "▲" : "▼") : "Sort";
 
   return (
     <TableHead className={`${className} bg-emerald-50`}>
       <button
-        className="flex w-full items-center justify-between gap-2 text-left text-xs font-medium text-muted-foreground hover:text-emerald-950"
+        className="flex w-full cursor-pointer items-center justify-between gap-2 text-left text-xs font-medium text-muted-foreground hover:text-emerald-950"
         type="button"
+        title={`Sort by ${label}`}
         onClick={() => onSort(column)}
       >
         <span>{label}</span>
-        <span className="flex items-center gap-1 text-[10px]">
+        <span className={activeRule ? "flex items-center gap-1 text-[10px] text-emerald-800" : "flex items-center gap-1 text-[10px] text-muted-foreground/70"}>
           {activeRule ? <span className="rounded bg-emerald-100 px-1 text-emerald-800">{sortIndex + 1}</span> : null}
           <span>{indicator}</span>
         </span>

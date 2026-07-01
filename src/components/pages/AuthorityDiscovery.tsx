@@ -50,10 +50,17 @@ const categories: OrganizationCategory[] = [
   "Business Directories",
 ];
 const dataSources: AuthorityDiscoverySourceType[] = [
-  "Curated Data",
-  "CSV Imported Data",
-  "Tavily Web Search",
+  "Verified Internal Database",
+  "Imported Organization Database",
+  "Live AI Web Search (Tavily + OpenAI)",
 ];
+
+const dataSourceDescriptions: Record<AuthorityDiscoverySourceType, string> = {
+  "Verified Internal Database": "Organizations already stored inside Business Growth OS. Used for searching existing verified records only.",
+  "Imported Organization Database": "Organizations previously imported from CSV files.",
+  "Live AI Web Search (Tavily + OpenAI)":
+    "Search the live web using Tavily, then analyze and structure the results using OpenAI before importing into Authority CRM.",
+};
 
 type DiscoveryProgressStatus = "Pending" | "In progress" | "Done" | "Failed" | "Fallback";
 type DiscoveryProgressStep = {
@@ -81,7 +88,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
     category: "Teaching Hospitals",
     treatmentKeyword: "Cancer",
     maximumResults: 25,
-    sourceType: "Curated Data",
+    sourceType: "Live AI Web Search (Tavily + OpenAI)",
     csvText: "",
   });
   const [results, setResults] = useState<AuthorityDiscoveryResult[]>([]);
@@ -114,9 +121,9 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
     setSearchStartedAt(new Date().toISOString());
     setProgressSteps([
       { label: "Preparing search query", status: "Done" },
-      { label: "Contacting Tavily Web Search", status: parameters.sourceType === "Tavily Web Search" ? "In progress" : "Done" },
-      { label: "Receiving web results", status: parameters.sourceType === "Tavily Web Search" ? "Pending" : "Done" },
-      { label: "Running OpenAI analysis", status: parameters.sourceType === "Tavily Web Search" ? "Pending" : "Done" },
+      { label: "Contacting Tavily Web Search", status: parameters.sourceType === "Live AI Web Search (Tavily + OpenAI)" ? "In progress" : "Done" },
+      { label: "Receiving web results", status: parameters.sourceType === "Live AI Web Search (Tavily + OpenAI)" ? "Pending" : "Done" },
+      { label: "Running OpenAI analysis", status: parameters.sourceType === "Live AI Web Search (Tavily + OpenAI)" ? "Pending" : "Done" },
       { label: "Preparing discovery table", status: "Pending" },
       { label: "Complete", status: "Pending" },
     ]);
@@ -190,9 +197,9 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
       </div>
 
       <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950">
-        Curated and CSV discovery run locally. Tavily Web Search runs through the secure backend route and requires
-        server-side Vercel environment variables. OpenAI intelligence runs server-side only and extracts factual fields
-        from Tavily evidence.
+        Verified Internal Database and Imported Organization Database searches run locally. Live AI Web Search runs
+        through the secure backend route and requires server-side Vercel environment variables. OpenAI intelligence
+        runs server-side only and extracts factual fields from Tavily evidence.
       </div>
 
       <Card>
@@ -280,8 +287,17 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
               {isSearching ? "Searching..." : "Run Discovery"}
             </Button>
           </div>
+          <div className="mt-3 rounded-md border bg-slate-50 p-3 text-sm text-muted-foreground">
+            <p className="font-medium text-emerald-950">{parameters.sourceType}</p>
+            <p className="mt-1">{dataSourceDescriptions[parameters.sourceType]}</p>
+            <div className="mt-3 grid gap-2 md:grid-cols-3">
+              <ProviderHelpLine label="Verified Internal Database" value="Search existing organizations already inside the CRM." />
+              <ProviderHelpLine label="Imported Organization Database" value="Search organizations imported from CSV." />
+              <ProviderHelpLine label="Live AI Web Search (Tavily + OpenAI)" value="Discover new organizations from the live web using AI." />
+            </div>
+          </div>
 
-          {parameters.sourceType === "CSV Imported Data" ? (
+          {parameters.sourceType === "Imported Organization Database" ? (
             <div className="mt-3">
               <label className="text-xs font-medium uppercase text-muted-foreground">
                 CSV real-data input
@@ -295,9 +311,9 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
             </div>
           ) : null}
 
-          {parameters.sourceType === "Tavily Web Search" ? (
+          {parameters.sourceType === "Live AI Web Search (Tavily + OpenAI)" ? (
             <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-              Tavily Web Search uses POST /api/authority-discovery/search. If server-side provider keys are missing,
+              Live AI Web Search uses POST /api/authority-discovery/search. If server-side provider keys are missing,
               discovery will return a configuration error instead of fake results.
             </div>
           ) : null}
@@ -389,7 +405,7 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
                           <p className="font-medium text-emerald-950">No results were returned.</p>
                           <p>
                             {safeMessage ||
-                              (parameters.sourceType === "Tavily Web Search"
+                              (parameters.sourceType === "Live AI Web Search (Tavily + OpenAI)"
                                 ? "No real organizations found from Tavily for this search."
                                 : "No real organizations found in configured sources. Import CSV or configure a real search provider.")}
                           </p>
@@ -515,7 +531,7 @@ function buildFinalProgressSteps(
   resultCount: number,
   diagnostics: AuthorityDiscoveryDiagnostics | null,
 ): DiscoveryProgressStep[] {
-  if (sourceType !== "Tavily Web Search") {
+  if (sourceType !== "Live AI Web Search (Tavily + OpenAI)") {
     return discoveryStepLabels.map((label) => ({
       label,
       status: errorMessage ? "Failed" : "Done",
@@ -625,6 +641,15 @@ function DiagnosticItem({ label, value }: { label: string; value: string }) {
     <div>
       <p className="text-xs font-medium uppercase text-muted-foreground">{label}</p>
       <p className="mt-1 font-semibold text-emerald-950">{value}</p>
+    </div>
+  );
+}
+
+function ProviderHelpLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border bg-white p-3">
+      <p className="font-medium text-emerald-950">{label}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{value}</p>
     </div>
   );
 }

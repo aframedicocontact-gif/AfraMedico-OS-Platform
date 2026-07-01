@@ -4,9 +4,9 @@ export type AuthorityDiscoveryStatus = "New" | "Imported" | "Duplicate";
 
 export type AuthorityValueRating = "High" | "Medium" | "Low";
 export type AuthorityDiscoverySourceType =
-  | "Curated Data"
-  | "CSV Imported Data"
-  | "Tavily Web Search";
+  | "Verified Internal Database"
+  | "Imported Organization Database"
+  | "Live AI Web Search (Tavily + OpenAI)";
 export type AuthorityDiscoveryConfidence = "Verified" | "Needs verification" | "Unknown";
 export type AuthorityIntelligenceConfidence = "High" | "Medium" | "Low" | "Unknown";
 export type AuthorityVerificationStatus = "Verified" | "Needs Manual Review" | "Insufficient Evidence";

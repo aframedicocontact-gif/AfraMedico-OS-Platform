@@ -89,19 +89,19 @@ const curatedSeedOrganizations: CuratedSeedOrganization[] = [
 export const authorityDiscoveryProviders: AuthorityDiscoveryProvider[] = [
   {
     kind: "Curated seed list",
-    sourceType: "Curated Data",
+    sourceType: "Verified Internal Database",
     isConfigured: true,
     search: curatedSeedSearch,
   },
   {
     kind: "Manual CSV import",
-    sourceType: "CSV Imported Data",
+    sourceType: "Imported Organization Database",
     isConfigured: true,
     search: csvImportSearch,
   },
   {
     kind: "Tavily Web Search",
-    sourceType: "Tavily Web Search",
+    sourceType: "Live AI Web Search (Tavily + OpenAI)",
     isConfigured: true,
     search: tavilyWebSearch,
   },
@@ -159,7 +159,7 @@ function buildResult(
     contactEmail: "Not found",
     sourceUrl: seed.website,
     snippet: "",
-    rawSearchSource: "Curated Data",
+    rawSearchSource: "Verified Internal Database",
     sourceType,
     sourceNote,
     confidence: "Needs verification",
@@ -182,7 +182,7 @@ async function curatedSeedSearch(parameters: AuthorityDiscoveryParameters) {
     .filter((seed) => matchesText([seed.organization, seed.category, ...seed.tags], parameters.treatmentKeyword))
     .slice(0, parameters.maximumResults)
     .map((seed, index) =>
-      buildResult(seed, "Curated Data", "Curated seed / needs verification", index + 1, parameters.treatmentKeyword),
+      buildResult(seed, "Verified Internal Database", "Curated seed / needs verification", index + 1, parameters.treatmentKeyword),
     );
 }
 
@@ -209,8 +209,8 @@ async function csvImportSearch(parameters: AuthorityDiscoveryParameters) {
         contactEmail: row.contactEmail || "Not found",
         sourceUrl: row.website,
         snippet: row.tags,
-        rawSearchSource: "CSV Imported Data",
-        sourceType: "CSV Imported Data",
+        rawSearchSource: "Imported Organization Database",
+        sourceType: "Imported Organization Database",
         sourceNote: "CSV import / needs verification",
         confidence: "Needs verification",
         authorityType: scored.authorityType,
@@ -327,7 +327,7 @@ async function tavilyWebSearch(parameters: AuthorityDiscoveryParameters) {
         contactEmail: result.email || "Not found",
         sourceUrl,
         snippet: result.snippet || "",
-        rawSearchSource: result.rawSearchSource || "Tavily Web Search",
+        rawSearchSource: result.rawSearchSource || "Live AI Web Search (Tavily + OpenAI)",
         description: result.description || "",
         organizationType: result.organizationType || "Unknown",
         primaryMedicalSpecialty: result.primaryMedicalSpecialty || "Unknown",
@@ -342,7 +342,7 @@ async function tavilyWebSearch(parameters: AuthorityDiscoveryParameters) {
             : "Needs Manual Review",
         contactPage: result.contactPage || "",
         aiSummary: result.aiSummary || "",
-        sourceType: "Tavily Web Search",
+        sourceType: "Live AI Web Search (Tavily + OpenAI)",
         sourceNote: sourceUrl ? `Tavily source: ${sourceUrl}` : "Tavily search result",
         confidence: result.verificationStatus === "Verified" ? "Verified" : "Needs verification",
         authorityType: "Not estimated",

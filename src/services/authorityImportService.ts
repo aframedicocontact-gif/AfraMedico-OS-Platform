@@ -83,7 +83,7 @@ export function importAuthorityDiscoveryResults(
       duplicateNames.push(result.organization);
       return;
     }
-    const isTavilyResult = result.sourceType === "Tavily Web Search";
+    const isTavilyResult = result.sourceType === "Live AI Web Search (Tavily + OpenAI)";
 
     const organization: Organization = {
       id: `authority-import-${Date.now()}-${importedOrganizations.length + 1}`,

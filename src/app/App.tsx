@@ -5,6 +5,7 @@ import { AddLead } from "../components/pages/AddLead";
 import { AddOrganization } from "../components/pages/AddOrganization";
 import { AddPartner } from "../components/pages/AddPartner";
 import { AuthorityDiscovery } from "../components/pages/AuthorityDiscovery";
+import { BacklinkCampaigns } from "../components/pages/BacklinkCampaigns";
 import { CasesPage } from "../components/pages/CasesPage";
 import { CaseDetailPage } from "../components/pages/CaseDetailPage";
 import { CaseProfile } from "../components/pages/CaseProfile";
@@ -87,6 +88,7 @@ export type AppView =
   | { name: "enterprise-task-board" }
   | { name: "opportunity-dashboard" }
   | { name: "revenue-pipeline" }
+  | { name: "backlink-campaigns" }
   | { name: "authority-discovery" }
   | { name: "organization-details"; organizationId: string }
   | { name: "outreach-workspace"; organizationId: string }
@@ -404,6 +406,9 @@ export function App() {
       ) : null}
       {view.name === "revenue-pipeline" ? (
         <RevenuePipeline organizations={organizations} />
+      ) : null}
+      {view.name === "backlink-campaigns" ? (
+        <BacklinkCampaigns organizations={organizations} />
       ) : null}
       {view.name === "authority-discovery" ? (
         <AuthorityDiscovery

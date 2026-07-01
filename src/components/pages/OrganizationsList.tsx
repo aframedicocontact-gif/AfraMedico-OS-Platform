@@ -1,4 +1,4 @@
-import { CircleDollarSign, FileSpreadsheet, KanbanSquare, Plus, Search, Sparkles, Target } from "lucide-react";
+import { CircleDollarSign, FileSpreadsheet, KanbanSquare, Link2, Plus, Search, Sparkles, Target } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { AppView } from "../../app/App";
 import { ExternalFieldLink } from "../common/ExternalFieldLink";
@@ -182,6 +182,10 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
           <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "revenue-pipeline" })}>
             <CircleDollarSign className="h-4 w-4" />
             Revenue Pipeline
+          </Button>
+          <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "backlink-campaigns" })}>
+            <Link2 className="h-4 w-4" />
+            Backlink Campaigns
           </Button>
           <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "authority-discovery" })}>
             <Sparkles className="h-4 w-4" />

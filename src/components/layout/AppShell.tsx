@@ -12,6 +12,7 @@ import {
   FolderOpen,
   Hospital,
   Layers3,
+  Link2,
   ListChecks,
   LogOut,
   Network,
@@ -89,6 +90,7 @@ export function AppShell({ children, caseContext, currentView, onNavigate, onSig
               currentView === "enterprise-task-board" ||
               currentView === "opportunity-dashboard" ||
               currentView === "revenue-pipeline" ||
+              currentView === "backlink-campaigns" ||
               currentView === "authority-discovery" ||
               currentView === "organization-details" ||
               currentView === "outreach-workspace" ||
@@ -99,6 +101,12 @@ export function AppShell({ children, caseContext, currentView, onNavigate, onSig
             icon={<Layers3 className="h-4 w-4" />}
             label="Authority CRM"
             onClick={() => onNavigate({ name: "organizations" })}
+          />
+          <NavButton
+            active={currentView === "backlink-campaigns"}
+            icon={<Link2 className="h-4 w-4" />}
+            label="Backlink Campaigns"
+            onClick={() => onNavigate({ name: "backlink-campaigns" })}
           />
           <NavButton
             active={

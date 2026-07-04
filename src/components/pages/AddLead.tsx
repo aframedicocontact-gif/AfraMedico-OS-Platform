@@ -1,10 +1,18 @@
 import { ArrowLeft, ClipboardList, FileSearch, Mail, Plane, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import type { AppView } from "../../app/App";
 import {
+  callingCodeOptions,
+  countryOptions,
+  getCountryOptionByName,
+  nationalityOptions,
+} from "../../data/countryDataset";
+import {
+  calculateLeadAge,
   createLead,
   findLeadDuplicates,
+  generateNextPatientId,
   validateLeadInput,
   type CreateLeadInput,
 } from "../../services/leadService";
@@ -28,17 +36,25 @@ const defaultLeadInput: CreateLeadInput = {
   country: "",
   city: "",
   nationality: "",
+  phoneCountryCode: "+234",
+  phoneLocalNumber: "",
   phone: "",
+  whatsappCountryCode: "+234",
+  whatsappLocalNumber: "",
   whatsapp: "",
   email: "",
+  confirmEmail: "",
+  emailVerified: "No",
+  emailVerificationStatus: "Unverified",
   age: "",
   gender: "Female",
   preferredLanguage: "English",
   leadSource: "Website",
   interestedTreatment: "",
   medicalCondition: "",
+  medicalHistory: "",
   urgency: "Medium",
-  preferredDestination: "Turkey",
+  preferredDestination: "Türkiye",
   referralPartner: "",
   hospital: "",
   caseId: "",
@@ -56,27 +72,124 @@ const defaultLeadInput: CreateLeadInput = {
   internalNotes: "",
 };
 
+const preferredLanguages = [
+  "English",
+  "French",
+  "Spanish",
+  "Arabic",
+  "Persian (Farsi)",
+  "Turkish",
+  "Hindi",
+  "Urdu",
+  "Russian",
+  "Chinese",
+  "German",
+  "Italian",
+  "Portuguese",
+];
+
+const commonTreatments = [
+  "Brain Surgery",
+  "Cancer Treatment",
+  "Oncology",
+  "Cardiac Surgery",
+  "IVF",
+  "Orthopedics",
+  "Robotic Surgery",
+  "Neurosurgery",
+  "Neurology",
+  "Transplant",
+  "Dental",
+  "Hair Transplant",
+  "Bariatric Surgery",
+  "Plastic Surgery",
+  "Ophthalmology",
+  "Rehabilitation",
+  "Diagnostics",
+];
+
+function buildInternationalNumber(countryCode: string, localNumber: string) {
+  const cleanLocal = localNumber.replace(/\D/g, "");
+  return countryCode && cleanLocal ? `${countryCode} ${cleanLocal}` : "";
+}
+
 export function AddLead({ existingLeads, onLeadCreated, onNavigate }: AddLeadProps) {
-  const [form, setForm] = useState<CreateLeadInput>(defaultLeadInput);
+  const nextPatientId = useMemo(() => generateNextPatientId(existingLeads), [existingLeads]);
+  const [form, setForm] = useState<CreateLeadInput>(() => ({
+    ...defaultLeadInput,
+    patientId: nextPatientId,
+  }));
   const [errors, setErrors] = useState<string[]>([]);
+  const [invalidFields, setInvalidFields] = useState<string[]>([]);
   const [savedDuplicateWarning, setSavedDuplicateWarning] = useState("");
   const duplicateResult = useMemo(
     () => findLeadDuplicates(form, existingLeads),
     [existingLeads, form],
   );
 
+  useEffect(() => {
+    setForm((current) => (current.patientId ? current : { ...current, patientId: nextPatientId }));
+  }, [nextPatientId]);
+
   function updateField<Key extends keyof CreateLeadInput>(key: Key, value: CreateLeadInput[Key]) {
-    setForm((current) => ({ ...current, [key]: value }));
+    setForm((current) => {
+      const next = { ...current, [key]: value };
+
+      if (key === "dateOfBirth") {
+        next.age = String(calculateLeadAge(String(value)) || "");
+      }
+
+      if (key === "country") {
+        const country = getCountryOptionByName(String(value));
+        if (country) {
+          next.nationality = current.nationality || country.nationality;
+          next.phoneCountryCode = current.phoneCountryCode || country.callingCode;
+          next.whatsappCountryCode = current.whatsappCountryCode || country.callingCode;
+        }
+      }
+
+      if (key === "phoneCountryCode" || key === "phoneLocalNumber") {
+        next.phone = buildInternationalNumber(next.phoneCountryCode, next.phoneLocalNumber);
+      }
+
+      if (key === "whatsappCountryCode" || key === "whatsappLocalNumber") {
+        next.whatsapp = buildInternationalNumber(next.whatsappCountryCode, next.whatsappLocalNumber);
+      }
+
+      if (key === "email" || key === "confirmEmail") {
+        const email = String(next.email).trim();
+        const confirmEmail = String(next.confirmEmail).trim();
+        const matched = Boolean(email && confirmEmail && email.toLowerCase() === confirmEmail.toLowerCase());
+        next.emailVerified = matched ? "Yes" : "No";
+        next.emailVerificationStatus = matched ? "Verified" : confirmEmail ? "Mismatch" : "Unverified";
+      }
+
+      return next;
+    });
     setErrors([]);
+    setInvalidFields([]);
     setSavedDuplicateWarning("");
   }
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     const validation = validateLeadInput(form);
+    const nextInvalidFields = [
+      !form.patientName.trim() ? "patientName" : "",
+      !form.country.trim() ? "country" : "",
+      !form.dateOfBirth.trim() ? "dateOfBirth" : "",
+      !form.interestedTreatment.trim() ? "interestedTreatment" : "",
+      !form.phone.trim() && !form.phoneLocalNumber.trim() ? "phone" : "",
+      !form.email.trim() ? "email" : "",
+      !form.confirmEmail.trim() ? "confirmEmail" : "",
+      form.email.trim() && form.confirmEmail.trim() && form.email.trim().toLowerCase() !== form.confirmEmail.trim().toLowerCase() ? "confirmEmail" : "",
+      form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()) ? "email" : "",
+      form.preferredDestination.trim() && !countryOptions.some((country) => country.name.toLowerCase() === form.preferredDestination.trim().toLowerCase()) ? "preferredDestination" : "",
+    ].filter(Boolean);
 
     if (!validation.valid) {
       setErrors(validation.errors);
+      setInvalidFields(nextInvalidFields);
       return;
     }
 
@@ -135,25 +248,28 @@ export function AddLead({ existingLeads, onLeadCreated, onNavigate }: AddLeadPro
       <div className="grid gap-4 xl:grid-cols-[1fr_360px]">
         <div className="space-y-4">
           <FormSection icon={<UserRound className="h-4 w-4" />} title="Patient Details">
-            <Field label="Patient ID" placeholder="PAT-1009" value={form.patientId} onChange={(value) => updateField("patientId", value)} />
-            <Field label="Patient Name" placeholder="Amina Yusuf" value={form.patientName} onChange={(value) => updateField("patientName", value)} required />
-            <Field label="Date of Birth" placeholder="1984-03-14" type="date" value={form.dateOfBirth} onChange={(value) => updateField("dateOfBirth", value)} />
-            <Field label="Country" placeholder="Nigeria" value={form.country} onChange={(value) => updateField("country", value)} required />
+            <Field label="Patient ID" placeholder="PAT-000001" value={form.patientId} onChange={() => undefined} readOnly />
+            <Field label="Patient Name" placeholder="Amina Yusuf" value={form.patientName} onChange={(value) => updateField("patientName", value)} required invalid={invalidFields.includes("patientName")} />
+            <Field label="Date of Birth" placeholder="1984-03-14" type="date" value={form.dateOfBirth} onChange={(value) => updateField("dateOfBirth", value)} required invalid={invalidFields.includes("dateOfBirth")} />
+            <DatalistField label="Country" listId="country-options" placeholder="Nigeria" value={form.country} onChange={(value) => updateField("country", value)} required invalid={invalidFields.includes("country")} options={countryOptions.map((country) => country.name)} />
             <Field label="City" placeholder="Lagos" value={form.city} onChange={(value) => updateField("city", value)} />
-            <Field label="Nationality" placeholder="Nigerian" value={form.nationality} onChange={(value) => updateField("nationality", value)} />
-            <Field label="Age" placeholder="42" type="number" value={form.age} onChange={(value) => updateField("age", value)} />
+            <DatalistField label="Nationality" listId="nationality-options" placeholder="Nigerian" value={form.nationality} onChange={(value) => updateField("nationality", value)} options={nationalityOptions} />
+            <Field label="Age" placeholder="Calculated from DOB" type="number" value={form.age} onChange={() => undefined} readOnly />
             <SelectField label="Gender" value={form.gender} onChange={(value) => updateField("gender", value)}>
               <option>Female</option>
               <option>Male</option>
               <option>Other</option>
             </SelectField>
-            <Field label="Preferred Language" placeholder="English" value={form.preferredLanguage} onChange={(value) => updateField("preferredLanguage", value)} />
+            <DatalistField label="Preferred Language" listId="language-options" placeholder="English" value={form.preferredLanguage} onChange={(value) => updateField("preferredLanguage", value)} options={preferredLanguages} />
           </FormSection>
 
           <FormSection icon={<Mail className="h-4 w-4" />} title="Contact and Source">
-            <Field label="Phone" placeholder="+234 800 000 0000" value={form.phone} onChange={(value) => updateField("phone", value)} />
-            <Field label="WhatsApp" placeholder="+234 800 000 0000" value={form.whatsapp} onChange={(value) => updateField("whatsapp", value)} />
-            <Field label="Email" placeholder="patient@example.com" type="email" value={form.email} onChange={(value) => updateField("email", value)} />
+            <PhoneField label="Phone" code={form.phoneCountryCode} localNumber={form.phoneLocalNumber} onCodeChange={(value) => updateField("phoneCountryCode", value)} onLocalNumberChange={(value) => updateField("phoneLocalNumber", value)} invalid={invalidFields.includes("phone")} required />
+            <PhoneField label="WhatsApp" code={form.whatsappCountryCode} localNumber={form.whatsappLocalNumber} onCodeChange={(value) => updateField("whatsappCountryCode", value)} onLocalNumberChange={(value) => updateField("whatsappLocalNumber", value)} />
+            <Field label="Primary Email" placeholder="patient@example.com" type="email" value={form.email} onChange={(value) => updateField("email", value)} required invalid={invalidFields.includes("email")} />
+            <Field label="Confirm Email" placeholder="patient@example.com" type="email" value={form.confirmEmail} onChange={(value) => updateField("confirmEmail", value)} required invalid={invalidFields.includes("confirmEmail")} />
+            <Field label="Email Verified" placeholder="Derived" value={form.emailVerified} onChange={() => undefined} readOnly />
+            <Field label="Verification Status" placeholder="Derived" value={form.emailVerificationStatus} onChange={() => undefined} readOnly />
             <SelectField label="Lead Source" value={form.leadSource} onChange={(value) => updateField("leadSource", value as CreateLeadInput["leadSource"])}>
               <option>Website</option>
               <option>WhatsApp</option>
@@ -176,7 +292,7 @@ export function AddLead({ existingLeads, onLeadCreated, onNavigate }: AddLeadPro
           </FormSection>
 
           <FormSection icon={<FileSearch className="h-4 w-4" />} title="Medical Need">
-            <Field label="Interested Treatment" placeholder="Cardiac surgery" value={form.interestedTreatment} onChange={(value) => updateField("interestedTreatment", value)} required />
+            <DatalistField label="Interested Treatment" listId="treatment-options" placeholder="Cancer Treatment" value={form.interestedTreatment} onChange={(value) => updateField("interestedTreatment", value)} required invalid={invalidFields.includes("interestedTreatment")} options={commonTreatments} />
             <Field label="Medical Condition" placeholder="Brief condition summary" value={form.medicalCondition} onChange={(value) => updateField("medicalCondition", value)} />
             <SelectField label="Urgency" value={form.urgency} onChange={(value) => updateField("urgency", value as CreateLeadInput["urgency"])}>
               <option>Low</option>
@@ -184,9 +300,10 @@ export function AddLead({ existingLeads, onLeadCreated, onNavigate }: AddLeadPro
               <option>High</option>
               <option>Urgent</option>
             </SelectField>
-            <Field label="Preferred Destination" placeholder="Turkey" value={form.preferredDestination} onChange={(value) => updateField("preferredDestination", value)} />
+            <DatalistField label="Preferred Destination" listId="destination-options" placeholder="Turkey" value={form.preferredDestination} onChange={(value) => updateField("preferredDestination", value)} invalid={invalidFields.includes("preferredDestination")} options={countryOptions.map((country) => country.name)} />
             <Field label="Referral Partner" placeholder="Optional partner name" value={form.referralPartner} onChange={(value) => updateField("referralPartner", value)} />
             <Field label="Hospital" placeholder="Pending selection" value={form.hospital} onChange={(value) => updateField("hospital", value)} />
+            <TextareaField label="Medical History" placeholder="Chief complaint, symptoms, diagnosis, previous treatments, current medications, past surgeries, chronic diseases, allergies, family history, smoking, alcohol, and other clinical notes..." value={form.medicalHistory} onChange={(value) => updateField("medicalHistory", value)} />
           </FormSection>
 
           <FormSection icon={<Plane className="h-4 w-4" />} title="Pipeline and Travel">
@@ -284,16 +401,20 @@ function FormSection({ icon, title, children }: { icon: ReactNode; title: string
 }
 
 function Field({
+  invalid,
   label,
   onChange,
   placeholder,
+  readOnly,
   required,
   type = "text",
   value,
 }: {
+  invalid?: boolean;
   label: string;
   onChange: (value: string) => void;
   placeholder: string;
+  readOnly?: boolean;
   required?: boolean;
   type?: string;
   value: string;
@@ -301,7 +422,87 @@ function Field({
   return (
     <label className="space-y-1.5">
       <span className="text-sm font-medium">{label}{required ? " *" : ""}</span>
-      <Input placeholder={placeholder} type={type} value={value} onChange={(event) => onChange(event.target.value)} />
+      <Input
+        className={[readOnly ? "bg-muted/40 text-muted-foreground" : "", invalid ? "border-red-400 bg-red-50" : ""].filter(Boolean).join(" ")}
+        placeholder={placeholder}
+        readOnly={readOnly}
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
+  );
+}
+
+function DatalistField({
+  invalid,
+  label,
+  listId,
+  onChange,
+  options,
+  placeholder,
+  required,
+  value,
+}: {
+  invalid?: boolean;
+  label: string;
+  listId: string;
+  onChange: (value: string) => void;
+  options: string[];
+  placeholder: string;
+  required?: boolean;
+  value: string;
+}) {
+  return (
+    <label className="space-y-1.5">
+      <span className="text-sm font-medium">{label}{required ? " *" : ""}</span>
+      <Input
+        className={invalid ? "border-red-400 bg-red-50" : undefined}
+        list={listId}
+        placeholder={placeholder}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+      <datalist id={listId}>
+        {options.map((option) => (
+          <option key={option} value={option} />
+        ))}
+      </datalist>
+    </label>
+  );
+}
+
+function PhoneField({
+  code,
+  invalid,
+  label,
+  localNumber,
+  onCodeChange,
+  onLocalNumberChange,
+  required,
+}: {
+  code: string;
+  invalid?: boolean;
+  label: string;
+  localNumber: string;
+  onCodeChange: (value: string) => void;
+  onLocalNumberChange: (value: string) => void;
+  required?: boolean;
+}) {
+  return (
+    <label className="space-y-1.5">
+      <span className="text-sm font-medium">{label}{required ? " *" : ""}</span>
+      <div className="grid grid-cols-[140px_1fr] gap-2">
+        <Input className={invalid ? "border-red-400 bg-red-50" : undefined} list={`${label.toLowerCase()}-calling-codes`} value={code} onChange={(event) => onCodeChange(event.target.value)} placeholder="+234" />
+        <Input className={invalid ? "border-red-400 bg-red-50" : undefined} value={localNumber} onChange={(event) => onLocalNumberChange(event.target.value)} placeholder="Local number only" inputMode="tel" />
+      </div>
+      <datalist id={`${label.toLowerCase()}-calling-codes`}>
+        {callingCodeOptions.map((option) => (
+          <option key={`${option.label}-${option.value}`} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </datalist>
     </label>
   );
 }

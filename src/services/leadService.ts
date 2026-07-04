@@ -8,6 +8,7 @@ import type {
   LeadStatus,
   MedicalReviewStatus,
 } from "../types/lead";
+import { countryOptions } from "../data/countryDataset";
 
 const STORAGE_KEY = "aframedico.development.leads";
 
@@ -18,15 +19,23 @@ export type CreateLeadInput = {
   country: string;
   city: string;
   nationality: string;
+  phoneCountryCode: string;
+  phoneLocalNumber: string;
   phone: string;
+  whatsappCountryCode: string;
+  whatsappLocalNumber: string;
   whatsapp: string;
   email: string;
+  confirmEmail: string;
+  emailVerified: "Yes" | "No";
+  emailVerificationStatus: "Unverified" | "Mismatch" | "Verified";
   age: string;
   gender: string;
   preferredLanguage: string;
   leadSource: LeadSource;
   interestedTreatment: string;
   medicalCondition: string;
+  medicalHistory: string;
   urgency: LeadPriority;
   preferredDestination: string;
   referralPartner: string;
@@ -125,6 +134,50 @@ function ensurePatientId(value: string) {
   return value.trim() || `PAT-${Date.now()}`;
 }
 
+function formatSequentialPatientId(sequence: number) {
+  return `PAT-${String(sequence).padStart(6, "0")}`;
+}
+
+function extractPatientSequence(patientId: string) {
+  const match = patientId.match(/^PAT-(\d+)$/i);
+  return match ? Number(match[1]) : 0;
+}
+
+function buildInternationalNumber(countryCode: string, localNumber: string, fallback: string) {
+  const cleanCode = countryCode.trim();
+  const cleanLocal = localNumber.replace(/\D/g, "");
+  if (cleanCode && cleanLocal) return `${cleanCode} ${cleanLocal}`;
+  return fallback.trim();
+}
+
+function calculateAgeFromDateOfBirth(dateOfBirth: string) {
+  if (!dateOfBirth) return 0;
+  const birthDate = new Date(`${dateOfBirth}T00:00:00`);
+  if (Number.isNaN(birthDate.getTime())) return 0;
+
+  const todayDate = new Date();
+  let age = todayDate.getFullYear() - birthDate.getFullYear();
+  const monthDelta = todayDate.getMonth() - birthDate.getMonth();
+  if (monthDelta < 0 || (monthDelta === 0 && todayDate.getDate() < birthDate.getDate())) {
+    age -= 1;
+  }
+  return Math.max(0, age);
+}
+
+function isValidEmail(email: string) {
+  if (!email.trim()) return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+function emailsMatch(email: string, confirmEmail: string) {
+  return normalizeText(email) === normalizeText(confirmEmail);
+}
+
+function isKnownCountry(countryName: string) {
+  const normalized = normalizeText(countryName);
+  return countryOptions.some((country) => country.name.toLowerCase() === normalized);
+}
+
 export function getStoredLeads() {
   return readStoredLeads();
 }
@@ -138,13 +191,35 @@ export function getLeads(seedLeads: Lead[]) {
   ];
 }
 
+export function generateNextPatientId(existingLeads: Lead[]) {
+  const highestSequence = existingLeads.reduce(
+    (highest, lead) => Math.max(highest, extractPatientSequence(lead.patientId)),
+    0,
+  );
+  return formatSequentialPatientId(highestSequence + 1);
+}
+
+export function calculateLeadAge(dateOfBirth: string) {
+  return calculateAgeFromDateOfBirth(dateOfBirth);
+}
+
 export function validateLeadInput(input: CreateLeadInput): LeadValidationResult {
   const errors: string[] = [];
 
   if (!input.patientName.trim()) errors.push("Patient name is required.");
   if (!input.country.trim()) errors.push("Country is required.");
+  if (!input.dateOfBirth.trim()) errors.push("Date of birth is required.");
   if (!input.interestedTreatment.trim()) errors.push("Interested treatment is required.");
-  if (!input.phone.trim() && !input.email.trim()) errors.push("Phone or email is required.");
+  if (!input.phone.trim() && !input.phoneLocalNumber.trim()) errors.push("Phone is required.");
+  if (!input.email.trim()) errors.push("Primary email is required.");
+  if (!input.confirmEmail.trim()) errors.push("Confirm email is required.");
+  if (!isValidEmail(input.email)) errors.push("Email format is invalid.");
+  if (input.email.trim() && input.confirmEmail.trim() && !emailsMatch(input.email, input.confirmEmail)) {
+    errors.push("Primary email and confirm email must match.");
+  }
+  if (input.preferredDestination.trim() && !isKnownCountry(input.preferredDestination)) {
+    errors.push("Preferred destination must be selected from the country list.");
+  }
 
   return {
     valid: errors.length === 0,
@@ -175,6 +250,8 @@ export function createLead(input: CreateLeadInput, existingLeads: Lead[]) {
   const caseId = ensureCaseId(input.caseId);
   const patientId = ensurePatientId(input.patientId);
   const treatment = input.interestedTreatment.trim();
+  const phoneInternationalNumber = buildInternationalNumber(input.phoneCountryCode, input.phoneLocalNumber, input.phone);
+  const whatsappInternationalNumber = buildInternationalNumber(input.whatsappCountryCode, input.whatsappLocalNumber, input.whatsapp);
 
   const lead: Lead = {
     id: createId("lead-dev"),
@@ -185,15 +262,26 @@ export function createLead(input: CreateLeadInput, existingLeads: Lead[]) {
     country: input.country.trim(),
     city: input.city.trim(),
     nationality: input.nationality.trim(),
-    phone: input.phone.trim(),
-    whatsapp: input.whatsapp.trim(),
+    phone: phoneInternationalNumber,
+    phoneCountryCode: input.phoneCountryCode,
+    phoneLocalNumber: input.phoneLocalNumber.trim(),
+    phoneInternationalNumber,
+    whatsapp: whatsappInternationalNumber,
+    whatsappCountryCode: input.whatsappCountryCode,
+    whatsappLocalNumber: input.whatsappLocalNumber.trim(),
+    whatsappInternationalNumber,
     email: input.email.trim(),
-    age: parseNumber(input.age),
+    primaryEmail: input.email.trim(),
+    confirmEmail: input.confirmEmail.trim(),
+    emailVerified: input.emailVerified === "Yes",
+    emailVerificationStatus: input.emailVerificationStatus,
+    age: calculateAgeFromDateOfBirth(input.dateOfBirth) || parseNumber(input.age),
     gender: input.gender,
     preferredLanguage: input.preferredLanguage.trim() || "English",
     leadSource: input.leadSource,
     interestedTreatment: treatment,
     medicalCondition: input.medicalCondition.trim(),
+    medicalHistory: input.medicalHistory.trim(),
     urgency: input.urgency,
     preferredDestination: input.preferredDestination.trim(),
     assignedCoordinator: input.assignedCoordinator.trim() || "Unassigned",

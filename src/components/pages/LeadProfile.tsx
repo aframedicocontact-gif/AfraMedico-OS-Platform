@@ -394,6 +394,8 @@ export function LeadProfile({ lead, onNavigate, onLeadUpdated }: LeadProfileProp
               <Field label="Lead Source" value={currentLead.leadSource} />
               <Field label="Current Status" value={<LeadStatusBadge status={currentLead.currentStatus} />} />
               <Field label="Priority" value={<LeadPriorityBadge priority={currentLead.priority} />} />
+              <Field label="Created At" value={formatTimestamp(currentLead.createdAt)} />
+              <Field label="Updated At" value={formatTimestamp(currentLead.updatedAt)} />
               <Field label="Interested Treatment" value={currentLead.interestedTreatment} wide />
               <Field label="Medical Condition" value={currentLead.medicalCondition} wide />
               <Field label="Internal Notes" value={<pre className="whitespace-pre-wrap font-sans text-sm">{currentLead.internalNotes || "None yet"}</pre>} wide />
@@ -589,6 +591,13 @@ export function LeadProfile({ lead, onNavigate, onLeadUpdated }: LeadProfileProp
 
 function today() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function formatTimestamp(value?: string) {
+  if (!value) return "Not recorded";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString();
 }
 
 function Field({ label, value, wide }: { label: string; value: ReactNode; wide?: boolean }) {

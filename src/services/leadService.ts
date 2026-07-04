@@ -99,15 +99,16 @@ function writeStoredLeads(leads: Lead[]) {
 }
 
 function defaultPipelineStage(status: LeadStatus): LeadPipelineStage {
+  if (status === "New Lead") return "New Lead";
   if (status === "Contacted") return "Initial Contact";
-  if (status === "Medical Documents Requested") return "Documents Requested";
-  if (status === "Documents Received") return "Documents Received";
-  if (status === "Medical Review") return "Medical Review";
-  if (status === "Hospital Quotes Requested") return "Hospital Selection";
-  if (status === "Hospital Quotes Received") return "Quotation Sent";
-  if (status === "Patient Decision Pending") return "Decision Pending";
-  if (status === "Accepted") return "Confirmed";
-  if (status === "Lost") return "Lost";
+  if (status === "Medical Documents Requested" || status === "Medical Records Requested") return "Documents Requested";
+  if (status === "Documents Received" || status === "Medical Records Received") return "Documents Received";
+  if (status === "Medical Review" || status === "Medical Review Requested") return "Medical Review";
+  if (status === "Hospital Quotes Requested" || status === "Quotation Requested") return "Hospital Selection";
+  if (status === "Hospital Quotes Received" || status === "Quotation Received") return "Quotation Sent";
+  if (status === "Patient Decision Pending" || status === "Patient Decision") return "Decision Pending";
+  if (status === "Accepted" || status === "Treatment Scheduled" || status === "Travel Planning" || status === "Completed") return "Confirmed";
+  if (status === "Lost" || status === "Closed") return "Lost";
   return "New Lead";
 }
 
@@ -250,4 +251,50 @@ export function createLead(input: CreateLeadInput, existingLeads: Lead[]) {
     lead,
     duplicateResult,
   };
+}
+
+export function createLeadItemId(prefix: string) {
+  return createId(prefix);
+}
+
+export function getLeadPipelineStage(status: LeadStatus) {
+  return defaultPipelineStage(status);
+}
+
+export function updateLead(updatedLead: Lead) {
+  const storedLeads = readStoredLeads();
+  const nextLead = {
+    ...updatedLead,
+    updatedAt: nowIso(),
+  };
+  const existingIndex = storedLeads.findIndex((lead) => lead.id === nextLead.id);
+  const nextLeads =
+    existingIndex >= 0
+      ? storedLeads.map((lead) => (lead.id === nextLead.id ? nextLead : lead))
+      : [nextLead, ...storedLeads];
+
+  writeStoredLeads(nextLeads);
+  return nextLead;
+}
+
+export function updateLeadWithActivity(
+  lead: Lead,
+  updates: Partial<Lead>,
+  title: string,
+  detail: string,
+) {
+  const nextLead = {
+    ...lead,
+    ...updates,
+    activity: [
+      {
+        date: today(),
+        title,
+        detail,
+      },
+      ...(lead.activity ?? []),
+    ],
+  };
+
+  return updateLead(nextLead);
 }

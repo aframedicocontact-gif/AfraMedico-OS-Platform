@@ -464,7 +464,13 @@ export function App() {
         <LeadDirectory leads={leads} onNavigate={setView} />
       ) : null}
       {view.name === "lead-profile" ? (
-        <LeadProfile lead={selectedLead} onNavigate={setView} />
+        <LeadProfile
+          lead={selectedLead}
+          onNavigate={setView}
+          onLeadUpdated={() => {
+            setLeads(getLeads(seedLeads));
+          }}
+        />
       ) : null}
       {view.name === "add-lead" ? (
         <AddLead

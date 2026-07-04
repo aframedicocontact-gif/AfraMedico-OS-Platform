@@ -19,13 +19,24 @@ export type LeadSource =
 
 export type LeadStatus =
   | "New"
+  | "New Lead"
   | "Contacted"
   | "Medical Documents Requested"
+  | "Medical Records Requested"
   | "Documents Received"
+  | "Medical Records Received"
   | "Medical Review"
+  | "Medical Review Requested"
   | "Hospital Quotes Requested"
+  | "Quotation Requested"
   | "Hospital Quotes Received"
+  | "Quotation Received"
   | "Patient Decision Pending"
+  | "Patient Decision"
+  | "Treatment Scheduled"
+  | "Travel Planning"
+  | "Completed"
+  | "Closed"
   | "Accepted"
   | "Lost";
 
@@ -68,6 +79,31 @@ export type LeadActivityItem = {
   date: string;
   title: string;
   detail: string;
+};
+
+export type LeadAttachment = {
+  id: string;
+  name: string;
+  category: string;
+  notes: string;
+  createdAt: string;
+};
+
+export type LeadCommunication = {
+  id: string;
+  type: "Email" | "WhatsApp";
+  subject: string;
+  summary: string;
+  createdAt: string;
+};
+
+export type LeadReminder = {
+  id: string;
+  title: string;
+  dueDate: string;
+  priority: LeadPriority;
+  status: "Open" | "Completed";
+  createdAt: string;
 };
 
 export type PatientCaseSummary = {
@@ -130,6 +166,9 @@ export type Lead = {
   internalNotes: string;
   patientCases: PatientCaseSummary[];
   activity: LeadActivityItem[];
+  attachments?: LeadAttachment[];
+  communications?: LeadCommunication[];
+  reminders?: LeadReminder[];
   createdAt?: string;
   updatedAt?: string;
 };

@@ -89,7 +89,7 @@ export type AppView =
   | { name: "enterprise-task-board" }
   | { name: "opportunity-dashboard" }
   | { name: "revenue-pipeline" }
-  | { name: "backlink-campaigns" }
+  | { name: "backlink-campaigns"; organizationIds?: string[]; campaignType?: string; openWizard?: boolean }
   | { name: "authority-discovery" }
   | { name: "organization-details"; organizationId: string }
   | { name: "outreach-workspace"; organizationId: string }
@@ -410,7 +410,12 @@ export function App() {
         <RevenuePipeline organizations={organizations} />
       ) : null}
       {view.name === "backlink-campaigns" ? (
-        <BacklinkCampaigns organizations={organizations} />
+        <BacklinkCampaigns
+          initialCampaignType={view.campaignType}
+          initialOrganizationIds={view.organizationIds}
+          initialOpenWizard={view.openWizard}
+          organizations={organizations}
+        />
       ) : null}
       {view.name === "authority-discovery" ? (
         <AuthorityDiscovery

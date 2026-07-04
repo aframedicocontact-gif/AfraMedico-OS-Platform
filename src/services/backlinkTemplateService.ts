@@ -7,10 +7,16 @@ import type {
 const campaignTypeMessages: Record<BacklinkCampaignType, string> = {
   "Resource Page Backlink": "request inclusion as an international patient education resource",
   "Guest Article": "offer a high-quality educational article for their audience",
+  "Partner Page": "request a partnership or resource listing",
   "Partner Page Listing": "request a partnership or resource listing",
+  "Medical Directory": "request inclusion in a relevant healthcare directory",
   "Medical Directory Listing": "request inclusion in a relevant healthcare directory",
+  "Conference": "explore conference collaboration and educational visibility",
   "Conference Collaboration": "explore conference collaboration and educational visibility",
+  "University": "explore an academic resource, education, or student-facing collaboration",
+  "Medical Association": "explore professional association collaboration and patient education visibility",
   "Academic Collaboration": "explore academic collaboration and patient education resources",
+  "NGO Partnership": "propose an awareness partnership for patients seeking care options",
   "NGO Awareness Partnership": "propose an awareness partnership for patients seeking care options",
   "Referral Partnership": "explore a referral partnership for international patient support",
 };

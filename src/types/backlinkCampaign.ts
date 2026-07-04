@@ -3,26 +3,31 @@ import type { OrganizationPriority } from "./organization";
 export type BacklinkCampaignType =
   | "Resource Page Backlink"
   | "Guest Article"
+  | "Partner Page"
   | "Partner Page Listing"
+  | "Medical Directory"
   | "Medical Directory Listing"
+  | "Conference"
   | "Conference Collaboration"
+  | "University"
+  | "Medical Association"
   | "Academic Collaboration"
+  | "NGO Partnership"
   | "NGO Awareness Partnership"
   | "Referral Partnership";
 
 export type BacklinkCampaignStatus = "Draft" | "Active" | "Paused" | "Completed" | "Archived";
 
 export type BacklinkOutreachStatus =
-  | "Not Started"
-  | "Website Checked"
-  | "Contact Found"
+  | "Discovered"
+  | "Qualified"
+  | "Added to Campaign"
   | "Message Prepared"
-  | "Sent"
-  | "Follow-up Needed"
-  | "Replied"
+  | "Message Sent"
+  | "Waiting Reply"
+  | "Follow-up"
   | "Backlink Won"
   | "Partnership Won"
-  | "Rejected"
   | "Archived";
 
 export type BacklinkStatus =
@@ -85,3 +90,5 @@ export type CreateBacklinkCampaignInput = {
   notes: string;
   targetOrganizationIds: string[];
 };
+
+export type CampaignWizardMode = "existing" | "new";

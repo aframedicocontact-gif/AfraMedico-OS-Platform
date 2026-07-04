@@ -76,6 +76,7 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
   const [priority, setPriority] = useState<"all" | OrganizationPriority>("all");
   const [status, setStatus] = useState<"all" | OrganizationStatus>("all");
   const [sortRules, setSortRules] = useState<SortRule[]>([]);
+  const [selectedOrganizationIds, setSelectedOrganizationIds] = useState<string[]>([]);
 
   const filteredOrganizations = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -157,6 +158,47 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
       }
 
       return current.filter((rule) => rule.column !== column);
+    });
+  }
+
+  function toggleSelected(organizationId: string) {
+    setSelectedOrganizationIds((current) =>
+      current.includes(organizationId)
+        ? current.filter((id) => id !== organizationId)
+        : [...current, organizationId],
+    );
+  }
+
+  function toggleAllFiltered() {
+    const filteredIds = filteredOrganizations.map((organization) => organization.id);
+    const allSelected = filteredIds.length > 0 && filteredIds.every((id) => selectedOrganizationIds.includes(id));
+    setSelectedOrganizationIds((current) =>
+      allSelected
+        ? current.filter((id) => !filteredIds.includes(id))
+        : Array.from(new Set([...current, ...filteredIds])),
+    );
+  }
+
+  function handleBulkAction(action: string) {
+    if (!action || selectedOrganizationIds.length === 0) return;
+
+    if (action === "export") {
+      exportSelectedOrganizations(organizations.filter((organization) => selectedOrganizationIds.includes(organization.id)));
+      return;
+    }
+
+    const campaignType =
+      action === "conference"
+        ? "Conference Collaboration"
+        : action === "partnership"
+          ? "Referral Partnership"
+          : "Resource Page Backlink";
+
+    onNavigate({
+      name: "backlink-campaigns",
+      organizationIds: selectedOrganizationIds,
+      campaignType,
+      openWizard: true,
     });
   }
 
@@ -262,10 +304,37 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
         </div>
       </div>
 
+      <div className="flex flex-col gap-3 rounded-lg border bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 text-sm font-medium text-emerald-950">
+            <input
+              checked={filteredOrganizations.length > 0 && filteredOrganizations.every((organization) => selectedOrganizationIds.includes(organization.id))}
+              type="checkbox"
+              onChange={toggleAllFiltered}
+            />
+            Select All
+          </label>
+          <span className="text-sm text-muted-foreground">{selectedOrganizationIds.length} selected</span>
+        </div>
+        <Select
+          aria-label="Bulk actions"
+          className="sm:w-[260px]"
+          value=""
+          onChange={(event) => handleBulkAction(event.target.value)}
+        >
+          <option value="">Actions</option>
+          <option value="backlink">Add to Backlink Campaign</option>
+          <option value="partnership">Add to Partnership Campaign</option>
+          <option value="conference">Add to Conference Campaign</option>
+          <option value="export">Export Selected</option>
+        </Select>
+      </div>
+
       <TableScrollContainer>
-        <Table className="min-w-[2320px] table-fixed">
+        <Table className="min-w-[2380px] table-fixed">
           <TableHeader className="sticky top-0 z-10 bg-white">
             <TableRow className="bg-emerald-50/70">
+              <TableHead className="w-[60px] min-w-[60px] bg-emerald-50">Select</TableHead>
               <SortableTableHead className="w-[260px] min-w-[260px]" column="organization" label="Organization" sortRules={sortRules} onSort={toggleSort} />
               <SortableTableHead className="w-[140px] min-w-[140px]" column="country" label="Country" sortRules={sortRules} onSort={toggleSort} />
               <SortableTableHead className="w-[210px] min-w-[210px]" column="category" label="Category" sortRules={sortRules} onSort={toggleSort} />
@@ -292,6 +361,13 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
                   })
                 }
               >
+                <TableCell className="w-[60px] min-w-[60px]" onClick={(event) => event.stopPropagation()}>
+                  <input
+                    checked={selectedOrganizationIds.includes(organization.id)}
+                    type="checkbox"
+                    onChange={() => toggleSelected(organization.id)}
+                  />
+                </TableCell>
                 <TableCell className="w-[260px] min-w-[260px]">
                   <div className="font-medium text-emerald-950">{organization.name}</div>
                   <div className="text-xs text-muted-foreground">DR {organization.domainRating}</div>
@@ -442,6 +518,32 @@ function getOrganizationUpdatedDate(organization: Organization) {
   };
 
   return metadata.updatedAt || metadata.updated_at || organization.activity[0]?.date || getOrganizationCreatedDate(organization);
+}
+
+function exportSelectedOrganizations(selectedOrganizations: Organization[]) {
+  if (typeof window === "undefined" || selectedOrganizations.length === 0) return;
+  const headers = ["Organization", "Country", "Category", "Priority", "Status", "Opportunity", "Email", "Website", "Next Step"];
+  const rows = selectedOrganizations.map((organization) => [
+    organization.name,
+    organization.country,
+    organization.category,
+    organization.priority,
+    statusLabels[organization.status],
+    organization.opportunityType,
+    organization.email,
+    organization.website,
+    organization.nextStep,
+  ]);
+  const csv = [headers, ...rows]
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "authority-crm-selected-organizations.csv";
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 function StatusBadge({ status }: { status: OrganizationStatus }) {

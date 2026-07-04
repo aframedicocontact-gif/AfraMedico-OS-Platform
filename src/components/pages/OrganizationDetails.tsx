@@ -1,4 +1,4 @@
-import { ArrowLeft, BrainCircuit, CalendarClock, ExternalLink, Handshake, Linkedin, Mail, Pencil } from "lucide-react";
+import { ArrowLeft, BrainCircuit, CalendarClock, ExternalLink, Handshake, Link2, Linkedin, Mail, Pencil } from "lucide-react";
 import type { ReactNode } from "react";
 import type { AppView } from "../../app/App";
 import { ExternalFieldLink } from "../common/ExternalFieldLink";
@@ -63,6 +63,14 @@ export function OrganizationDetails({ organization, onNavigate }: OrganizationDe
           >
             <BrainCircuit className="h-4 w-4" />
             Opportunity Intelligence
+          </Button>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => onNavigate({ name: "backlink-campaigns", organizationIds: [organization.id], openWizard: true })}
+          >
+            <Link2 className="h-4 w-4" />
+            Add to Campaign
           </Button>
           <Button variant="secondary" type="button">
             <Pencil className="h-4 w-4" />

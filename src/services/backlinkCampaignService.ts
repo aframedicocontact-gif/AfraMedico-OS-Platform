@@ -74,6 +74,31 @@ export function updateBacklinkCampaign(campaign: BacklinkCampaign) {
   );
 }
 
+export function addOrganizationsToBacklinkCampaign(
+  campaignId: string,
+  organizationIds: string[],
+  targetBacklinkUrl: string,
+  anchorText: string,
+) {
+  const campaigns = readCampaigns();
+  const nextCampaigns = campaigns.map((campaign) => {
+    if (campaign.id !== campaignId) return campaign;
+    const existingIds = new Set(campaign.targets.map((target) => target.organizationId));
+    const newOrganizationIds = organizationIds.filter((organizationId) => !existingIds.has(organizationId));
+
+    return {
+      ...campaign,
+      targets: [
+        ...campaign.targets,
+        ...createCampaignTargets(newOrganizationIds, targetBacklinkUrl || campaign.targetBacklinkUrl, anchorText || campaign.anchorText),
+      ],
+      updatedAt: today(),
+    };
+  });
+
+  return saveBacklinkCampaigns(nextCampaigns);
+}
+
 export function createCampaignTargets(
   organizationIds: string[],
   targetBacklinkUrl: string,
@@ -81,7 +106,7 @@ export function createCampaignTargets(
 ): BacklinkCampaignTarget[] {
   return organizationIds.map((organizationId) => ({
     organizationId,
-    outreachStatus: "Not Started",
+    outreachStatus: "Added to Campaign",
     backlinkStatus: "Not Requested",
     requestedUrl: targetBacklinkUrl,
     targetPage: "",

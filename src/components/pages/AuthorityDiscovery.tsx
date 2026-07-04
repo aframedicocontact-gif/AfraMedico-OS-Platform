@@ -344,9 +344,25 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
           </CardHeader>
           <CardContent className="min-w-0">
             {importSummary ? (
-              <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
-                Imported {importSummary.importedOrganizations} organizations. Skipped{" "}
-                {importSummary.duplicateOrganizations} duplicates.
+              <div className="mb-4 flex flex-col gap-3 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="font-medium">{importSummary.importedOrganizations} organizations imported successfully.</p>
+                  <p>Skipped {importSummary.duplicateOrganizations} duplicates. Create a Backlink Campaign?</p>
+                </div>
+                <Button
+                  disabled={importSummary.importedIds.length === 0}
+                  type="button"
+                  onClick={() =>
+                    onNavigate({
+                      name: "backlink-campaigns",
+                      organizationIds: importSummary.importedIds,
+                      campaignType: "Resource Page Backlink",
+                      openWizard: true,
+                    })
+                  }
+                >
+                  Create Campaign
+                </Button>
               </div>
             ) : null}
             {discoveryError ? (

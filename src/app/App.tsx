@@ -55,6 +55,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { supabaseConfig } from "../lib/supabaseClient";
 import { mergeImportedAuthorityOrganizations } from "../services/authorityImportService";
 import { getPasswordRecoveryTokensFromLocation } from "../services/authService";
+import { getLeads } from "../services/leadService";
 import organizationsJson from "../data/organizations.json";
 import leadsJson from "../data/leads.json";
 import referralPartnersJson from "../data/referral-partners.json";
@@ -148,7 +149,7 @@ export type AppView =
 
 const baseOrganizations = organizationsJson as Organization[];
 const referralPartners = referralPartnersJson as ReferralPartner[];
-const leads = leadsJson as Lead[];
+const seedLeads = leadsJson as Lead[];
 const protectionCases = referralProtectionJson as ProtectedReferralCase[];
 const caseProfiles = caseProfilesJson as CaseProfileRecord[];
 const clinicalReviews = clinicalReviewsJson as ClinicalReviewRecord[];
@@ -162,6 +163,7 @@ export function App() {
   const [organizations, setOrganizations] = useState<Organization[]>(() =>
     mergeImportedAuthorityOrganizations(baseOrganizations),
   );
+  const [leads, setLeads] = useState<Lead[]>(() => getLeads(seedLeads));
   const { isAuthenticated, loading: authLoading, signOut } = useAuth();
   const authRequired = supabaseConfig.isConfigured;
   const publicView = isPublicView(view.name);
@@ -460,7 +462,14 @@ export function App() {
         <LeadProfile lead={selectedLead} onNavigate={setView} />
       ) : null}
       {view.name === "add-lead" ? (
-        <AddLead onNavigate={setView} />
+        <AddLead
+          existingLeads={leads}
+          onLeadCreated={(lead) => {
+            setLeads(getLeads(seedLeads));
+            setView({ name: "lead-profile", leadId: lead.id });
+          }}
+          onNavigate={setView}
+        />
       ) : null}
       {view.name === "lead-pipeline" ? (
         <LeadPipeline leads={leads} onNavigate={setView} />

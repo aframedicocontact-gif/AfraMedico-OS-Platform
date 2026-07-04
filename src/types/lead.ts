@@ -130,4 +130,6 @@ export type Lead = {
   internalNotes: string;
   patientCases: PatientCaseSummary[];
   activity: LeadActivityItem[];
+  createdAt?: string;
+  updatedAt?: string;
 };

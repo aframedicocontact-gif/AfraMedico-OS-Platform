@@ -137,6 +137,13 @@ serve(async (req) => {
         name: asNullableString(body.organization_name) ?? (body.full_name as string),
         type: asNullableString(body.applicant_category),
         country: asNullableString(body.country),
+        // A website applicant enters the same lifecycle as any other
+        // prospect, not as an already-active partner. 'prospect' is the
+        // existing partners.status value closest to that; acquisition_source
+        // and lifecycle_stage track this intake path specifically.
+        status: 'prospect',
+        acquisition_source: 'website_application',
+        lifecycle_stage: 'approved_activation_pending',
       })
       .select('id')
       .single();

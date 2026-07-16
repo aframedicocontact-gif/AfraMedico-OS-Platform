@@ -1,10 +1,19 @@
 -- Phase 1A: Additive companion table for partners transferred from the
 -- AfraMedico Network Platform's Referral Partner program.
 --
--- This migration does not modify public.partners, public.organizations, or
--- any existing clinical/finance/commission table. Writes happen only through
--- the partner-network-intake edge function (service role); RLS below only
+-- Reuses the existing public.partners table (no new Partner module) and
+-- does not touch public.organizations, public.providers, or any existing
+-- clinical/finance/commission table. Writes happen only through the
+-- partner-network-intake edge function (service role); RLS below only
 -- grants read access, scoped by organization, to authenticated users.
+
+-- Additive nullable columns on the existing partners table so a transferred
+-- website applicant can be told apart from an automated-discovery prospect
+-- and can carry its own lifecycle stage without disturbing existing rows
+-- (both columns are nullable, so every pre-existing partner is unaffected).
+alter table public.partners
+  add column if not exists acquisition_source text,
+  add column if not exists lifecycle_stage text;
 
 create table public.partner_network_intake (
   id uuid primary key default gen_random_uuid(),

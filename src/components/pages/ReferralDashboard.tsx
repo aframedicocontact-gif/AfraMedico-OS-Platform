@@ -9,7 +9,7 @@ import {
   Users,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
-import type { AppView } from "../../app/App";
+import { useNavigate } from "react-router-dom";
 import { getLivePartners } from "../../services/partnerService";
 import type { LivePartner } from "../../types/partnerRecord";
 import type { ReferralPartner } from "../../types/referralPartner";
@@ -25,10 +25,10 @@ import {
 
 type ReferralDashboardProps = {
   partners: ReferralPartner[];
-  onNavigate: (view: AppView) => void;
 };
 
-export function ReferralDashboard({ partners, onNavigate }: ReferralDashboardProps) {
+export function ReferralDashboard({ partners }: ReferralDashboardProps) {
+  const navigate = useNavigate();
   const [livePartners, setLivePartners] = useState<LivePartner[]>([]);
   const [liveLoading, setLiveLoading] = useState(true);
   const [liveError, setLiveError] = useState<string | null>(null);
@@ -64,7 +64,7 @@ export function ReferralDashboard({ partners, onNavigate }: ReferralDashboardPro
 
   return (
     <div className="space-y-6">
-      <ReferralPartnerNav current="dashboard" onNavigate={onNavigate} />
+      <ReferralPartnerNav current="dashboard" />
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -75,10 +75,10 @@ export function ReferralDashboard({ partners, onNavigate }: ReferralDashboardPro
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "referral-pipeline" })}>
+          <Button variant="secondary" type="button" onClick={() => navigate("/referrals/pipeline")}>
             View pipeline
           </Button>
-          <Button type="button" onClick={() => onNavigate({ name: "add-referral-partner" })}>
+          <Button type="button" onClick={() => navigate("/referrals/add")}>
             <Plus className="h-4 w-4" />
             Add Partner
           </Button>
@@ -137,7 +137,7 @@ export function ReferralDashboard({ partners, onNavigate }: ReferralDashboardPro
                   key={stage}
                   className="grid w-full gap-2 rounded-md p-2 text-left hover:bg-muted sm:grid-cols-[170px_1fr_36px] sm:items-center"
                   type="button"
-                  onClick={() => onNavigate({ name: "referral-pipeline" })}
+                  onClick={() => navigate("/referrals/pipeline")}
                 >
                   <div className="text-sm font-medium">{stage}</div>
                   <div className="h-2 overflow-hidden rounded-full bg-emerald-50">
@@ -164,12 +164,7 @@ export function ReferralDashboard({ partners, onNavigate }: ReferralDashboardPro
                   key={partner.id}
                   className="w-full rounded-md border bg-white p-3 text-left hover:bg-muted"
                   type="button"
-                  onClick={() =>
-                    onNavigate({
-                      name: "referral-partner-profile",
-                      partnerId: partner.id,
-                    })
-                  }
+                  onClick={() => navigate(`/referrals/partners/${partner.id}`)}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>

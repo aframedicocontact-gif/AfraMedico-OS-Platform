@@ -1,30 +1,26 @@
-import type { AppView } from "../../app/App";
+import { useNavigate } from "react-router-dom";
 import { cn } from "../../lib/utils";
 import { Badge } from "../ui/badge";
 import type { AgreementStatus, ReferralStatus } from "../../types/referralPartner";
 
 export type ReferralNavKey = "dashboard" | "pipeline" | "directory";
 
-const referralNavItems: { key: ReferralNavKey; label: string; view: AppView }[] = [
-  { key: "dashboard", label: "Dashboard", view: { name: "referral-dashboard" } },
-  { key: "pipeline", label: "Pipeline", view: { name: "referral-pipeline" } },
-  { key: "directory", label: "Directory", view: { name: "partner-directory" } },
+const referralNavItems: { key: ReferralNavKey; label: string; path: string }[] = [
+  { key: "dashboard", label: "Dashboard", path: "/referrals" },
+  { key: "pipeline", label: "Pipeline", path: "/referrals/pipeline" },
+  { key: "directory", label: "Directory", path: "/referrals/directory" },
 ];
 
-export function ReferralPartnerNav({
-  current,
-  onNavigate,
-}: {
-  current: ReferralNavKey;
-  onNavigate: (view: AppView) => void;
-}) {
+export function ReferralPartnerNav({ current }: { current: ReferralNavKey }) {
+  const navigate = useNavigate();
+
   return (
     <nav className="inline-flex w-fit gap-1 rounded-md border bg-white p-1 shadow-sm">
       {referralNavItems.map((item) => (
         <button
           key={item.key}
           type="button"
-          onClick={() => onNavigate(item.view)}
+          onClick={() => navigate(item.path)}
           className={cn(
             "rounded px-3 py-1.5 text-sm font-medium transition-colors",
             current === item.key

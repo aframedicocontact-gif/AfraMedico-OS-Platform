@@ -3,7 +3,6 @@ import { AppShell } from "../components/layout/AppShell";
 import type { UnifiedCaseContext } from "../components/context/UnifiedPatientContext";
 import { AddLead } from "../components/pages/AddLead";
 import { AddOrganization } from "../components/pages/AddOrganization";
-import { AddPartner } from "../components/pages/AddPartner";
 import { AuthorityDiscovery } from "../components/pages/AuthorityDiscovery";
 import { BacklinkCampaigns } from "../components/pages/BacklinkCampaigns";
 import { CasesPage } from "../components/pages/CasesPage";
@@ -41,14 +40,11 @@ import { OpportunityIntelligence } from "../components/pages/OpportunityIntellig
 import { OpportunityIntelligenceDashboard } from "../components/pages/OpportunityIntelligenceDashboard";
 import { OutreachWorkspace } from "../components/pages/OutreachWorkspace";
 import { OperationsCenter } from "../components/pages/OperationsCenter";
-import { PartnerDirectory } from "../components/pages/PartnerDirectory";
-import { PartnerProfile } from "../components/pages/PartnerProfile";
 import { PatientsPage } from "../components/pages/PatientsPage";
 import { ProtectionAuditTrail } from "../components/pages/ProtectionAuditTrail";
 import { ProtectionDashboard } from "../components/pages/ProtectionDashboard";
-import { ReferralDashboard } from "../components/pages/ReferralDashboard";
 import { ReferralDetails } from "../components/pages/ReferralDetails";
-import { ReferralPipeline } from "../components/pages/ReferralPipeline";
+import { ReferralPartnersModule } from "../components/referrals/ReferralPartnersModule";
 import { ResetPasswordPage } from "../components/pages/ResetPasswordPage";
 import { RevenuePipeline } from "../components/pages/RevenuePipeline";
 import { useAuth } from "../contexts/AuthContext";
@@ -175,6 +171,18 @@ export function App() {
     }
   }, [authLoading, authRequired, isAuthenticated, publicView]);
 
+  useEffect(() => {
+    function handlePopState() {
+      if (hasPasswordRecoveryRoute()) return;
+      setView(resolveViewFromPathname(window.location.pathname));
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
   const selectedOrganization = useMemo(() => {
     if (
       view.name !== "organization-details" &&
@@ -189,17 +197,6 @@ export function App() {
       organizations[0]
     );
   }, [organizations, view]);
-
-  const selectedReferralPartner = useMemo(() => {
-    if (view.name !== "referral-partner-profile") {
-      return referralPartners[0];
-    }
-
-    return (
-      referralPartners.find((partner) => partner.id === view.partnerId) ??
-      referralPartners[0]
-    );
-  }, [view]);
 
   const selectedLead = useMemo(() => {
     if (view.name !== "lead-profile") {
@@ -442,20 +439,8 @@ export function App() {
       {view.name === "csv-import" ? (
         <CsvImport onNavigate={setView} />
       ) : null}
-      {view.name === "referral-dashboard" ? (
-        <ReferralDashboard partners={referralPartners} onNavigate={setView} />
-      ) : null}
-      {view.name === "partner-directory" ? (
-        <PartnerDirectory partners={referralPartners} onNavigate={setView} />
-      ) : null}
-      {view.name === "referral-partner-profile" ? (
-        <PartnerProfile partner={selectedReferralPartner} onNavigate={setView} />
-      ) : null}
-      {view.name === "add-referral-partner" ? (
-        <AddPartner onNavigate={setView} />
-      ) : null}
-      {view.name === "referral-pipeline" ? (
-        <ReferralPipeline partners={referralPartners} onNavigate={setView} />
+      {isReferralPartnersView(view.name) ? (
+        <ReferralPartnersModule partners={referralPartners} initialView={view} />
       ) : null}
       {view.name === "lead-dashboard" ? (
         <LeadDashboard leads={leads} onNavigate={setView} />
@@ -633,35 +618,43 @@ export function App() {
   );
 }
 
-function getInitialView(): AppView {
+function resolveViewFromPathname(pathname: string): AppView {
   if (hasPasswordRecoveryRoute()) {
     return { name: "reset-password" };
   }
 
-  if (window.location.pathname === "/login") {
+  if (pathname === "/login") {
     return { name: "login" };
   }
 
-  if (window.location.pathname === "/organizations") {
+  if (pathname === "/organizations") {
     return { name: "platform-organizations" };
   }
 
-  if (window.location.pathname === "/patients") {
+  if (pathname === "/patients") {
     return { name: "patients" };
   }
 
-  if (window.location.pathname === "/cases") {
+  if (pathname === "/cases") {
     return { name: "cases" };
   }
 
-  if (window.location.pathname.startsWith("/cases/")) {
-    const caseId = window.location.pathname.replace("/cases/", "").trim();
+  if (pathname.startsWith("/cases/")) {
+    const caseId = pathname.replace("/cases/", "").trim();
     if (caseId) {
       return { name: "case-detail", caseId };
     }
   }
 
+  if (pathname === "/referrals" || pathname.startsWith("/referrals/")) {
+    return { name: "referral-dashboard" };
+  }
+
   return { name: "dashboard" };
+}
+
+function getInitialView(): AppView {
+  return resolveViewFromPathname(window.location.pathname);
 }
 
 function hasPasswordRecoveryRoute() {
@@ -676,6 +669,16 @@ function hasPasswordRecoveryRoute() {
 
 function isPublicView(viewName: AppView["name"]) {
   return viewName === "login" || viewName === "reset-password";
+}
+
+function isReferralPartnersView(viewName: AppView["name"]) {
+  return (
+    viewName === "referral-dashboard" ||
+    viewName === "partner-directory" ||
+    viewName === "referral-partner-profile" ||
+    viewName === "add-referral-partner" ||
+    viewName === "referral-pipeline"
+  );
 }
 
 function usesCaseContextFrame(viewName: AppView["name"]) {

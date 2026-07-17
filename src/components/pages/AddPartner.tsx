@@ -1,27 +1,25 @@
 import { ArrowLeft, BadgeDollarSign, Building2, ClipboardList, Mail, Stethoscope } from "lucide-react";
 import type { ReactNode } from "react";
-import type { AppView } from "../../app/App";
+import { useNavigate } from "react-router-dom";
 import { ReferralPartnerNav } from "../referrals/referralUi";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 
-type AddPartnerProps = {
-  onNavigate: (view: AppView) => void;
-};
+export function AddPartner() {
+  const navigate = useNavigate();
 
-export function AddPartner({ onNavigate }: AddPartnerProps) {
   return (
     <div className="space-y-5">
-      <ReferralPartnerNav current="directory" onNavigate={onNavigate} />
+      <ReferralPartnerNav current="directory" />
 
       <div>
         <Button
           variant="ghost"
           className="-ml-3 mb-2"
           type="button"
-          onClick={() => onNavigate({ name: "partner-directory" })}
+          onClick={() => navigate("/referrals/directory")}
         >
           <ArrowLeft className="h-4 w-4" />
           Back
@@ -109,10 +107,10 @@ export function AddPartner({ onNavigate }: AddPartnerProps) {
               <p className="mt-1">Buttons return to the directory; no data is saved.</p>
             </div>
             <div className="flex flex-col gap-2">
-              <Button type="button" onClick={() => onNavigate({ name: "partner-directory" })}>
+              <Button type="button" onClick={() => navigate("/referrals/directory")}>
                 Preview complete
               </Button>
-              <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "partner-directory" })}>
+              <Button variant="secondary" type="button" onClick={() => navigate("/referrals/directory")}>
                 Cancel
               </Button>
             </div>

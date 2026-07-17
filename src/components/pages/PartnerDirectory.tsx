@@ -1,6 +1,6 @@
 import { Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { AppView } from "../../app/App";
+import { useNavigate } from "react-router-dom";
 import {
   formatLiveDate,
   formatLiveLifecycle,
@@ -31,7 +31,6 @@ import {
 
 type PartnerDirectoryProps = {
   partners: ReferralPartner[];
-  onNavigate: (view: AppView) => void;
 };
 
 const partnerTypes: PartnerType[] = [
@@ -55,7 +54,8 @@ const statuses: ReferralStatus[] = [
   "Inactive",
 ];
 
-export function PartnerDirectory({ partners, onNavigate }: PartnerDirectoryProps) {
+export function PartnerDirectory({ partners }: PartnerDirectoryProps) {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState("all");
   const [partnerType, setPartnerType] = useState<"all" | PartnerType>("all");
@@ -116,7 +116,7 @@ export function PartnerDirectory({ partners, onNavigate }: PartnerDirectoryProps
 
   return (
     <div className="space-y-5">
-      <ReferralPartnerNav current="directory" onNavigate={onNavigate} />
+      <ReferralPartnerNav current="directory" />
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -126,7 +126,7 @@ export function PartnerDirectory({ partners, onNavigate }: PartnerDirectoryProps
             Search and qualify physicians, clinics, diagnostic centers, NGOs, insurers, facilitators, and corporate referral sources.
           </p>
         </div>
-        <Button type="button" onClick={() => onNavigate({ name: "add-referral-partner" })}>
+        <Button type="button" onClick={() => navigate("/referrals/add")}>
           <Plus className="h-4 w-4" />
           Add Partner
         </Button>
@@ -168,7 +168,11 @@ export function PartnerDirectory({ partners, onNavigate }: PartnerDirectoryProps
               </TableHeader>
               <TableBody>
                 {livePartners.map((partner) => (
-                  <TableRow key={partner.id}>
+                  <TableRow
+                    key={partner.id}
+                    className="cursor-pointer"
+                    onClick={() => navigate(`/referrals/partners/${partner.id}`)}
+                  >
                     <TableCell className="font-medium text-emerald-950">
                       <div className="flex items-center gap-2">
                         {partner.partner_code}
@@ -259,12 +263,7 @@ export function PartnerDirectory({ partners, onNavigate }: PartnerDirectoryProps
               <TableRow
                 key={partner.id}
                 className="cursor-pointer"
-                onClick={() =>
-                  onNavigate({
-                    name: "referral-partner-profile",
-                    partnerId: partner.id,
-                  })
-                }
+                onClick={() => navigate(`/referrals/partners/${partner.id}`)}
               >
                 <TableCell>
                   <div className="font-medium text-emerald-950">{partner.organizationName}</div>

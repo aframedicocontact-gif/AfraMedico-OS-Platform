@@ -1,6 +1,9 @@
 import { ArrowLeft, ExternalLink, Mail, MessageCircle, Phone, UserRound } from "lucide-react";
-import type { ReactNode } from "react";
-import type { AppView } from "../../app/App";
+import { useEffect, useState, type ReactNode } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { isLivePartnerId, formatLiveDate, formatLiveLifecycle, formatLiveSource, formatLiveStatus } from "../../lib/livePartnerFormat";
+import { getLivePartnerById, getPartnerNetworkIntakeByPartnerId } from "../../services/partnerService";
+import type { LiveNetworkIntake, LivePartner } from "../../types/partnerRecord";
 import type { ReferralPartner } from "../../types/referralPartner";
 import {
   AgreementStatusBadge,
@@ -13,33 +16,205 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 type PartnerProfileProps = {
-  partner: ReferralPartner;
-  onNavigate: (view: AppView) => void;
+  partners: ReferralPartner[];
 };
 
-export function PartnerProfile({ partner, onNavigate }: PartnerProfileProps) {
+export function PartnerProfile({ partners }: PartnerProfileProps) {
+  const { partnerId } = useParams<{ partnerId: string }>();
+
+  if (!partnerId) {
+    return <PartnerNotFound />;
+  }
+
+  if (isLivePartnerId(partnerId)) {
+    return <LivePartnerProfile partnerId={partnerId} />;
+  }
+
+  const partner = partners.find((item) => item.id === partnerId);
+  if (!partner) {
+    return <PartnerNotFound />;
+  }
+
+  return <PrototypePartnerProfile partner={partner} />;
+}
+
+function BackActions() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Button variant="ghost" className="-ml-3" type="button" onClick={() => navigate("/referrals/pipeline")}>
+        <ArrowLeft className="h-4 w-4" />
+        Back to Pipeline
+      </Button>
+      <Button variant="ghost" type="button" onClick={() => navigate("/referrals/directory")}>
+        <ArrowLeft className="h-4 w-4" />
+        Back to Directory
+      </Button>
+    </div>
+  );
+}
+
+function PartnerNotFound() {
   return (
     <div className="space-y-5">
-      <ReferralPartnerNav current="directory" onNavigate={onNavigate} />
+      <ReferralPartnerNav current="directory" />
+      <BackActions />
+      <Card>
+        <CardContent className="space-y-2 p-8 text-center">
+          <p className="text-lg font-semibold text-emerald-950">Partner not found</p>
+          <p className="text-sm text-muted-foreground">
+            This partner profile doesn't exist or you don't have access to it.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function LivePartnerProfile({ partnerId }: { partnerId: string }) {
+  const [partner, setPartner] = useState<LivePartner | null>(null);
+  const [intake, setIntake] = useState<LiveNetworkIntake | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      const [partnerResult, intakeResult] = await Promise.all([
+        getLivePartnerById(partnerId),
+        getPartnerNetworkIntakeByPartnerId(partnerId),
+      ]);
+      if (cancelled) return;
+
+      setPartner(partnerResult.data);
+      setIntake(intakeResult.data);
+      setError(partnerResult.error);
+      setLoading(false);
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [partnerId]);
+
+  if (loading) {
+    return (
+      <div className="space-y-5">
+        <ReferralPartnerNav current="directory" />
+        <BackActions />
+        <p className="text-sm text-muted-foreground">Loading partner profile…</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-5">
+        <ReferralPartnerNav current="directory" />
+        <BackActions />
+        <Card>
+          <CardContent className="p-8 text-center text-sm text-rose-700">{error}</CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!partner) {
+    return <PartnerNotFound />;
+  }
+
+  return (
+    <div className="space-y-5">
+      <ReferralPartnerNav current="directory" />
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <Button
-            variant="ghost"
-            className="-ml-3 mb-2"
-            type="button"
-            onClick={() => onNavigate({ name: "partner-directory" })}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          <p className="text-sm font-medium text-primary">Partner Profile</p>
+          <BackActions />
+          <div className="mt-2 flex items-center gap-2">
+            <p className="text-sm font-medium text-primary">Partner Profile</p>
+            <Badge tone="success">Live</Badge>
+          </div>
+          <h2 className="mt-1 text-2xl font-semibold sm:text-3xl">{partner.name}</h2>
+          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+            {partner.type ?? "—"} partner in {partner.country ?? "—"}.
+          </p>
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Partner Overview</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-3">
+          <Field label="Partner Code" value={partner.partner_code} />
+          <Field label="Name" value={partner.name} />
+          <Field label="Country" value={partner.country ?? "—"} />
+          <Field label="Type" value={partner.type ?? "—"} />
+          <Field label="Status" value={formatLiveStatus(partner.status)} />
+          <Field label="Source" value={formatLiveSource(partner.acquisition_source)} />
+          <Field label="Lifecycle" value={formatLiveLifecycle(partner.lifecycle_stage)} />
+          <Field label="Created" value={formatLiveDate(partner.created_at)} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Transferred Application Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {intake ? (
+            <div className="grid gap-4 md:grid-cols-3">
+              <Field label="Applicant Name" value={intake.full_name} />
+              <Field label="Email" value={intake.email} />
+              <Field label="Phone" value={intake.phone ?? "—"} />
+              <Field label="Country" value={intake.country ?? "—"} />
+              <Field label="City" value={intake.city ?? "—"} />
+              <Field label="Organization" value={intake.organization_name ?? "—"} />
+              <Field label="Professional Title" value={intake.professional_title ?? "—"} />
+              <Field label="Applicant Category" value={intake.applicant_category ?? "—"} />
+              <Field label="Years of Experience" value={intake.years_experience ?? "—"} />
+              <Field label="Languages" value={intake.languages?.join(", ") || "—"} />
+              <Field label="Target Countries" value={intake.target_countries?.join(", ") || "—"} />
+              <Field label="LinkedIn" value={intake.linkedin ?? "—"} />
+              <Field label="Application Date" value={intake.application_date ? formatLiveDate(intake.application_date) : "—"} />
+              <Field label="Network Description" value={intake.network_description ?? "—"} wide />
+              <Field label="Relevant Experience" value={intake.relevant_experience ?? "—"} wide />
+              <Field label="Motivation" value={intake.motivation ?? "—"} wide />
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No transferred application record for this partner.</p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function PrototypePartnerProfile({ partner }: { partner: ReferralPartner }) {
+  const navigate = useNavigate();
+
+  return (
+    <div className="space-y-5">
+      <ReferralPartnerNav current="directory" />
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <BackActions />
+          <div className="mt-2 flex items-center gap-2">
+            <p className="text-sm font-medium text-primary">Partner Profile</p>
+            <Badge tone="muted">Prototype</Badge>
+          </div>
           <h2 className="mt-1 text-2xl font-semibold sm:text-3xl">{partner.organizationName}</h2>
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
             {partner.partnerType} partner in {partner.city}, {partner.country}.
           </p>
         </div>
-        <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "referral-pipeline" })}>
+        <Button variant="secondary" type="button" onClick={() => navigate("/referrals/pipeline")}>
           View Pipeline
         </Button>
       </div>

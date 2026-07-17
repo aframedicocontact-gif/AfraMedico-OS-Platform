@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { AppView } from "../../app/App";
+import { useNavigate } from "react-router-dom";
 import { formatLiveSource, formatLiveLifecycle, mapLivePartnerToPipelineStage } from "../../lib/livePartnerFormat";
 import { getLivePartners } from "../../services/partnerService";
 import type { LivePartner } from "../../types/partnerRecord";
@@ -18,10 +18,10 @@ import { KanbanBoard, KanbanColumn, KanbanColumns } from "../ui/kanban-board";
 
 type ReferralPipelineProps = {
   partners: ReferralPartner[];
-  onNavigate: (view: AppView) => void;
 };
 
-export function ReferralPipeline({ partners, onNavigate }: ReferralPipelineProps) {
+export function ReferralPipeline({ partners }: ReferralPipelineProps) {
+  const navigate = useNavigate();
   const [livePartners, setLivePartners] = useState<LivePartner[]>([]);
   const [liveLoading, setLiveLoading] = useState(true);
   const [liveError, setLiveError] = useState<string | null>(null);
@@ -48,7 +48,7 @@ export function ReferralPipeline({ partners, onNavigate }: ReferralPipelineProps
 
   return (
     <div className="space-y-5">
-      <ReferralPartnerNav current="pipeline" onNavigate={onNavigate} />
+      <ReferralPartnerNav current="pipeline" />
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -58,7 +58,7 @@ export function ReferralPipeline({ partners, onNavigate }: ReferralPipelineProps
             Track referral partner progress from prospecting through active referral generation.
           </p>
         </div>
-        <Button type="button" onClick={() => onNavigate({ name: "add-referral-partner" })}>
+        <Button type="button" onClick={() => navigate("/referrals/add")}>
           <Plus className="h-4 w-4" />
           Add Partner
         </Button>
@@ -92,9 +92,11 @@ export function ReferralPipeline({ partners, onNavigate }: ReferralPipelineProps
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {stageLivePartners.map((partner) => (
-                      <div
+                      <button
                         key={`live-${partner.id}`}
-                        className="w-full rounded-md border border-emerald-200 bg-emerald-50/50 p-3 shadow-sm"
+                        className="w-full rounded-md border border-emerald-200 bg-emerald-50/50 p-3 text-left shadow-sm hover:bg-emerald-50"
+                        type="button"
+                        onClick={() => navigate(`/referrals/partners/${partner.id}`)}
                       >
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-emerald-950">{partner.name}</p>
@@ -107,19 +109,14 @@ export function ReferralPipeline({ partners, onNavigate }: ReferralPipelineProps
                           <Badge tone="info">{formatLiveSource(partner.acquisition_source)}</Badge>
                           <Badge tone="gold">{formatLiveLifecycle(partner.lifecycle_stage)}</Badge>
                         </div>
-                      </div>
+                      </button>
                     ))}
                     {stagePartners.map((partner) => (
                       <button
                         key={partner.id}
                         className="w-full rounded-md border bg-white p-3 text-left shadow-sm hover:bg-muted"
                         type="button"
-                        onClick={() =>
-                          onNavigate({
-                            name: "referral-partner-profile",
-                            partnerId: partner.id,
-                          })
-                        }
+                        onClick={() => navigate(`/referrals/partners/${partner.id}`)}
                       >
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-emerald-950">{partner.organizationName}</p>

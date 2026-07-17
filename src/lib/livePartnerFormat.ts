@@ -43,6 +43,12 @@ export function formatLiveDate(value: string) {
   return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isLivePartnerId(value: string) {
+  return UUID_PATTERN.test(value);
+}
+
 export function mapLivePartnerToPipelineStage(partner: LivePartner): ReferralStatus {
   if (partner.lifecycle_stage === "approved_activation_pending") {
     return "Prospect";

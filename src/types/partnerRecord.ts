@@ -10,6 +10,30 @@ export type LivePartner = {
   created_at: string;
 };
 
+export type PartnerAuthLinkStatus = "invited" | "active" | "revoked";
+
+export type PartnerAuthLink = {
+  id: string;
+  partner_id: string;
+  status: PartnerAuthLinkStatus;
+  invited_at: string;
+  activated_at: string | null;
+};
+
+export type PartnerEntityType = "individual" | "organization";
+export type PartnerCommunicationMethod = "email" | "phone" | "whatsapp";
+
+export type PartnerOnboardingProfile = {
+  id: string;
+  partner_id: string;
+  legal_full_name: string | null;
+  legal_address: string | null;
+  entity_type: PartnerEntityType | null;
+  authorized_representative_name: string | null;
+  preferred_communication_method: PartnerCommunicationMethod | null;
+  completed_at: string | null;
+};
+
 export type LiveNetworkIntake = {
   id: string;
   partner_id: string;
@@ -30,4 +54,59 @@ export type LiveNetworkIntake = {
   linkedin: string | null;
   application_date: string | null;
   created_at: string;
+};
+
+// Allowlisted read model returned by the partner-activation Edge Function's
+// get_profile action. Deliberately excludes organization_id, internal ids,
+// resume paths, IP, gender, reviewer info, internal notes, and any
+// payment/tax/banking/secret fields -- this is the only shape a
+// partner-portal session is ever allowed to see.
+export type PartnerActivationProfilePartner = {
+  id: string;
+  partner_code: string;
+  name: string;
+  country: string | null;
+  type: string | null;
+  status: string;
+  lifecycle_stage: string | null;
+};
+
+export type PartnerActivationProfileIntake = {
+  full_name: string;
+  email: string;
+  phone: string | null;
+  country: string | null;
+  city: string | null;
+  organization_name: string | null;
+  professional_title: string | null;
+  applicant_category: string | null;
+  years_experience: number | null;
+  languages: string[] | null;
+  target_countries: string[] | null;
+  network_description: string | null;
+  relevant_experience: string | null;
+  motivation: string | null;
+  linkedin: string | null;
+};
+
+export type PartnerActivationProfileOnboarding = {
+  legal_full_name: string | null;
+  legal_address: string | null;
+  entity_type: PartnerEntityType | null;
+  authorized_representative_name: string | null;
+  preferred_communication_method: PartnerCommunicationMethod | null;
+  completed_at: string | null;
+};
+
+export type PartnerActivationProfileAuthLink = {
+  status: PartnerAuthLinkStatus;
+  invited_at: string;
+  activated_at: string | null;
+};
+
+export type PartnerActivationProfile = {
+  partner: PartnerActivationProfilePartner;
+  intake: PartnerActivationProfileIntake | null;
+  onboarding_profile: PartnerActivationProfileOnboarding | null;
+  auth_link: PartnerActivationProfileAuthLink;
 };

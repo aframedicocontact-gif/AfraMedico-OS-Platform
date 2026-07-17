@@ -136,6 +136,56 @@ export async function querySupabaseTable<T>(
   }
 }
 
+export async function callSupabaseFunction<T>(
+  functionName: string,
+  body: unknown = {},
+): Promise<SupabaseQueryResult<T>> {
+  if (!supabaseConfig.isConfigured) {
+    return {
+      data: null,
+      error: "Supabase environment variables are not configured.",
+      status: 0,
+    };
+  }
+
+  try {
+    const accessToken = getStoredAccessToken();
+    const baseUrl = supabaseConfig.url.replace(/\/$/, "");
+    const response = await fetch(`${baseUrl}/functions/v1/${functionName}`, {
+      method: "POST",
+      headers: {
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${accessToken ?? supabaseConfig.anonKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body ?? {}),
+    });
+
+    const responseText = await response.text();
+    const responseBody = responseText ? JSON.parse(responseText) : null;
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: responseBody?.message ?? responseBody?.error ?? response.statusText,
+        status: response.status,
+      };
+    }
+
+    return {
+      data: responseBody as T,
+      error: null,
+      status: response.status,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown Supabase function error.",
+      status: 0,
+    };
+  }
+}
+
 export const supabaseClient = {
   config: supabaseConfig,
   from<T>(tableName: string, queryParams: QueryParams = {}) {

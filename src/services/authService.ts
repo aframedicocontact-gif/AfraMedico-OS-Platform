@@ -132,6 +132,44 @@ export async function signInWithEmailPassword(email: string, password: string) {
   return session;
 }
 
+// Adopts a session directly from the access/refresh tokens Supabase places
+// in the URL hash fragment after a native invite or magic-link redirect.
+// This never talks to a custom token endpoint — it validates the
+// Supabase-issued access token against GET /auth/v1/user and then stores it
+// exactly like a password sign-in, so the rest of the app (querySupabaseTable,
+// callSupabaseFunction) picks it up automatically.
+export async function adoptSessionFromTokens(tokens: PasswordRecoveryTokens) {
+  if (!supabaseConfig.isConfigured) {
+    throw new Error("Supabase environment variables are not configured.");
+  }
+  if (!tokens.accessToken) {
+    throw new Error("No access token was found in the invite link.");
+  }
+
+  const response = await fetch(authUrl("/user"), {
+    headers: authHeaders(tokens.accessToken),
+  });
+
+  const responseText = await response.text();
+  const body = responseText ? JSON.parse(responseText) : null;
+
+  if (!response.ok) {
+    throw new Error(body?.msg ?? body?.message ?? "This invite link is invalid or has expired.");
+  }
+
+  const session: AuthSession = {
+    access_token: tokens.accessToken,
+    refresh_token: tokens.refreshToken ?? undefined,
+    token_type: tokens.tokenType ?? undefined,
+    user: body as AuthUser,
+  };
+
+  storeSession(session);
+  notifyAuthListeners("SIGNED_IN", session);
+
+  return session;
+}
+
 export async function updatePasswordWithRecoveryToken(accessToken: string, password: string) {
   if (!supabaseConfig.isConfigured) {
     throw new Error("Supabase environment variables are not configured.");

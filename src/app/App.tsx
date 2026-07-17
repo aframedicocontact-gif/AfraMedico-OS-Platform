@@ -40,6 +40,7 @@ import { OpportunityIntelligence } from "../components/pages/OpportunityIntellig
 import { OpportunityIntelligenceDashboard } from "../components/pages/OpportunityIntelligenceDashboard";
 import { OutreachWorkspace } from "../components/pages/OutreachWorkspace";
 import { OperationsCenter } from "../components/pages/OperationsCenter";
+import { PartnerActivation } from "../components/pages/PartnerActivation";
 import { PatientsPage } from "../components/pages/PatientsPage";
 import { ProtectionAuditTrail } from "../components/pages/ProtectionAuditTrail";
 import { ProtectionDashboard } from "../components/pages/ProtectionDashboard";
@@ -76,6 +77,7 @@ import type { ReferralPartner } from "../types/referralPartner";
 export type AppView =
   | { name: "login" }
   | { name: "reset-password" }
+  | { name: "partner-activate" }
   | { name: "dashboard" }
   | { name: "platform-organizations" }
   | { name: "patients" }
@@ -173,7 +175,7 @@ export function App() {
 
   useEffect(() => {
     function handlePopState() {
-      if (hasPasswordRecoveryRoute()) return;
+      if (hasPartnerActivationRoute() || hasPasswordRecoveryRoute()) return;
       setView(resolveViewFromPathname(window.location.pathname));
     }
 
@@ -329,6 +331,13 @@ export function App() {
 
   if (view.name === "reset-password") {
     return <ResetPasswordPage onComplete={openLogin} />;
+  }
+
+  if (view.name === "partner-activate") {
+    // Always sign out before returning to /login: adopting the invite-link
+    // session here must never leave a live partner-portal session active
+    // once the user leaves this standalone activation flow.
+    return <PartnerActivation onDone={handleSignOut} />;
   }
 
   if (authRequired && authLoading) {
@@ -619,6 +628,10 @@ export function App() {
 }
 
 function resolveViewFromPathname(pathname: string): AppView {
+  if (hasPartnerActivationRoute()) {
+    return { name: "partner-activate" };
+  }
+
   if (hasPasswordRecoveryRoute()) {
     return { name: "reset-password" };
   }
@@ -660,15 +673,31 @@ function getInitialView(): AppView {
 function hasPasswordRecoveryRoute() {
   const pathname = window.location.pathname;
 
-  return (
-    pathname === "/reset-password" ||
-    pathname === "/auth/callback" ||
-    Boolean(getPasswordRecoveryTokensFromLocation())
-  );
+  if (pathname === "/reset-password" || pathname === "/auth/callback") {
+    return true;
+  }
+
+  const tokens = getPasswordRecoveryTokensFromLocation();
+  return Boolean(tokens) && tokens?.type !== "invite" && tokens?.type !== "magiclink";
+}
+
+// Supabase's native invite email lands here with an access_token hash
+// fragment tagged type=invite (or, for a resent sign-in link, type=magiclink).
+// This must be checked before hasPasswordRecoveryRoute(), which otherwise
+// treats any access_token fragment as a password reset.
+function hasPartnerActivationRoute() {
+  const pathname = window.location.pathname;
+
+  if (pathname === "/partner/activate") {
+    return true;
+  }
+
+  const tokens = getPasswordRecoveryTokensFromLocation();
+  return tokens?.type === "invite" || tokens?.type === "magiclink";
 }
 
 function isPublicView(viewName: AppView["name"]) {
-  return viewName === "login" || viewName === "reset-password";
+  return viewName === "login" || viewName === "reset-password" || viewName === "partner-activate";
 }
 
 function isReferralPartnersView(viewName: AppView["name"]) {

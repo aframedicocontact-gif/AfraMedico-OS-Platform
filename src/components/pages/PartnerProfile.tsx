@@ -2,8 +2,13 @@ import { ArrowLeft, ExternalLink, Mail, MessageCircle, Phone, UserRound } from "
 import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { isLivePartnerId, formatLiveDate, formatLiveLifecycle, formatLiveSource, formatLiveStatus } from "../../lib/livePartnerFormat";
-import { getLivePartnerById, getPartnerNetworkIntakeByPartnerId } from "../../services/partnerService";
-import type { LiveNetworkIntake, LivePartner } from "../../types/partnerRecord";
+import {
+  getLivePartnerById,
+  getPartnerAuthLinkByPartnerId,
+  getPartnerNetworkIntakeByPartnerId,
+  sendPartnerActivationInvite,
+} from "../../services/partnerService";
+import type { LiveNetworkIntake, LivePartner, PartnerAuthLink } from "../../types/partnerRecord";
 import type { ReferralPartner } from "../../types/referralPartner";
 import {
   AgreementStatusBadge,
@@ -72,35 +77,74 @@ function PartnerNotFound() {
   );
 }
 
+// Edge Function error codes that need manual admin resolution get a plain-
+// language explanation here; everything else falls back to the raw code.
+const INVITE_ERROR_MESSAGES: Record<string, string> = {
+  email_belongs_to_internal_account:
+    "This partner's email belongs to an internal staff account and cannot be used for a partner invite. Confirm the correct email with the partner and update their application record.",
+  email_already_linked_to_different_partner:
+    "This partner's email is already linked to a different partner record. This needs manual resolution — check the Directory for a duplicate before resending.",
+  not_eligible: "This partner is not currently eligible for an activation invite.",
+  already_activated: "This partner has already signed in and activated the portal.",
+  no_transferred_email: "No transferred application email was found for this partner.",
+};
+
+function describeInviteError(code: string): string {
+  return INVITE_ERROR_MESSAGES[code] ?? code;
+}
+
 function LivePartnerProfile({ partnerId }: { partnerId: string }) {
   const [partner, setPartner] = useState<LivePartner | null>(null);
   const [intake, setIntake] = useState<LiveNetworkIntake | null>(null);
+  const [authLink, setAuthLink] = useState<PartnerAuthLink | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [isSendingInvite, setIsSendingInvite] = useState(false);
+  const [inviteMessage, setInviteMessage] = useState<string | null>(null);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+
+  async function load(signal: { cancelled: boolean }) {
+    setLoading(true);
+    const [partnerResult, intakeResult, authLinkResult] = await Promise.all([
+      getLivePartnerById(partnerId),
+      getPartnerNetworkIntakeByPartnerId(partnerId),
+      getPartnerAuthLinkByPartnerId(partnerId),
+    ]);
+    if (signal.cancelled) return;
+
+    setPartner(partnerResult.data);
+    setIntake(intakeResult.data);
+    setAuthLink(authLinkResult.data);
+    setError(partnerResult.error);
+    setLoading(false);
+  }
+
   useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      setLoading(true);
-      const [partnerResult, intakeResult] = await Promise.all([
-        getLivePartnerById(partnerId),
-        getPartnerNetworkIntakeByPartnerId(partnerId),
-      ]);
-      if (cancelled) return;
-
-      setPartner(partnerResult.data);
-      setIntake(intakeResult.data);
-      setError(partnerResult.error);
-      setLoading(false);
-    }
-
-    load();
-
+    const signal = { cancelled: false };
+    load(signal);
     return () => {
-      cancelled = true;
+      signal.cancelled = true;
     };
   }, [partnerId]);
+
+  async function handleSendActivationInvite() {
+    setIsSendingInvite(true);
+    setInviteMessage(null);
+    setInviteError(null);
+
+    const result = await sendPartnerActivationInvite(partnerId);
+
+    setIsSendingInvite(false);
+
+    if (result.error) {
+      setInviteError(describeInviteError(result.error));
+      return;
+    }
+
+    setInviteMessage(result.data?.message ?? "Activation invite sent.");
+    await load({ cancelled: false });
+  }
 
   if (loading) {
     return (
@@ -144,7 +188,33 @@ function LivePartnerProfile({ partnerId }: { partnerId: string }) {
             {partner.type ?? "—"} partner in {partner.country ?? "—"}.
           </p>
         </div>
+
+        {partner.lifecycle_stage === "approved_activation_pending" ? (
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+            <Button type="button" disabled={isSendingInvite} onClick={() => void handleSendActivationInvite()}>
+              {isSendingInvite
+                ? "Sending…"
+                : authLink
+                  ? "Resend Activation Invite"
+                  : "Send Activation Invite"}
+            </Button>
+            {authLink ? (
+              <p className="text-xs text-muted-foreground">
+                Invite {authLink.status} {formatLiveDate(authLink.invited_at)}.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </div>
+
+      {inviteMessage ? (
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+          {inviteMessage}
+        </div>
+      ) : null}
+      {inviteError ? (
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{inviteError}</div>
+      ) : null}
 
       <Card>
         <CardHeader>

@@ -4,6 +4,7 @@ import type { AppView } from "../../app/App";
 import type { ReferralPartner } from "../../types/referralPartner";
 import {
   AgreementStatusBadge,
+  ReferralPartnerNav,
   ReferralStatusBadge,
   formatCurrency,
 } from "../referrals/referralUi";
@@ -19,6 +20,8 @@ type PartnerProfileProps = {
 export function PartnerProfile({ partner, onNavigate }: PartnerProfileProps) {
   return (
     <div className="space-y-5">
+      <ReferralPartnerNav current="directory" onNavigate={onNavigate} />
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <Button

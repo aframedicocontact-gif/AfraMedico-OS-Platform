@@ -1,6 +1,7 @@
 import { ArrowLeft, BadgeDollarSign, Building2, ClipboardList, Mail, Stethoscope } from "lucide-react";
 import type { ReactNode } from "react";
 import type { AppView } from "../../app/App";
+import { ReferralPartnerNav } from "../referrals/referralUi";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
@@ -13,6 +14,8 @@ type AddPartnerProps = {
 export function AddPartner({ onNavigate }: AddPartnerProps) {
   return (
     <div className="space-y-5">
+      <ReferralPartnerNav current="directory" onNavigate={onNavigate} />
+
       <div>
         <Button
           variant="ghost"

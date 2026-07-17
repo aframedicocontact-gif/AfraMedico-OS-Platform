@@ -1,7 +1,17 @@
 import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 import type { AppView } from "../../app/App";
+import { formatLiveSource, formatLiveLifecycle, mapLivePartnerToPipelineStage } from "../../lib/livePartnerFormat";
+import { getLivePartners } from "../../services/partnerService";
+import type { LivePartner } from "../../types/partnerRecord";
 import type { ReferralPartner } from "../../types/referralPartner";
-import { ReferralStatusBadge, formatCurrency, pipelineStages } from "../referrals/referralUi";
+import {
+  ReferralPartnerNav,
+  ReferralStatusBadge,
+  formatCurrency,
+  pipelineStages,
+} from "../referrals/referralUi";
+import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { KanbanBoard, KanbanColumn, KanbanColumns } from "../ui/kanban-board";
@@ -12,8 +22,34 @@ type ReferralPipelineProps = {
 };
 
 export function ReferralPipeline({ partners, onNavigate }: ReferralPipelineProps) {
+  const [livePartners, setLivePartners] = useState<LivePartner[]>([]);
+  const [liveLoading, setLiveLoading] = useState(true);
+  const [liveError, setLiveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadLivePartners() {
+      setLiveLoading(true);
+      const result = await getLivePartners();
+      if (cancelled) return;
+
+      setLivePartners(result.data ?? []);
+      setLiveError(result.error);
+      setLiveLoading(false);
+    }
+
+    loadLivePartners();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="space-y-5">
+      <ReferralPartnerNav current="pipeline" onNavigate={onNavigate} />
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-medium text-primary">Referral Partner CRM</p>
@@ -28,10 +64,20 @@ export function ReferralPipeline({ partners, onNavigate }: ReferralPipelineProps
         </Button>
       </div>
 
+      {liveLoading ? (
+        <p className="text-xs text-muted-foreground">Loading live partners…</p>
+      ) : liveError ? (
+        <p className="text-xs text-rose-700">{liveError}</p>
+      ) : null}
+
       <KanbanBoard>
         <KanbanColumns>
           {pipelineStages.map((stage) => {
+            const stageLivePartners = livePartners.filter(
+              (partner) => mapLivePartnerToPipelineStage(partner) === stage,
+            );
             const stagePartners = partners.filter((partner) => partner.referralStatus === stage);
+            const totalCount = stageLivePartners.length + stagePartners.length;
 
             return (
               <KanbanColumn key={stage}>
@@ -40,11 +86,29 @@ export function ReferralPipeline({ partners, onNavigate }: ReferralPipelineProps
                     <CardTitle className="flex items-center justify-between gap-2 text-sm">
                       <span>{stage}</span>
                       <span className="rounded bg-emerald-50 px-2 py-1 text-xs text-emerald-900">
-                        {stagePartners.length}
+                        {totalCount}
                       </span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
+                    {stageLivePartners.map((partner) => (
+                      <div
+                        key={`live-${partner.id}`}
+                        className="w-full rounded-md border border-emerald-200 bg-emerald-50/50 p-3 shadow-sm"
+                      >
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-emerald-950">{partner.name}</p>
+                          <Badge tone="success">Live</Badge>
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {partner.partner_code} · {partner.country ?? "—"}
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <Badge tone="info">{formatLiveSource(partner.acquisition_source)}</Badge>
+                          <Badge tone="gold">{formatLiveLifecycle(partner.lifecycle_stage)}</Badge>
+                        </div>
+                      </div>
+                    ))}
                     {stagePartners.map((partner) => (
                       <button
                         key={partner.id}
@@ -57,7 +121,10 @@ export function ReferralPipeline({ partners, onNavigate }: ReferralPipelineProps
                           })
                         }
                       >
-                        <p className="font-medium text-emerald-950">{partner.organizationName}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-emerald-950">{partner.organizationName}</p>
+                          <Badge tone="muted">Prototype</Badge>
+                        </div>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {partner.city}, {partner.country}
                         </p>
@@ -72,7 +139,7 @@ export function ReferralPipeline({ partners, onNavigate }: ReferralPipelineProps
                         </p>
                       </button>
                     ))}
-                    {stagePartners.length === 0 ? (
+                    {totalCount === 0 ? (
                       <div className="rounded-md border border-dashed p-4 text-center text-sm text-muted-foreground">
                         No partners in this stage.
                       </div>

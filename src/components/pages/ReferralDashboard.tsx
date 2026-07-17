@@ -8,12 +8,20 @@ import {
   Stethoscope,
   Users,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { AppView } from "../../app/App";
+import { getLivePartners } from "../../services/partnerService";
+import type { LivePartner } from "../../types/partnerRecord";
 import type { ReferralPartner } from "../../types/referralPartner";
+import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ReferralStatusBadge, formatCurrency, pipelineStages } from "../referrals/referralUi";
+import {
+  ReferralPartnerNav,
+  ReferralStatusBadge,
+  formatCurrency,
+  pipelineStages,
+} from "../referrals/referralUi";
 
 type ReferralDashboardProps = {
   partners: ReferralPartner[];
@@ -21,6 +29,30 @@ type ReferralDashboardProps = {
 };
 
 export function ReferralDashboard({ partners, onNavigate }: ReferralDashboardProps) {
+  const [livePartners, setLivePartners] = useState<LivePartner[]>([]);
+  const [liveLoading, setLiveLoading] = useState(true);
+  const [liveError, setLiveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadLivePartners() {
+      setLiveLoading(true);
+      const result = await getLivePartners();
+      if (cancelled) return;
+
+      setLivePartners(result.data ?? []);
+      setLiveError(result.error);
+      setLiveLoading(false);
+    }
+
+    loadLivePartners();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const activePartners = partners.filter((partner) => partner.referralStatus === "Active Referrer").length;
   const newReferrals = partners.reduce((sum, partner) => sum + partner.newReferrals, 0);
   const patientsReferred = partners.reduce((sum, partner) => sum + partner.patientsReferred, 0);
@@ -32,6 +64,8 @@ export function ReferralDashboard({ partners, onNavigate }: ReferralDashboardPro
 
   return (
     <div className="space-y-6">
+      <ReferralPartnerNav current="dashboard" onNavigate={onNavigate} />
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-medium text-primary">Referral Partner CRM</p>
@@ -49,6 +83,33 @@ export function ReferralDashboard({ partners, onNavigate }: ReferralDashboardPro
             Add Partner
           </Button>
         </div>
+      </div>
+
+      <Card className="border-emerald-100">
+        <CardContent className="flex items-center justify-between gap-3 p-4">
+          <div className="flex items-center gap-3">
+            <span className="rounded-md bg-emerald-50 p-2 text-emerald-800">
+              <Handshake className="h-4 w-4" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-muted-foreground">Live Partners</p>
+                <Badge tone="success">Live</Badge>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {liveError ? liveError : "Sourced directly from the AfraMedico Supabase database."}
+              </p>
+            </div>
+          </div>
+          <span className="text-xl font-semibold text-emerald-950">
+            {liveLoading ? "…" : liveError ? "—" : livePartners.length}
+          </span>
+        </CardContent>
+      </Card>
+
+      <div className="flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-emerald-950">Prototype Metrics</h3>
+        <Badge tone="muted">Prototype Data</Badge>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">

@@ -1,8 +1,11 @@
 import { Plus, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { AppView } from "../../app/App";
+import { getLivePartners } from "../../services/partnerService";
+import type { LivePartner } from "../../types/partnerRecord";
 import type { PartnerType, ReferralPartner, ReferralStatus } from "../../types/referralPartner";
 import { AgreementStatusBadge, ReferralStatusBadge, formatCurrency } from "../referrals/referralUi";
+import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
@@ -14,6 +17,47 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+
+const LIVE_STATUS_LABELS: Record<string, string> = {
+  prospect: "Prospect",
+};
+
+const LIVE_SOURCE_LABELS: Record<string, string> = {
+  website_application: "Website Application",
+};
+
+const LIVE_LIFECYCLE_LABELS: Record<string, string> = {
+  approved_activation_pending: "Approved – Activation Pending",
+};
+
+function humanizeLiveValue(value: string) {
+  return value
+    .split("_")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function formatLiveStatus(value: string | null) {
+  if (!value) return "—";
+  return LIVE_STATUS_LABELS[value] ?? humanizeLiveValue(value);
+}
+
+function formatLiveSource(value: string | null) {
+  if (!value) return "—";
+  return LIVE_SOURCE_LABELS[value] ?? humanizeLiveValue(value);
+}
+
+function formatLiveLifecycle(value: string | null) {
+  if (!value) return "—";
+  return LIVE_LIFECYCLE_LABELS[value] ?? humanizeLiveValue(value);
+}
+
+function formatLiveDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+}
 
 type PartnerDirectoryProps = {
   partners: ReferralPartner[];
@@ -46,6 +90,30 @@ export function PartnerDirectory({ partners, onNavigate }: PartnerDirectoryProps
   const [country, setCountry] = useState("all");
   const [partnerType, setPartnerType] = useState<"all" | PartnerType>("all");
   const [status, setStatus] = useState<"all" | ReferralStatus>("all");
+
+  const [livePartners, setLivePartners] = useState<LivePartner[]>([]);
+  const [liveLoading, setLiveLoading] = useState(true);
+  const [liveError, setLiveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadLivePartners() {
+      setLiveLoading(true);
+      const result = await getLivePartners();
+      if (cancelled) return;
+
+      setLivePartners(result.data ?? []);
+      setLiveError(result.error);
+      setLiveLoading(false);
+    }
+
+    loadLivePartners();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const countries = Array.from(new Set(partners.map((partner) => partner.country))).sort();
 
@@ -90,6 +158,69 @@ export function PartnerDirectory({ partners, onNavigate }: PartnerDirectoryProps
           <Plus className="h-4 w-4" />
           Add Partner
         </Button>
+      </div>
+
+      <div className="rounded-lg border bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b px-4 py-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-emerald-950">Live Partners</h3>
+              <Badge tone="success">Live</Badge>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Fetched from the AfraMedico Supabase database, including transferred Network applicants.
+            </p>
+          </div>
+        </div>
+
+        {liveLoading ? (
+          <div className="px-4 py-6 text-sm text-muted-foreground">Loading live partners…</div>
+        ) : liveError ? (
+          <div className="px-4 py-6 text-sm text-rose-700">{liveError}</div>
+        ) : livePartners.length === 0 ? (
+          <div className="px-4 py-6 text-sm text-muted-foreground">No live partner records yet.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table className="min-w-[960px]">
+              <TableHeader>
+                <TableRow className="bg-emerald-50/70">
+                  <TableHead>Partner Code</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Country</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>Lifecycle</TableHead>
+                  <TableHead>Created</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {livePartners.map((partner) => (
+                  <TableRow key={partner.id}>
+                    <TableCell className="font-medium text-emerald-950">
+                      <div className="flex items-center gap-2">
+                        {partner.partner_code}
+                        <Badge tone="success">Live</Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>{partner.name}</TableCell>
+                    <TableCell>{partner.country ?? "—"}</TableCell>
+                    <TableCell>{partner.type ?? "—"}</TableCell>
+                    <TableCell>{formatLiveStatus(partner.status)}</TableCell>
+                    <TableCell>{formatLiveSource(partner.acquisition_source)}</TableCell>
+                    <TableCell>{formatLiveLifecycle(partner.lifecycle_stage)}</TableCell>
+                    <TableCell>{formatLiveDate(partner.created_at)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-emerald-950">Prototype Data</h3>
+        <Badge tone="muted">Prototype Data</Badge>
       </div>
 
       <div className="rounded-lg border bg-white p-4 shadow-sm">

@@ -89,6 +89,43 @@ export async function resendPartnerAgreementEmail(
   return { data: result.data, error: null };
 }
 
+export type GenerateCorrectedAgreementPdfResponse = {
+  success: boolean;
+  artifact: { id: string; storage_path: string; sha256: string; renderer_version: string; generated_at: string };
+};
+
+export async function generateCorrectedAgreementPdf(
+  partnerId: string,
+): Promise<PartnerAgreementAdminResult<GenerateCorrectedAgreementPdfResponse>> {
+  const result = await callSupabaseFunction<GenerateCorrectedAgreementPdfResponse>(
+    "partner-agreement-admin",
+    { action: "generate_corrected_pdf", partner_id: partnerId },
+  );
+
+  if (result.error) {
+    logPartnerAgreementAdminWarning("generateCorrectedAgreementPdf", result.error);
+    return { data: null, error: result.error };
+  }
+
+  return { data: result.data, error: null };
+}
+
+export async function sendCorrectedAgreementPdf(
+  partnerId: string,
+): Promise<PartnerAgreementAdminResult<{ success: boolean; email_status: string }>> {
+  const result = await callSupabaseFunction<{ success: boolean; email_status: string }>(
+    "partner-agreement-admin",
+    { action: "send_corrected_pdf", partner_id: partnerId },
+  );
+
+  if (result.error) {
+    logPartnerAgreementAdminWarning("sendCorrectedAgreementPdf", result.error);
+    return { data: null, error: result.error };
+  }
+
+  return { data: result.data, error: null };
+}
+
 export async function getPartnerAgreementAdminDownloadUrl(
   partnerId: string,
 ): Promise<PartnerAgreementAdminResult<{ success: boolean; url: string; expires_in: number }>> {

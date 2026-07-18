@@ -134,7 +134,7 @@ export const SignaturePad = forwardRef<SignaturePadHandle, Props>(function Signa
       <div
         role="img"
         aria-label={`${label} pad. Draw your signature using a mouse, touch, or stylus in the box below.`}
-        className="w-full overflow-hidden rounded-md border border-input bg-white"
+        className="mx-auto w-full max-w-[420px] overflow-hidden rounded-md border border-input bg-white"
         style={{ aspectRatio: `${SIGNATURE_BOX.width} / ${SIGNATURE_BOX.height}` }}
       >
         <canvas

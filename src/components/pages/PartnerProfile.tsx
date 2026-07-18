@@ -10,9 +10,11 @@ import {
 } from "../../services/partnerService";
 import {
   countersignPartnerAgreement,
+  generateCorrectedAgreementPdf,
   getPartnerAgreementAdminDownloadUrl,
   getPartnerAgreementForAdmin,
   resendPartnerAgreementEmail,
+  sendCorrectedAgreementPdf,
   type PartnerAgreementAdminAgreement,
 } from "../../services/partnerAgreementAdminService";
 import type { LiveNetworkIntake, LivePartner, PartnerAuthLink } from "../../types/partnerRecord";
@@ -145,6 +147,8 @@ function LivePartnerProfile({ partnerId }: { partnerId: string }) {
   const [countersignError, setCountersignError] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isResendingEmail, setIsResendingEmail] = useState(false);
+  const [isGeneratingCorrectedPdf, setIsGeneratingCorrectedPdf] = useState(false);
+  const [isSendingCorrectedPdf, setIsSendingCorrectedPdf] = useState(false);
 
   async function loadAgreement() {
     const result = await getPartnerAgreementForAdmin(partnerId);
@@ -224,6 +228,36 @@ function LivePartnerProfile({ partnerId }: { partnerId: string }) {
     }
     setCountersignMessage(
       result.data?.email_status === "sent" ? "Signed agreement emailed to the partner." : "Email delivery attempted; check status shortly.",
+    );
+    await loadAgreement();
+  }
+
+  async function handleGenerateCorrectedPdf() {
+    setIsGeneratingCorrectedPdf(true);
+    setCountersignError(null);
+    setCountersignMessage(null);
+    const result = await generateCorrectedAgreementPdf(partnerId);
+    setIsGeneratingCorrectedPdf(false);
+    if (result.error) {
+      setCountersignError(result.error);
+      return;
+    }
+    setCountersignMessage("Corrected PDF generated. The prior executed PDF is retained for audit and marked superseded.");
+    await loadAgreement();
+  }
+
+  async function handleSendCorrectedPdf() {
+    setIsSendingCorrectedPdf(true);
+    setCountersignError(null);
+    setCountersignMessage(null);
+    const result = await sendCorrectedAgreementPdf(partnerId);
+    setIsSendingCorrectedPdf(false);
+    if (result.error) {
+      setCountersignError(result.error);
+      return;
+    }
+    setCountersignMessage(
+      result.data?.email_status === "sent" ? "Corrected agreement emailed to the partner." : "Email delivery attempted; check status shortly.",
     );
     await loadAgreement();
   }
@@ -419,6 +453,25 @@ function LivePartnerProfile({ partnerId }: { partnerId: string }) {
                   <Button type="button" variant="secondary" disabled={isResendingEmail} onClick={() => void handleResendEmail()}>
                     {isResendingEmail ? "Sending…" : agreement.final_pdf_email_status === "sent" ? "Resend Email" : "Send Email"}
                   </Button>
+                </div>
+              ) : null}
+
+              {agreement.status === "fully_executed" ? (
+                <div className="space-y-2 rounded-md border border-dashed p-4">
+                  <p className="text-xs font-medium uppercase text-muted-foreground">PDF Correction (admin only)</p>
+                  <p className="text-xs text-muted-foreground">
+                    Re-renders the executed PDF from the same immutable agreement and signature data using the current
+                    layout/typography fixes. The original PDF, hashes, and signatures are retained for audit and marked
+                    superseded. No email is sent automatically.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <Button type="button" variant="secondary" disabled={isGeneratingCorrectedPdf} onClick={() => void handleGenerateCorrectedPdf()}>
+                      {isGeneratingCorrectedPdf ? "Generating…" : "Generate Corrected PDF"}
+                    </Button>
+                    <Button type="button" variant="secondary" disabled={isSendingCorrectedPdf} onClick={() => void handleSendCorrectedPdf()}>
+                      {isSendingCorrectedPdf ? "Sending…" : "Send Corrected Executed PDF"}
+                    </Button>
+                  </div>
                 </div>
               ) : null}
             </>

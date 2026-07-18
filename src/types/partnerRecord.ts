@@ -110,3 +110,45 @@ export type PartnerActivationProfile = {
   onboarding_profile: PartnerActivationProfileOnboarding | null;
   auth_link: PartnerActivationProfileAuthLink;
 };
+
+export type PartnerPortalAgreement = {
+  id: string;
+  title: string;
+  template_version: string;
+  agreement_text: string;
+  commission_rate: number;
+  status: "pending_signature" | "signed" | "void";
+  issued_at: string;
+  signed_at: string | null;
+  signer_name: string | null;
+  signer_title: string | null;
+};
+
+export type PartnerPortalReferral = {
+  id: string;
+  referral_code: string;
+  patient_full_name: string;
+  patient_country: string;
+  requested_treatment: string;
+  referral_status: string;
+  submitted_at: string;
+};
+
+export type PartnerPortalDashboard = {
+  partner: {
+    partner_code: string;
+    name: string;
+    country: string | null;
+    type: string | null;
+    status: string;
+    lifecycle_stage: string | null;
+  };
+  profile: {
+    legal_full_name: string;
+    entity_type: PartnerEntityType;
+    authorized_representative_name: string | null;
+  };
+  agreement: PartnerPortalAgreement;
+  can_submit_referral: boolean;
+  referrals: PartnerPortalReferral[];
+};

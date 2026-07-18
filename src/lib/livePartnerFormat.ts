@@ -15,6 +15,8 @@ const LIVE_LIFECYCLE_LABELS: Record<string, string> = {
   invitation_sent: "Invitation Sent",
   registration_started: "Registration Started",
   profile_completed: "Profile Completed",
+  agreement_pending: "Agreement Pending",
+  active_partner: "Active Partner",
 };
 
 function humanizeLiveValue(value: string) {
@@ -62,6 +64,10 @@ export function mapLivePartnerToPipelineStage(partner: LivePartner): ReferralSta
       return "Registration Started";
     case "profile_completed":
       return "Profile Completed";
+    case "agreement_pending":
+      return "Agreement Pending";
+    case "active_partner":
+      return "Active Referrer";
   }
 
   const humanizedStatus = formatLiveStatus(partner.status);

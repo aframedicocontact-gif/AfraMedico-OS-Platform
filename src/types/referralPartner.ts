@@ -13,6 +13,7 @@ export type ReferralStatus =
   | "Invitation Sent"
   | "Registration Started"
   | "Profile Completed"
+  | "Agreement Pending"
   | "Contacted"
   | "Meeting Scheduled"
   | "Negotiation"

@@ -41,6 +41,7 @@ import { OpportunityIntelligenceDashboard } from "../components/pages/Opportunit
 import { OutreachWorkspace } from "../components/pages/OutreachWorkspace";
 import { OperationsCenter } from "../components/pages/OperationsCenter";
 import { PartnerActivation } from "../components/pages/PartnerActivation";
+import { PartnerDashboard } from "../components/pages/PartnerDashboard";
 import { PatientsPage } from "../components/pages/PatientsPage";
 import { ProtectionAuditTrail } from "../components/pages/ProtectionAuditTrail";
 import { ProtectionDashboard } from "../components/pages/ProtectionDashboard";
@@ -78,6 +79,7 @@ export type AppView =
   | { name: "login" }
   | { name: "reset-password" }
   | { name: "partner-activate" }
+  | { name: "partner-dashboard" }
   | { name: "dashboard" }
   | { name: "platform-organizations" }
   | { name: "patients" }
@@ -168,7 +170,7 @@ export function App() {
   // A partner-portal identity (app_metadata.partner_portal === true, set by
   // send-partner-activation-invite) is never a Growth OS staff session, even
   // though it authenticates through the same Supabase project. It must be
-  // confined to /partner/activate regardless of which pathname/view it
+  // confined to the standalone partner activation/dashboard routes regardless of which pathname/view it
   // arrives on -- e.g. a stale internal-route URL still open in a tab, or a
   // browser autocompleting an old address.
   const isPartnerPortalSession = Boolean(
@@ -183,9 +185,13 @@ export function App() {
   }, [authLoading, authRequired, isAuthenticated, publicView]);
 
   useEffect(() => {
-    if (isPartnerPortalSession && view.name !== "partner-activate") {
-      window.history.replaceState({}, "", "/partner/activate");
-      setView({ name: "partner-activate" });
+    if (
+      isPartnerPortalSession &&
+      view.name !== "partner-activate" &&
+      view.name !== "partner-dashboard"
+    ) {
+      window.history.replaceState({}, "", "/partner/dashboard");
+      setView({ name: "partner-dashboard" });
     }
   }, [isPartnerPortalSession, view.name]);
 
@@ -341,6 +347,16 @@ export function App() {
     openLogin();
   }
 
+  function openPartnerDashboard() {
+    window.history.replaceState({}, "", "/partner/dashboard");
+    setView({ name: "partner-dashboard" });
+  }
+
+  function openPartnerActivation() {
+    window.history.replaceState({}, "", "/partner/activate");
+    setView({ name: "partner-activate" });
+  }
+
   if (view.name === "login") {
     return <LoginPage onSignedIn={openMissionControl} />;
   }
@@ -349,7 +365,7 @@ export function App() {
     return <ResetPasswordPage onComplete={openLogin} />;
   }
 
-  if (view.name === "partner-activate" || isPartnerPortalSession) {
+  if (view.name === "partner-activate") {
     // Always sign out before returning to /login: adopting the invite-link
     // session here must never leave a live partner-portal session active
     // once the user leaves this standalone activation flow. The
@@ -357,7 +373,11 @@ export function App() {
     // useEffect above -- it guarantees a partner-portal session can never
     // paint so much as a single frame of the internal AppShell, even before
     // the URL/view-correcting effect has run.
-    return <PartnerActivation onDone={handleSignOut} />;
+    return <PartnerActivation onDone={handleSignOut} onDashboard={openPartnerDashboard} />;
+  }
+
+  if (isPartnerPortalSession) {
+    return <PartnerDashboard onSignOut={handleSignOut} onProfileIncomplete={openPartnerActivation} />;
   }
 
   if (authRequired && authLoading) {
@@ -654,6 +674,10 @@ function resolveViewFromPathname(pathname: string): AppView {
 
   if (hasPasswordRecoveryRoute()) {
     return { name: "reset-password" };
+  }
+
+  if (pathname === "/partner/dashboard") {
+    return { name: "partner-dashboard" };
   }
 
   if (pathname === "/login") {

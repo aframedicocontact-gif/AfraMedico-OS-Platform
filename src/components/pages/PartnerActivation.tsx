@@ -8,6 +8,7 @@ import {
   adoptSessionFromTokens,
   getPasswordRecoveryTokensFromLocation,
   getSession,
+  updateCurrentUserPassword,
 } from "../../services/authService";
 import {
   completePartnerActivationProfile,
@@ -23,16 +24,17 @@ import type {
 
 type PartnerActivationProps = {
   onDone: () => void;
+  onDashboard: () => void;
 };
 
-type Stage = "adopting" | "loading" | "invalid" | "revoked" | "form" | "completed" | "error";
+type Stage = "adopting" | "loading" | "invalid" | "revoked" | "form" | "password" | "error";
 
 // Standalone route (bypasses AppShell entirely, like LoginPage/ResetPasswordPage).
 // Establishes a session directly from Supabase's native invite-link tokens, then
 // relies exclusively on the partner-activation Edge Function's allowlisted
 // get_profile action for every read — no partner_id is ever taken from the
 // client, and there is no partner-facing PostgREST policy on any table.
-export function PartnerActivation({ onDone }: PartnerActivationProps) {
+export function PartnerActivation({ onDone, onDashboard }: PartnerActivationProps) {
   const inviteTokens = useMemo(() => getPasswordRecoveryTokensFromLocation(), []);
   const [stage, setStage] = useState<Stage>("adopting");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -49,6 +51,8 @@ export function PartnerActivation({ onDone }: PartnerActivationProps) {
   >("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -109,7 +113,7 @@ export function PartnerActivation({ onDone }: PartnerActivationProps) {
       setIntake(profileResult.data.intake);
 
       if (profileResult.data.partner.lifecycle_stage === "profile_completed") {
-        setStage("completed");
+        setStage("password");
         return;
       }
 
@@ -177,12 +181,34 @@ export function PartnerActivation({ onDone }: PartnerActivationProps) {
           : result.error,
       );
       if (result.error === "already_completed") {
-        setStage("completed");
+        setStage("password");
       }
       return;
     }
 
-    setStage("completed");
+    setStage("password");
+  }
+
+  async function handlePasswordSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaveError(null);
+    if (password.length < 10) {
+      setSaveError("Use at least 10 characters for your password.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setSaveError("The passwords do not match.");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await updateCurrentUserPassword(password);
+      onDashboard();
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Unable to create your password.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   if (stage === "adopting" || stage === "loading") {
@@ -234,15 +260,26 @@ export function PartnerActivation({ onDone }: PartnerActivationProps) {
     );
   }
 
-  if (stage === "completed") {
+  if (stage === "password") {
     return (
       <ActivationShell>
         <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-          Your partner profile has been completed. Our team will follow up with next steps.
+          Your partner profile is complete. Create a password for future access to your private
+          Partner Dashboard. Your email address is your username.
         </div>
-        <Button className="mt-4" type="button" variant="secondary" onClick={onDone}>
-          Back to Login
-        </Button>
+        <form className="space-y-4" onSubmit={handlePasswordSubmit}>
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="partner-password">Create password</label>
+            <Input id="partner-password" type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="partner-password-confirm">Confirm password</label>
+            <Input id="partner-password-confirm" type="password" autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
+          </div>
+          {saveError ? <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{saveError}</div> : null}
+          <Button className="w-full" disabled={isSaving} type="submit">{isSaving ? "Creating account…" : "Create Password and Open Dashboard"}</Button>
+          <Button className="w-full" type="button" variant="secondary" onClick={onDashboard}>I already have a password — Open Dashboard</Button>
+        </form>
       </ActivationShell>
     );
   }

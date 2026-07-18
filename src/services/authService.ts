@@ -194,6 +194,30 @@ export async function updatePasswordWithRecoveryToken(accessToken: string, passw
   return body;
 }
 
+export async function updateCurrentUserPassword(password: string) {
+  if (!supabaseConfig.isConfigured) {
+    throw new Error("Supabase environment variables are not configured.");
+  }
+  const session = readStoredSession();
+  if (!session?.access_token) {
+    throw new Error("Your activation session has expired. Request a new invitation link.");
+  }
+  const response = await fetch(authUrl("/user"), {
+    method: "PUT",
+    headers: authHeaders(session.access_token),
+    body: JSON.stringify({ password }),
+  });
+  const responseText = await response.text();
+  const body = responseText ? JSON.parse(responseText) : null;
+  if (!response.ok) {
+    throw new Error(body?.msg ?? body?.message ?? "Unable to create your password.");
+  }
+  const nextSession = { ...session, user: body as AuthUser };
+  storeSession(nextSession);
+  notifyAuthListeners("SESSION_LOADED", nextSession);
+  return body as AuthUser;
+}
+
 export async function signOut() {
   const session = readStoredSession();
 

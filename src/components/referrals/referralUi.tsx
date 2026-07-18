@@ -40,6 +40,7 @@ export const pipelineStages: ReferralStatus[] = [
   "Invitation Sent",
   "Registration Started",
   "Profile Completed",
+  "Agreement Pending",
   "Contacted",
   "Meeting Scheduled",
   "Negotiation",
@@ -52,7 +53,7 @@ export function ReferralStatusBadge({ status }: { status: ReferralStatus }) {
   const tone =
     status === "Active Referrer" || status === "Agreement Signed" || status === "Profile Completed"
       ? "success"
-      : status === "Negotiation" || status === "Meeting Scheduled" || status === "Registration Started"
+      : status === "Negotiation" || status === "Meeting Scheduled" || status === "Registration Started" || status === "Agreement Pending"
         ? "gold"
         : status === "Inactive"
           ? "danger"

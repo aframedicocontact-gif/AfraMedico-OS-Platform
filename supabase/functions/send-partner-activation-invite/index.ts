@@ -60,6 +60,28 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
+// GoTrue's /otp endpoint reads the post-verification redirect target from
+// the `redirect_to` query-string parameter -- exactly what supabase-js's
+// signInWithOtp({ options: { emailRedirectTo } }) sends under the hood -- not
+// from an `options.email_redirect_to` body field. Passing it only in the
+// body silently falls back to the project's Site URL default.
+async function sendActivationOtpEmail(email: string): Promise<Response> {
+  const otpUrl = new URL(`${SUPABASE_URL}/auth/v1/otp`);
+  otpUrl.searchParams.set('redirect_to', PARTNER_ACTIVATE_REDIRECT_URL!);
+
+  return fetch(otpUrl.toString(), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({
+      email,
+      create_user: false,
+    }),
+  });
+}
+
 type AdminClient = ReturnType<typeof createClient>;
 
 // The supabase-js v2 admin API has no getUserByEmail method and this
@@ -285,18 +307,7 @@ serve(async (req) => {
       // not return the generated link to the caller -- Supabase delivers it
       // by email using the project's already-configured Auth email
       // delivery.
-      const otpResponse = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify({
-          email: intake.email,
-          create_user: false,
-          options: { email_redirect_to: PARTNER_ACTIVATE_REDIRECT_URL },
-        }),
-      });
+      const otpResponse = await sendActivationOtpEmail(intake.email);
       if (!otpResponse.ok) {
         console.error('native OTP email dispatch failed with status:', otpResponse.status);
         return json({ error: 'Failed to send activation email' }, 500);
@@ -374,18 +385,7 @@ serve(async (req) => {
       // explicitly false since the user already exists. This does not
       // return the generated link to the caller -- Supabase delivers it by
       // email using the project's already-configured Auth email delivery.
-      const otpResponse = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify({
-          email: intake.email,
-          create_user: false,
-          options: { email_redirect_to: PARTNER_ACTIVATE_REDIRECT_URL },
-        }),
-      });
+      const otpResponse = await sendActivationOtpEmail(intake.email);
       if (!otpResponse.ok) {
         console.error('native OTP email dispatch failed with status:', otpResponse.status);
         return json({ error: 'Failed to send activation email' }, 500);

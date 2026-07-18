@@ -91,12 +91,14 @@ const INVITE_ERROR_MESSAGES: Record<string, string> = {
 };
 
 // Mirrors ELIGIBLE_LIFECYCLE_STAGES in the send-partner-activation-invite
-// edge function -- the button stays available through registration_started
-// and disappears only once the partner has finished onboarding.
+// edge function -- the button stays available through profile_completed
+// (final registration, i.e. the agreement/dashboard step) and disappears
+// only once the partner has actually activated the portal.
 const ACTIVATION_INVITE_ELIGIBLE_STAGES = new Set([
   "approved_activation_pending",
   "invitation_sent",
   "registration_started",
+  "profile_completed",
 ]);
 
 function describeInviteError(code: string): string {
@@ -204,9 +206,11 @@ function LivePartnerProfile({ partnerId }: { partnerId: string }) {
             <Button type="button" disabled={isSendingInvite} onClick={() => void handleSendActivationInvite()}>
               {isSendingInvite
                 ? "Sending…"
-                : authLink
-                  ? "Resend Activation Invite"
-                  : "Send Activation Invite"}
+                : partner.lifecycle_stage === "profile_completed"
+                  ? "Resend Final Registration Invitation"
+                  : authLink
+                    ? "Resend Activation Invite"
+                    : "Send Activation Invite"}
             </Button>
             {authLink ? (
               <p className="text-xs text-muted-foreground">

@@ -49,11 +49,18 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const USER_LOOKUP_MAX_PAGES = 20;
 const USER_LOOKUP_PAGE_SIZE = 1000;
 
-// A partner can be resent a fresh registration link at any of these stages;
-// profile_completed (or any other value) is not eligible. This also governs
-// the "Resend Final Registration Invitation" button's visibility in
-// PartnerProfile.tsx -- keep the two in sync.
-const ELIGIBLE_LIFECYCLE_STAGES = new Set(['approved_activation_pending', 'invitation_sent', 'registration_started']);
+// A partner can be resent a fresh registration link at any of these stages.
+// profile_completed is included so a partner who finished onboarding but
+// never returned to sign the Partner Agreement (e.g. a stale/expired magic
+// link) can still be resent one -- any other value is not eligible. This
+// also governs the "Resend Final Registration Invitation" button's
+// visibility in PartnerProfile.tsx -- keep the two in sync.
+const ELIGIBLE_LIFECYCLE_STAGES = new Set([
+  'approved_activation_pending',
+  'invitation_sent',
+  'registration_started',
+  'profile_completed',
+]);
 
 // App-level floor on top of GoTrue's own OTP send-rate limit, keyed off
 // partner_auth_links.invited_at rather than a dedicated column (none
@@ -207,10 +214,12 @@ serve(async (req) => {
     if (partner.organization_id !== callerOrganizationId) {
       return json({ error: 'Forbidden' }, 403);
     }
-    // registration_started is included so a partner who opened a previous
-    // link but never finished onboarding can still be resent a fresh one --
-    // this is the sole gate against inviting an already-completed partner
-    // (see ELIGIBLE_LIFECYCLE_STAGES).
+    // registration_started and profile_completed are included so a partner
+    // who opened a previous link but never finished onboarding, or who
+    // finished onboarding but never returned to sign the Partner Agreement,
+    // can still be resent a fresh one -- this is the sole gate against
+    // inviting a partner who has already activated the portal (see
+    // ELIGIBLE_LIFECYCLE_STAGES).
     if (!ELIGIBLE_LIFECYCLE_STAGES.has(partner.lifecycle_stage)) {
       return json(
         { error: 'not_eligible', message: 'Partner is not eligible for an activation invite in its current lifecycle stage.' },
@@ -428,9 +437,10 @@ serve(async (req) => {
         return json({ error: 'Failed to send activation email' }, 500);
       }
 
-      // Never downgrade a partner already at invitation_sent or
-      // registration_started back to invitation_sent -- only the first
-      // send (still at approved_activation_pending) advances the stage.
+      // Never downgrade a partner already at invitation_sent,
+      // registration_started, or profile_completed back to invitation_sent --
+      // only the first send (still at approved_activation_pending) advances
+      // the stage.
       if (partner.lifecycle_stage === 'approved_activation_pending') {
         const { error: lifecycleErr } = await adminClient
           .from('partners')

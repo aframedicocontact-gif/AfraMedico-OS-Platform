@@ -111,17 +111,28 @@ export type PartnerActivationProfile = {
   auth_link: PartnerActivationProfileAuthLink;
 };
 
+export type PartnerPortalAgreementStatus =
+  | "pending_signature"
+  | "signed"
+  | "void"
+  | "pending_partner_signature"
+  | "pending_aframedico_signature"
+  | "fully_executed";
+
 export type PartnerPortalAgreement = {
   id: string;
   title: string;
   template_version: string;
   agreement_text: string;
   commission_rate: number;
-  status: "pending_signature" | "signed" | "void";
+  status: PartnerPortalAgreementStatus;
   issued_at: string;
   signed_at: string | null;
   signer_name: string | null;
   signer_title: string | null;
+  partner_signed_at: string | null;
+  fully_executed_at: string | null;
+  has_final_pdf: boolean;
 };
 
 export type PartnerPortalReferral = {

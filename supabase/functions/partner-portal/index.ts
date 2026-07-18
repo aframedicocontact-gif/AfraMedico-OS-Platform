@@ -32,6 +32,29 @@ async function sha256(value: string) {
     .join('');
 }
 
+type StrokePoint = { x: number; y: number; t: number };
+
+function isValidStrokes(value: unknown): value is StrokePoint[][] {
+  if (!Array.isArray(value) || value.length === 0) return false;
+  for (const stroke of value) {
+    if (!Array.isArray(stroke) || stroke.length === 0) return false;
+    for (const point of stroke) {
+      if (
+        typeof point !== 'object' || point === null ||
+        typeof (point as StrokePoint).x !== 'number' || typeof (point as StrokePoint).y !== 'number' ||
+        typeof (point as StrokePoint).t !== 'number' ||
+        !Number.isFinite((point as StrokePoint).x) || !Number.isFinite((point as StrokePoint).y) ||
+        !Number.isFinite((point as StrokePoint).t) ||
+        (point as StrokePoint).x < -1 || (point as StrokePoint).x > 100000 ||
+        (point as StrokePoint).y < -1 || (point as StrokePoint).y > 100000
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
@@ -54,7 +77,7 @@ serve(async (req) => {
 
     const body = await req.json().catch(() => null) as Record<string, unknown> | null;
     const action = body?.action;
-    if (!['get_dashboard', 'sign_agreement', 'submit_referral'].includes(String(action))) {
+    if (!['get_dashboard', 'sign_agreement', 'sign_agreement_v2', 'submit_referral', 'get_download_url'].includes(String(action))) {
       return json({ error: 'Invalid action' }, 400);
     }
 
@@ -88,6 +111,7 @@ serve(async (req) => {
       .eq('organization_id', link.organization_id)
       .eq('status', 'approved')
       .order('effective_from', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
     if (templateError || !template) {
@@ -97,7 +121,7 @@ serve(async (req) => {
 
     let { data: agreement, error: agreementError } = await admin
       .from('partner_agreements')
-      .select('id, template_version, agreement_snapshot, commission_rate, status, issued_at, signed_at, signer_name, signer_title')
+      .select('id, template_version, agreement_snapshot, commission_rate, status, issued_at, signed_at, signer_name, signer_title, partner_signed_at, fully_executed_at, final_pdf_storage_path')
       .eq('partner_id', partner.id)
       .eq('template_id', template.id)
       .maybeSingle();
@@ -116,9 +140,9 @@ serve(async (req) => {
           template_version: template.version,
           agreement_snapshot: template.agreement_text,
           commission_rate: template.commission_rate,
-          status: 'pending_signature',
+          status: 'pending_partner_signature',
         })
-        .select('id, template_version, agreement_snapshot, commission_rate, status, issued_at, signed_at, signer_name, signer_title')
+        .select('id, template_version, agreement_snapshot, commission_rate, status, issued_at, signed_at, signer_name, signer_title, partner_signed_at, fully_executed_at, final_pdf_storage_path')
         .single();
       if (createError || !created) {
         console.error('agreement creation failed', createError);
@@ -184,8 +208,79 @@ serve(async (req) => {
       return json({ success: true, already_signed: false, lifecycle_stage: 'active_partner' });
     }
 
+    if (action === 'sign_agreement_v2') {
+      if (agreement.status === 'pending_aframedico_signature' || agreement.status === 'fully_executed') {
+        return json({ success: true, already_signed: true, status: agreement.status });
+      }
+      if (agreement.status !== 'pending_partner_signature') {
+        return json({ error: 'Agreement is not awaiting partner signature.' }, 409);
+      }
+      const strokes = body?.signature_strokes;
+      const acceptedAgreement = body?.accepted_agreement === true;
+      const acceptedElectronicSignature = body?.accepted_electronic_signature === true;
+      const acceptedPrivacy = body?.accepted_privacy === true;
+      if (!isValidStrokes(strokes) || !acceptedAgreement || !acceptedElectronicSignature || !acceptedPrivacy) {
+        return json({ error: 'Draw a signature and complete all acceptance confirmations.' }, 400);
+      }
+
+      const signedAt = new Date().toISOString();
+      const agreementHash = await sha256(agreement.agreement_snapshot);
+      const signatureHash = await sha256(JSON.stringify(strokes));
+      const userAgentHash = await sha256(req.headers.get('user-agent') ?? 'not-provided');
+      const { data: signed, error: signError } = await admin.rpc('partner_sign_agreement_v2', {
+        p_agreement_id: agreement.id,
+        p_partner_id: partner.id,
+        p_auth_user_id: callerData.user.id,
+        p_agreement_sha256: agreementHash,
+        p_signature_strokes: strokes,
+        p_signature_sha256: signatureHash,
+        p_evidence: {
+          accepted_agreement: true,
+          accepted_electronic_signature: true,
+          accepted_privacy: true,
+          authenticated_user_id: callerData.user.id,
+          user_agent_sha256: userAgentHash,
+          signed_at: signedAt,
+          legal_name_displayed: profile.legal_full_name,
+        },
+      });
+      if (signError) {
+        console.error('agreement v2 signature update failed', signError);
+        return json({ error: 'Unable to sign agreement' }, 409);
+      }
+      if (signed !== true) {
+        return json({ success: true, already_signed: true, status: 'pending_aframedico_signature' });
+      }
+      return json({ success: true, already_signed: false, status: 'pending_aframedico_signature' });
+    }
+
+    if (action === 'get_download_url') {
+      const agreementId = clean(body?.agreement_id, 100);
+      if (!agreementId) return json({ error: 'agreement_id is required' }, 400);
+      const { data: targetAgreement, error: targetError } = await admin
+        .from('partner_agreements')
+        .select('id, final_pdf_storage_path')
+        .eq('id', agreementId)
+        .eq('partner_id', partner.id)
+        .maybeSingle();
+      if (targetError || !targetAgreement) {
+        return json({ error: 'Agreement not found' }, 404);
+      }
+      if (!targetAgreement.final_pdf_storage_path) {
+        return json({ error: 'No executed agreement PDF is available yet.' }, 409);
+      }
+      const { data: signedUrl, error: signedUrlError } = await admin.storage
+        .from('partner-agreements')
+        .createSignedUrl(targetAgreement.final_pdf_storage_path, 300);
+      if (signedUrlError || !signedUrl) {
+        console.error('signed url creation failed', signedUrlError);
+        return json({ error: 'Unable to generate download link' }, 500);
+      }
+      return json({ success: true, url: signedUrl.signedUrl, expires_in: 300 });
+    }
+
     if (action === 'submit_referral') {
-      if (agreement.status !== 'signed' || partner.status !== 'active') {
+      if (agreement.status !== 'fully_executed' || partner.status !== 'active') {
         return json({ error: 'Sign the Partner Agreement before introducing a patient.' }, 403);
       }
       const patientFullName = clean(body?.patient_full_name, 200);
@@ -263,8 +358,11 @@ serve(async (req) => {
         signed_at: agreement.signed_at,
         signer_name: agreement.signer_name,
         signer_title: agreement.signer_title,
+        partner_signed_at: agreement.partner_signed_at,
+        fully_executed_at: agreement.fully_executed_at,
+        has_final_pdf: Boolean(agreement.final_pdf_storage_path),
       },
-      can_submit_referral: agreement.status === 'signed' && partner.status === 'active',
+      can_submit_referral: agreement.status === 'fully_executed' && partner.status === 'active',
       referrals: referrals ?? [],
     });
   } catch (error) {

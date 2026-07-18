@@ -117,7 +117,7 @@ export async function querySupabaseTable<T>(
     if (!response.ok) {
       return {
         data: null,
-        error: body?.message ?? response.statusText,
+        error: body?.message || response.statusText || `Request failed with status ${response.status}`,
         status: response.status,
       };
     }

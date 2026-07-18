@@ -41,6 +41,7 @@ import { OpportunityIntelligenceDashboard } from "../components/pages/Opportunit
 import { OutreachWorkspace } from "../components/pages/OutreachWorkspace";
 import { OperationsCenter } from "../components/pages/OperationsCenter";
 import { PartnerActivation } from "../components/pages/PartnerActivation";
+import { PartnerAgreementVerify } from "../components/pages/PartnerAgreementVerify";
 import { PartnerDashboard } from "../components/pages/PartnerDashboard";
 import { PatientsPage } from "../components/pages/PatientsPage";
 import { ProtectionAuditTrail } from "../components/pages/ProtectionAuditTrail";
@@ -79,6 +80,7 @@ export type AppView =
   | { name: "login" }
   | { name: "reset-password" }
   | { name: "partner-activate" }
+  | { name: "partner-verify"; code: string }
   | { name: "partner-dashboard" }
   | { name: "dashboard" }
   | { name: "platform-organizations" }
@@ -188,7 +190,8 @@ export function App() {
     if (
       isPartnerPortalSession &&
       view.name !== "partner-activate" &&
-      view.name !== "partner-dashboard"
+      view.name !== "partner-dashboard" &&
+      view.name !== "partner-verify"
     ) {
       window.history.replaceState({}, "", "/partner/dashboard");
       setView({ name: "partner-dashboard" });
@@ -363,6 +366,10 @@ export function App() {
 
   if (view.name === "reset-password") {
     return <ResetPasswordPage onComplete={openLogin} />;
+  }
+
+  if (view.name === "partner-verify") {
+    return <PartnerAgreementVerify code={view.code} />;
   }
 
   if (view.name === "partner-activate") {
@@ -680,6 +687,13 @@ function resolveViewFromPathname(pathname: string): AppView {
     return { name: "partner-dashboard" };
   }
 
+  if (pathname.startsWith("/verify/")) {
+    const code = pathname.replace("/verify/", "").trim();
+    if (code) {
+      return { name: "partner-verify", code };
+    }
+  }
+
   if (pathname === "/login") {
     return { name: "login" };
   }
@@ -741,7 +755,12 @@ function hasPartnerActivationRoute() {
 }
 
 function isPublicView(viewName: AppView["name"]) {
-  return viewName === "login" || viewName === "reset-password" || viewName === "partner-activate";
+  return (
+    viewName === "login" ||
+    viewName === "reset-password" ||
+    viewName === "partner-activate" ||
+    viewName === "partner-verify"
+  );
 }
 
 function isReferralPartnersView(viewName: AppView["name"]) {

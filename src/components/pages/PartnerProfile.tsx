@@ -1,5 +1,5 @@
 import { ArrowLeft, ExternalLink, Mail, MessageCircle, Phone, UserRound } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { isLivePartnerId, formatLiveDate, formatLiveLifecycle, formatLiveSource, formatLiveStatus } from "../../lib/livePartnerFormat";
 import {
@@ -8,6 +8,13 @@ import {
   getPartnerNetworkIntakeByPartnerId,
   sendPartnerActivationInvite,
 } from "../../services/partnerService";
+import {
+  countersignPartnerAgreement,
+  getPartnerAgreementAdminDownloadUrl,
+  getPartnerAgreementForAdmin,
+  resendPartnerAgreementEmail,
+  type PartnerAgreementAdminAgreement,
+} from "../../services/partnerAgreementAdminService";
 import type { LiveNetworkIntake, LivePartner, PartnerAuthLink } from "../../types/partnerRecord";
 import type { ReferralPartner } from "../../types/referralPartner";
 import {
@@ -19,6 +26,8 @@ import {
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Input } from "../ui/input";
+import { SignaturePad, type SignaturePadHandle } from "../ui/SignaturePad";
 
 type PartnerProfileProps = {
   partners: ReferralPartner[];
@@ -105,6 +114,15 @@ function describeInviteError(code: string): string {
   return INVITE_ERROR_MESSAGES[code] ?? code;
 }
 
+function agreementStatusLabel(status: string): string {
+  if (status === "fully_executed") return "Fully Executed";
+  if (status === "pending_aframedico_signature") return "Awaiting AfraMedico Countersignature";
+  if (status === "pending_partner_signature") return "Awaiting Partner Signature";
+  if (status === "signed") return "Signed (v1)";
+  if (status === "void") return "Void";
+  return "Signature Required";
+}
+
 function LivePartnerProfile({ partnerId }: { partnerId: string }) {
   const [partner, setPartner] = useState<LivePartner | null>(null);
   const [intake, setIntake] = useState<LiveNetworkIntake | null>(null);
@@ -116,12 +134,39 @@ function LivePartnerProfile({ partnerId }: { partnerId: string }) {
   const [inviteMessage, setInviteMessage] = useState<string | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
 
+  const [agreement, setAgreement] = useState<PartnerAgreementAdminAgreement | null>(null);
+  const [adminFullName, setAdminFullName] = useState<string | null>(null);
+  const [showCountersign, setShowCountersign] = useState(false);
+  const [signerTitle, setSignerTitle] = useState("");
+  const [padEmpty, setPadEmpty] = useState(true);
+  const padRef = useRef<SignaturePadHandle>(null);
+  const [isCountersigning, setIsCountersigning] = useState(false);
+  const [countersignMessage, setCountersignMessage] = useState<string | null>(null);
+  const [countersignError, setCountersignError] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
+
+  async function loadAgreement() {
+    const result = await getPartnerAgreementForAdmin(partnerId);
+    if (result.error) {
+      if (!result.error.toLowerCase().includes("no agreement found")) {
+        setCountersignError(result.error);
+      }
+      setAgreement(null);
+      setAdminFullName(null);
+      return;
+    }
+    setAgreement(result.data?.agreement ?? null);
+    setAdminFullName(result.data?.admin_full_name ?? null);
+  }
+
   async function load(signal: { cancelled: boolean }) {
     setLoading(true);
     const [partnerResult, intakeResult, authLinkResult] = await Promise.all([
       getLivePartnerById(partnerId),
       getPartnerNetworkIntakeByPartnerId(partnerId),
       getPartnerAuthLinkByPartnerId(partnerId),
+      loadAgreement(),
     ]);
     if (signal.cancelled) return;
 
@@ -130,6 +175,57 @@ function LivePartnerProfile({ partnerId }: { partnerId: string }) {
     setAuthLink(authLinkResult.data);
     setError(partnerResult.error);
     setLoading(false);
+  }
+
+  async function handleCountersign() {
+    if (!padRef.current || padRef.current.isEmpty() || !signerTitle.trim()) return;
+    setIsCountersigning(true);
+    setCountersignMessage(null);
+    setCountersignError(null);
+    const result = await countersignPartnerAgreement({
+      partner_id: partnerId,
+      signer_title: signerTitle.trim(),
+      signature_strokes: padRef.current.getStrokes(),
+    });
+    setIsCountersigning(false);
+    if (result.error) {
+      setCountersignError(result.error);
+      return;
+    }
+    setCountersignMessage("Agreement countersigned and fully executed.");
+    setShowCountersign(false);
+    setSignerTitle("");
+    padRef.current.clear();
+    setPadEmpty(true);
+    await loadAgreement();
+  }
+
+  async function handleDownload() {
+    setIsDownloading(true);
+    setCountersignError(null);
+    const result = await getPartnerAgreementAdminDownloadUrl(partnerId);
+    setIsDownloading(false);
+    if (result.error || !result.data) {
+      setCountersignError(result.error ?? "Unable to generate a download link.");
+      return;
+    }
+    window.open(result.data.url, "_blank", "noopener,noreferrer");
+  }
+
+  async function handleResendEmail() {
+    setIsResendingEmail(true);
+    setCountersignError(null);
+    setCountersignMessage(null);
+    const result = await resendPartnerAgreementEmail(partnerId);
+    setIsResendingEmail(false);
+    if (result.error) {
+      setCountersignError(result.error);
+      return;
+    }
+    setCountersignMessage(
+      result.data?.email_status === "sent" ? "Signed agreement emailed to the partner." : "Email delivery attempted; check status shortly.",
+    );
+    await loadAgreement();
   }
 
   useEffect(() => {
@@ -229,6 +325,14 @@ function LivePartnerProfile({ partnerId }: { partnerId: string }) {
       {inviteError ? (
         <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{inviteError}</div>
       ) : null}
+      {countersignMessage ? (
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+          {countersignMessage}
+        </div>
+      ) : null}
+      {countersignError ? (
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{countersignError}</div>
+      ) : null}
 
       <Card>
         <CardHeader>
@@ -243,6 +347,82 @@ function LivePartnerProfile({ partnerId }: { partnerId: string }) {
           <Field label="Source" value={formatLiveSource(partner.acquisition_source)} />
           <Field label="Lifecycle" value={formatLiveLifecycle(partner.lifecycle_stage)} />
           <Field label="Created" value={formatLiveDate(partner.created_at)} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Partner Agreement</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!agreement ? (
+            <p className="text-sm text-muted-foreground">The partner has not started their Partner Agreement yet.</p>
+          ) : (
+            <>
+              <div className="grid gap-4 md:grid-cols-3">
+                <Field label="Status" value={agreementStatusLabel(agreement.status)} />
+                <Field label="Version" value={agreement.template_version} />
+                <Field label="Commission" value={`${Number(agreement.commission_rate)}%`} />
+                <Field
+                  label="Partner Signature"
+                  value={agreement.partner_signed_at ? `${agreement.signer_name ?? "—"} on ${formatLiveDate(agreement.partner_signed_at)}` : "Not yet signed"}
+                />
+                {agreement.status === "fully_executed" ? (
+                  <Field
+                    label="AfraMedico Countersignature"
+                    value={`${agreement.company_signer_name ?? "—"} (${agreement.company_signer_title ?? "—"}) on ${agreement.company_signed_at ? formatLiveDate(agreement.company_signed_at) : "—"}`}
+                  />
+                ) : null}
+                {agreement.status === "fully_executed" ? (
+                  <Field label="Email Delivery" value={agreement.final_pdf_email_status.replaceAll("_", " ")} />
+                ) : null}
+              </div>
+
+              {agreement.status === "pending_aframedico_signature" ? (
+                <Button type="button" onClick={() => setShowCountersign((value) => !value)}>
+                  {showCountersign ? "Hide Countersign Form" : "Review and Countersign Agreement"}
+                </Button>
+              ) : null}
+
+              {showCountersign && agreement.status === "pending_aframedico_signature" ? (
+                <div className="space-y-4 rounded-md border bg-white p-4">
+                  <div className="max-h-[28rem] overflow-y-auto whitespace-pre-wrap rounded-md border p-4 text-sm leading-6">
+                    {agreement.agreement_text}
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium uppercase text-muted-foreground">Countersigning as</p>
+                    <p className="text-sm font-semibold text-emerald-950">{adminFullName ?? "—"}</p>
+                  </div>
+                  <Input
+                    aria-label="Your title"
+                    placeholder="Your title (e.g. Managing Director)"
+                    value={signerTitle}
+                    onChange={(event) => setSignerTitle(event.target.value)}
+                    required
+                  />
+                  <SignaturePad ref={padRef} label="Your signature" onChange={setPadEmpty} />
+                  <Button
+                    type="button"
+                    disabled={isCountersigning || padEmpty || !signerTitle.trim()}
+                    onClick={() => void handleCountersign()}
+                  >
+                    {isCountersigning ? "Countersigning…" : "Countersign Agreement"}
+                  </Button>
+                </div>
+              ) : null}
+
+              {agreement.has_final_pdf ? (
+                <div className="flex flex-wrap gap-3">
+                  <Button type="button" variant="secondary" disabled={isDownloading} onClick={() => void handleDownload()}>
+                    {isDownloading ? "Preparing…" : "View / Download Signed Agreement"}
+                  </Button>
+                  <Button type="button" variant="secondary" disabled={isResendingEmail} onClick={() => void handleResendEmail()}>
+                    {isResendingEmail ? "Sending…" : agreement.final_pdf_email_status === "sent" ? "Resend Email" : "Send Email"}
+                  </Button>
+                </div>
+              ) : null}
+            </>
+          )}
         </CardContent>
       </Card>
 

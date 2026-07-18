@@ -37,6 +37,9 @@ export function ReferralPartnerNav({ current }: { current: ReferralNavKey }) {
 
 export const pipelineStages: ReferralStatus[] = [
   "Prospect",
+  "Invitation Sent",
+  "Registration Started",
+  "Profile Completed",
   "Contacted",
   "Meeting Scheduled",
   "Negotiation",
@@ -47,13 +50,13 @@ export const pipelineStages: ReferralStatus[] = [
 
 export function ReferralStatusBadge({ status }: { status: ReferralStatus }) {
   const tone =
-    status === "Active Referrer" || status === "Agreement Signed"
+    status === "Active Referrer" || status === "Agreement Signed" || status === "Profile Completed"
       ? "success"
-      : status === "Negotiation" || status === "Meeting Scheduled"
+      : status === "Negotiation" || status === "Meeting Scheduled" || status === "Registration Started"
         ? "gold"
         : status === "Inactive"
           ? "danger"
-          : status === "Contacted"
+          : status === "Contacted" || status === "Invitation Sent"
             ? "info"
             : "muted";
 

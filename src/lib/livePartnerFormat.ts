@@ -12,6 +12,9 @@ const LIVE_SOURCE_LABELS: Record<string, string> = {
 
 const LIVE_LIFECYCLE_LABELS: Record<string, string> = {
   approved_activation_pending: "Approved – Activation Pending",
+  invitation_sent: "Invitation Sent",
+  registration_started: "Registration Started",
+  profile_completed: "Profile Completed",
 };
 
 function humanizeLiveValue(value: string) {
@@ -50,8 +53,15 @@ export function isLivePartnerId(value: string) {
 }
 
 export function mapLivePartnerToPipelineStage(partner: LivePartner): ReferralStatus {
-  if (partner.lifecycle_stage === "approved_activation_pending") {
-    return "Prospect";
+  switch (partner.lifecycle_stage) {
+    case "approved_activation_pending":
+      return "Prospect";
+    case "invitation_sent":
+      return "Invitation Sent";
+    case "registration_started":
+      return "Registration Started";
+    case "profile_completed":
+      return "Profile Completed";
   }
 
   const humanizedStatus = formatLiveStatus(partner.status);

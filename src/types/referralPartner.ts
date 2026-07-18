@@ -10,6 +10,9 @@ export type PartnerType =
 
 export type ReferralStatus =
   | "Prospect"
+  | "Invitation Sent"
+  | "Registration Started"
+  | "Profile Completed"
   | "Contacted"
   | "Meeting Scheduled"
   | "Negotiation"

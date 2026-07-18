@@ -157,6 +157,8 @@ serve(async (req) => {
     }
 
     if (action === 'touch') {
+      let lifecycleStage = partner.lifecycle_stage;
+
       if (link.status === 'invited') {
         const { error: touchErr } = await adminClient
           .from('partner_auth_links')
@@ -166,12 +168,26 @@ serve(async (req) => {
           console.error('partner_auth_links touch error:', touchErr);
           return json({ error: 'Failed to record activation' }, 500);
         }
+
+        // First time this partner has ever authenticated. Never downgrade
+        // an already-completed profile back to registration_started.
+        if (lifecycleStage !== 'profile_completed') {
+          const { error: lifecycleErr } = await adminClient
+            .from('partners')
+            .update({ lifecycle_stage: 'registration_started' })
+            .eq('id', partner.id);
+          if (lifecycleErr) {
+            console.error('partners lifecycle_stage update error (registration_started):', lifecycleErr);
+            return json({ error: 'Failed to update partner lifecycle stage' }, 500);
+          }
+          lifecycleStage = 'registration_started';
+        }
       }
 
       return json({
         success: true,
-        lifecycle_stage: partner.lifecycle_stage,
-        already_completed: partner.lifecycle_stage === 'profile_completed',
+        lifecycle_stage: lifecycleStage,
+        already_completed: lifecycleStage === 'profile_completed',
       });
     }
 

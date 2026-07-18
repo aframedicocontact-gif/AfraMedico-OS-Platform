@@ -199,7 +199,14 @@ serve(async (req) => {
     if (partner.organization_id !== callerOrganizationId) {
       return json({ error: 'Forbidden' }, 403);
     }
-    if (partner.lifecycle_stage !== 'approved_activation_pending') {
+    // 'invitation_sent' is included so a resend for a partner who hasn't
+    // yet authenticated is still allowed -- the authoritative gate against
+    // re-inviting an already-activated partner is the existingLink.status
+    // === 'active' check below, not this lifecycle_stage check.
+    if (
+      partner.lifecycle_stage !== 'approved_activation_pending' &&
+      partner.lifecycle_stage !== 'invitation_sent'
+    ) {
       return json(
         { error: 'not_eligible', message: 'Partner is not in approved_activation_pending stage.' },
         409,
@@ -312,6 +319,14 @@ serve(async (req) => {
         console.error('native OTP email dispatch failed with status:', otpResponse.status);
         return json({ error: 'Failed to send activation email' }, 500);
       }
+
+      const { error: lifecycleErr } = await adminClient
+        .from('partners')
+        .update({ lifecycle_stage: 'invitation_sent' })
+        .eq('id', partner.id);
+      if (lifecycleErr) {
+        console.error('partners lifecycle_stage update error (invitation_sent):', lifecycleErr);
+      }
     } else {
       // Step 5b: an auth user already exists for this email. Internal
       // Growth OS staff accounts always carry organization_id in
@@ -389,6 +404,14 @@ serve(async (req) => {
       if (!otpResponse.ok) {
         console.error('native OTP email dispatch failed with status:', otpResponse.status);
         return json({ error: 'Failed to send activation email' }, 500);
+      }
+
+      const { error: lifecycleErr } = await adminClient
+        .from('partners')
+        .update({ lifecycle_stage: 'invitation_sent' })
+        .eq('id', partner.id);
+      if (lifecycleErr) {
+        console.error('partners lifecycle_stage update error (invitation_sent):', lifecycleErr);
       }
 
       // Step 6: refresh the existing auth link row (invited_at/invited_by)

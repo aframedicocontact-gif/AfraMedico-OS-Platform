@@ -26,10 +26,14 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// Function secret (set manually, not yet configured this phase): the
-// deployed app's /partner/activate URL, e.g.
-// https://app.aframedico.example/partner/activate.
-const PARTNER_ACTIVATE_REDIRECT_URL = Deno.env.get('PARTNER_ACTIVATE_REDIRECT_URL');
+// The deployed app's partner-activation URL. Hardcoded rather than read
+// from a project secret: the previous PARTNER_ACTIVATE_REDIRECT_URL secret
+// was the root cause of partners landing on the internal login page instead
+// of /partner/activate -- it was either unset or stale, and nothing in this
+// function could detect that at deploy time. This must stay in Supabase
+// Auth's Redirect URL allow-list (Dashboard > Authentication > URL
+// Configuration) for GoTrue to honor it.
+const PARTNER_ACTIVATE_REDIRECT_URL = 'https://afra-medico-os-platform.vercel.app/partner/activate';
 
 // The intended From identity for the activation email ("AfraMedico Partner
 // Network" <partners@aframedico.com>) is a project-level Auth/SMTP setting,
@@ -60,25 +64,21 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-// GoTrue's /otp endpoint reads the post-verification redirect target from
-// the `redirect_to` query-string parameter -- exactly what supabase-js's
-// signInWithOtp({ options: { emailRedirectTo } }) sends under the hood -- not
-// from an `options.email_redirect_to` body field. Passing it only in the
-// body silently falls back to the project's Site URL default.
-async function sendActivationOtpEmail(email: string): Promise<Response> {
-  const otpUrl = new URL(`${SUPABASE_URL}/auth/v1/otp`);
-  otpUrl.searchParams.set('redirect_to', PARTNER_ACTIVATE_REDIRECT_URL!);
-
-  return fetch(otpUrl.toString(), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      apikey: SUPABASE_ANON_KEY,
+// Uses the official supabase-js signInWithOtp API (an anon-key client, not
+// a raw fetch) so emailRedirectTo goes through the same code path Supabase
+// documents and tests -- a raw JSON body `redirect_to` field is silently
+// ignored by GoTrue's /otp endpoint, which is what caused partners to land
+// on the Site URL default (the internal login page) instead of
+// /partner/activate. shouldCreateUser is false because the auth user is
+// always created/found explicitly above, before this is ever called.
+async function sendActivationOtpEmail(email: string) {
+  const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  return authClient.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: PARTNER_ACTIVATE_REDIRECT_URL,
+      shouldCreateUser: false,
     },
-    body: JSON.stringify({
-      email,
-      create_user: false,
-    }),
   });
 }
 
@@ -121,11 +121,6 @@ serve(async (req) => {
   }
 
   try {
-    if (!PARTNER_ACTIVATE_REDIRECT_URL) {
-      console.error('PARTNER_ACTIVATE_REDIRECT_URL is not configured');
-      return json({ error: 'Integration is not configured on this project' }, 500);
-    }
-
     // Step 1: identify the caller from their own access token. This is an
     // admin-only action, so the caller must be an authenticated internal
     // organization_administrator -- never a partner-portal session, never
@@ -309,14 +304,14 @@ serve(async (req) => {
       }
 
       // Send Supabase's native magic-link email only now that both the
-      // auth identity and its partner_auth_links row exist. create_user is
-      // explicitly false since the user was just created above. This does
-      // not return the generated link to the caller -- Supabase delivers it
-      // by email using the project's already-configured Auth email
-      // delivery.
-      const otpResponse = await sendActivationOtpEmail(intake.email);
-      if (!otpResponse.ok) {
-        console.error('native OTP email dispatch failed with status:', otpResponse.status);
+      // auth identity and its partner_auth_links row exist. shouldCreateUser
+      // is explicitly false since the user was just created above. This
+      // does not return the generated link to the caller -- Supabase
+      // delivers it by email using the project's already-configured Auth
+      // email delivery.
+      const { error: otpError } = await sendActivationOtpEmail(intake.email);
+      if (otpError) {
+        console.error('native OTP email dispatch failed:', otpError);
         return json({ error: 'Failed to send activation email' }, 500);
       }
 
@@ -395,14 +390,13 @@ serve(async (req) => {
         return json({ error: 'Failed to configure invited user access' }, 500);
       }
 
-      // Send Supabase's native magic-link email. This is the same
-      // underlying mechanism as client-side signInWithOtp; create_user is
+      // Send Supabase's native magic-link email. shouldCreateUser is
       // explicitly false since the user already exists. This does not
       // return the generated link to the caller -- Supabase delivers it by
       // email using the project's already-configured Auth email delivery.
-      const otpResponse = await sendActivationOtpEmail(intake.email);
-      if (!otpResponse.ok) {
-        console.error('native OTP email dispatch failed with status:', otpResponse.status);
+      const { error: otpError } = await sendActivationOtpEmail(intake.email);
+      if (otpError) {
+        console.error('native OTP email dispatch failed:', otpError);
         return json({ error: 'Failed to send activation email' }, 500);
       }
 

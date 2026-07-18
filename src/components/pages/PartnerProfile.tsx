@@ -87,7 +87,17 @@ const INVITE_ERROR_MESSAGES: Record<string, string> = {
   not_eligible: "This partner is not currently eligible for an activation invite.",
   already_activated: "This partner has already signed in and activated the portal.",
   no_transferred_email: "No transferred application email was found for this partner.",
+  rate_limited: "Please wait before resending this invite.",
 };
+
+// Mirrors ELIGIBLE_LIFECYCLE_STAGES in the send-partner-activation-invite
+// edge function -- the button stays available through registration_started
+// and disappears only once the partner has finished onboarding.
+const ACTIVATION_INVITE_ELIGIBLE_STAGES = new Set([
+  "approved_activation_pending",
+  "invitation_sent",
+  "registration_started",
+]);
 
 function describeInviteError(code: string): string {
   return INVITE_ERROR_MESSAGES[code] ?? code;
@@ -189,7 +199,7 @@ function LivePartnerProfile({ partnerId }: { partnerId: string }) {
           </p>
         </div>
 
-        {partner.lifecycle_stage === "approved_activation_pending" ? (
+        {partner.lifecycle_stage != null && ACTIVATION_INVITE_ELIGIBLE_STAGES.has(partner.lifecycle_stage) ? (
           <div className="flex flex-col items-start gap-2 sm:items-end">
             <Button type="button" disabled={isSendingInvite} onClick={() => void handleSendActivationInvite()}>
               {isSendingInvite

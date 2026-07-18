@@ -49,6 +49,19 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const USER_LOOKUP_MAX_PAGES = 20;
 const USER_LOOKUP_PAGE_SIZE = 1000;
 
+// A partner can be resent a fresh registration link at any of these stages;
+// profile_completed (or any other value) is not eligible. This also governs
+// the "Resend Final Registration Invitation" button's visibility in
+// PartnerProfile.tsx -- keep the two in sync.
+const ELIGIBLE_LIFECYCLE_STAGES = new Set(['approved_activation_pending', 'invitation_sent', 'registration_started']);
+
+// App-level floor on top of GoTrue's own OTP send-rate limit, keyed off
+// partner_auth_links.invited_at rather than a dedicated column (none
+// exists). This is deliberately generous relative to GoTrue's ~60s default
+// -- it exists so this endpoint fails the same way even if the project's
+// GoTrue rate limit is ever loosened or disabled.
+const RESEND_COOLDOWN_MS = 60_000;
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -194,16 +207,13 @@ serve(async (req) => {
     if (partner.organization_id !== callerOrganizationId) {
       return json({ error: 'Forbidden' }, 403);
     }
-    // 'invitation_sent' is included so a resend for a partner who hasn't
-    // yet authenticated is still allowed -- the authoritative gate against
-    // re-inviting an already-activated partner is the existingLink.status
-    // === 'active' check below, not this lifecycle_stage check.
-    if (
-      partner.lifecycle_stage !== 'approved_activation_pending' &&
-      partner.lifecycle_stage !== 'invitation_sent'
-    ) {
+    // registration_started is included so a partner who opened a previous
+    // link but never finished onboarding can still be resent a fresh one --
+    // this is the sole gate against inviting an already-completed partner
+    // (see ELIGIBLE_LIFECYCLE_STAGES).
+    if (!ELIGIBLE_LIFECYCLE_STAGES.has(partner.lifecycle_stage)) {
       return json(
-        { error: 'not_eligible', message: 'Partner is not in approved_activation_pending stage.' },
+        { error: 'not_eligible', message: 'Partner is not eligible for an activation invite in its current lifecycle stage.' },
         409,
       );
     }
@@ -232,7 +242,7 @@ serve(async (req) => {
     // creates a second link row for the same partner.
     const { data: existingLink, error: existingLinkErr } = await adminClient
       .from('partner_auth_links')
-      .select('id, auth_user_id, status')
+      .select('id, auth_user_id, status, invited_at')
       .eq('partner_id', partnerId)
       .maybeSingle();
 
@@ -241,11 +251,25 @@ serve(async (req) => {
       return json({ error: 'Failed to check existing activation link' }, 500);
     }
 
-    if (existingLink && existingLink.status === 'active') {
-      return json(
-        { error: 'already_activated', message: 'Partner has already signed in and activated the portal.' },
-        409,
-      );
+    // A partner's auth link flips to status 'active' the moment they first
+    // open the link (partner-activation's "touch" action), well before
+    // profile_completed -- so link status is not a valid "already done"
+    // signal. Eligibility is governed solely by lifecycle_stage above; this
+    // is only an app-level resend cooldown, on top of GoTrue's own OTP
+    // send-rate limit.
+    if (existingLink?.invited_at) {
+      const elapsedMs = Date.now() - new Date(existingLink.invited_at).getTime();
+      if (elapsedMs < RESEND_COOLDOWN_MS) {
+        const retryAfterSeconds = Math.ceil((RESEND_COOLDOWN_MS - elapsedMs) / 1000);
+        return json(
+          {
+            error: 'rate_limited',
+            message: `Please wait ${retryAfterSeconds}s before resending this invite.`,
+            retry_after_seconds: retryAfterSeconds,
+          },
+          429,
+        );
+      }
     }
 
     // Step 4: determine whether an auth user already exists for this email.
@@ -315,12 +339,16 @@ serve(async (req) => {
         return json({ error: 'Failed to send activation email' }, 500);
       }
 
-      const { error: lifecycleErr } = await adminClient
-        .from('partners')
-        .update({ lifecycle_stage: 'invitation_sent' })
-        .eq('id', partner.id);
-      if (lifecycleErr) {
-        console.error('partners lifecycle_stage update error (invitation_sent):', lifecycleErr);
+      // partner.lifecycle_stage is always approved_activation_pending here
+      // (this is the brand-new-auth-user branch), so this never downgrades.
+      if (partner.lifecycle_stage === 'approved_activation_pending') {
+        const { error: lifecycleErr } = await adminClient
+          .from('partners')
+          .update({ lifecycle_stage: 'invitation_sent' })
+          .eq('id', partner.id);
+        if (lifecycleErr) {
+          console.error('partners lifecycle_stage update error (invitation_sent):', lifecycleErr);
+        }
       }
     } else {
       // Step 5b: an auth user already exists for this email. Internal
@@ -400,12 +428,17 @@ serve(async (req) => {
         return json({ error: 'Failed to send activation email' }, 500);
       }
 
-      const { error: lifecycleErr } = await adminClient
-        .from('partners')
-        .update({ lifecycle_stage: 'invitation_sent' })
-        .eq('id', partner.id);
-      if (lifecycleErr) {
-        console.error('partners lifecycle_stage update error (invitation_sent):', lifecycleErr);
+      // Never downgrade a partner already at invitation_sent or
+      // registration_started back to invitation_sent -- only the first
+      // send (still at approved_activation_pending) advances the stage.
+      if (partner.lifecycle_stage === 'approved_activation_pending') {
+        const { error: lifecycleErr } = await adminClient
+          .from('partners')
+          .update({ lifecycle_stage: 'invitation_sent' })
+          .eq('id', partner.id);
+        if (lifecycleErr) {
+          console.error('partners lifecycle_stage update error (invitation_sent):', lifecycleErr);
+        }
       }
 
       // Step 6: refresh the existing auth link row (invited_at/invited_by)

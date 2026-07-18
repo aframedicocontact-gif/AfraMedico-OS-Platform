@@ -162,9 +162,18 @@ export function App() {
     mergeImportedAuthorityOrganizations(baseOrganizations),
   );
   const [leads, setLeads] = useState<Lead[]>(() => getLeads(seedLeads));
-  const { isAuthenticated, loading: authLoading, signOut } = useAuth();
+  const { isAuthenticated, loading: authLoading, signOut, user } = useAuth();
   const authRequired = supabaseConfig.isConfigured;
   const publicView = isPublicView(view.name);
+  // A partner-portal identity (app_metadata.partner_portal === true, set by
+  // send-partner-activation-invite) is never a Growth OS staff session, even
+  // though it authenticates through the same Supabase project. It must be
+  // confined to /partner/activate regardless of which pathname/view it
+  // arrives on -- e.g. a stale internal-route URL still open in a tab, or a
+  // browser autocompleting an old address.
+  const isPartnerPortalSession = Boolean(
+    isAuthenticated && user?.app_metadata?.partner_portal === true,
+  );
 
   useEffect(() => {
     if (authRequired && !authLoading && !isAuthenticated && !publicView) {
@@ -172,6 +181,13 @@ export function App() {
       setView({ name: "login" });
     }
   }, [authLoading, authRequired, isAuthenticated, publicView]);
+
+  useEffect(() => {
+    if (isPartnerPortalSession && view.name !== "partner-activate") {
+      window.history.replaceState({}, "", "/partner/activate");
+      setView({ name: "partner-activate" });
+    }
+  }, [isPartnerPortalSession, view.name]);
 
   useEffect(() => {
     function handlePopState() {
@@ -333,10 +349,14 @@ export function App() {
     return <ResetPasswordPage onComplete={openLogin} />;
   }
 
-  if (view.name === "partner-activate") {
+  if (view.name === "partner-activate" || isPartnerPortalSession) {
     // Always sign out before returning to /login: adopting the invite-link
     // session here must never leave a live partner-portal session active
-    // once the user leaves this standalone activation flow.
+    // once the user leaves this standalone activation flow. The
+    // isPartnerPortalSession branch is a render-time backstop for the
+    // useEffect above -- it guarantees a partner-portal session can never
+    // paint so much as a single frame of the internal AppShell, even before
+    // the URL/view-correcting effect has run.
     return <PartnerActivation onDone={handleSignOut} />;
   }
 

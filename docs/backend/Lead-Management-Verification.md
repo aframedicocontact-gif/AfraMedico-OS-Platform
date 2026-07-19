@@ -477,17 +477,19 @@ Expected CI steps:
 - `npm run lint`
 - Tests: no `test` script is configured, so the workflow reports tests as not configured
 
-CI result for PR #1:
+CI result for PR #1 after workflow push:
 
-- `npm ci`: pending GitHub Actions run
-- TypeScript: pending GitHub Actions run
-- build: pending GitHub Actions run
-- lint: pending GitHub Actions run
+- GitHub Actions workflow runs for commit `dc752b89598dc7e92c208213fe9eed4092819152`: none found
+- Combined commit status: Vercel succeeded
+- `npm ci`: not executed by GitHub Actions
+- TypeScript: not executed by GitHub Actions
+- build: not executed by GitHub Actions
+- lint: not executed by GitHub Actions
 - tests: not configured
 
 Final merge readiness:
 
-- Pending independent GitHub Actions result after workflow push.
+- Blocked until a GitHub Actions `PR Validation` run executes successfully or repository maintainers confirm the workflow trigger behavior. The likely reason no run appeared is that this is the first workflow introduced in the pull request and no workflow existed on `main` before this branch.
 
 ## Ready for PR Review
 

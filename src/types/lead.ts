@@ -117,6 +117,10 @@ export type PatientCaseSummary = {
 
 export type Lead = {
   id: string;
+  leadCode?: string;
+  sourceReferralId?: string;
+  partnerId?: string;
+  partnerCode?: string;
   patientId: string;
   caseId: string;
   patientName: string;

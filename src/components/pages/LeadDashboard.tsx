@@ -18,11 +18,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 type LeadDashboardProps = {
   leads: Lead[];
+  loading?: boolean;
+  error?: string | null;
+  dataSource?: "live" | "development" | "unavailable";
   onNavigate: (view: AppView) => void;
 };
 
-export function LeadDashboard({ leads, onNavigate }: LeadDashboardProps) {
-  const newLeads = leads.filter((lead) => lead.currentStatus === "New").length;
+export function LeadDashboard({ dataSource, error, leads, loading, onNavigate }: LeadDashboardProps) {
+  const newLeads = leads.filter((lead) => lead.currentStatus === "New" || lead.currentStatus === "New Lead").length;
   const reviewsPending = leads.filter((lead) =>
     ["Pending Documents", "In Review"].includes(lead.medicalReviewStatus),
   ).length;
@@ -31,9 +34,9 @@ export function LeadDashboard({ leads, onNavigate }: LeadDashboardProps) {
     ["Received", "Sent to Patient"].includes(lead.hospitalQuoteStatus),
   ).length;
   const accepted = leads.filter((lead) => lead.currentStatus === "Accepted").length;
-  const conversionRate = Math.round((accepted / leads.length) * 100);
+  const conversionRate = leads.length ? Math.round((accepted / leads.length) * 100) : 0;
   const avgResponse = Math.round(
-    leads.reduce((sum, lead) => sum + lead.responseTimeHours, 0) / leads.length,
+    leads.length ? leads.reduce((sum, lead) => sum + lead.responseTimeHours, 0) / leads.length : 0,
   );
 
   return (
@@ -57,6 +60,8 @@ export function LeadDashboard({ leads, onNavigate }: LeadDashboardProps) {
         </div>
       </div>
 
+      <LeadDataState loading={loading} error={error} source={dataSource} />
+
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
         <Metric icon={<Users className="h-4 w-4" />} label="Total Leads" value={leads.length} />
         <Metric icon={<Inbox className="h-4 w-4" />} label="New Leads" value={newLeads} />
@@ -76,7 +81,7 @@ export function LeadDashboard({ leads, onNavigate }: LeadDashboardProps) {
           <CardContent className="space-y-3">
             {leadPipelineStages.map((stage) => {
               const count = leads.filter((lead) => lead.pipelineStage === stage).length;
-              const width = Math.max((count / leads.length) * 100, count > 0 ? 7 : 0);
+              const width = Math.max((count / Math.max(leads.length, 1)) * 100, count > 0 ? 7 : 0);
 
               return (
                 <button
@@ -132,6 +137,27 @@ export function LeadDashboard({ leads, onNavigate }: LeadDashboardProps) {
       </div>
     </div>
   );
+}
+
+function LeadDataState({
+  error,
+  loading,
+  source,
+}: {
+  error?: string | null;
+  loading?: boolean;
+  source?: "live" | "development" | "unavailable";
+}) {
+  if (loading) {
+    return <div className="rounded-md border bg-white p-3 text-sm text-muted-foreground">Loading Leads from the operational backend...</div>;
+  }
+
+  if (error) {
+    const tone = source === "development" ? "border-amber-200 bg-amber-50 text-amber-900" : "border-red-200 bg-red-50 text-red-800";
+    return <div className={`rounded-md border p-3 text-sm ${tone}`}>{error}</div>;
+  }
+
+  return null;
 }
 
 function Metric({

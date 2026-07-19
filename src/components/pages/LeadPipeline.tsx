@@ -8,10 +8,13 @@ import { KanbanBoard, KanbanColumn, KanbanColumns } from "../ui/kanban-board";
 
 type LeadPipelineProps = {
   leads: Lead[];
+  loading?: boolean;
+  error?: string | null;
+  dataSource?: "live" | "development" | "unavailable";
   onNavigate: (view: AppView) => void;
 };
 
-export function LeadPipeline({ leads, onNavigate }: LeadPipelineProps) {
+export function LeadPipeline({ dataSource, error, leads, loading, onNavigate }: LeadPipelineProps) {
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -27,6 +30,8 @@ export function LeadPipeline({ leads, onNavigate }: LeadPipelineProps) {
           Add Lead
         </Button>
       </div>
+
+      <LeadDataState loading={loading} error={error} source={dataSource} />
 
       <KanbanBoard>
         <KanbanColumns>
@@ -83,4 +88,25 @@ export function LeadPipeline({ leads, onNavigate }: LeadPipelineProps) {
       </KanbanBoard>
     </div>
   );
+}
+
+function LeadDataState({
+  error,
+  loading,
+  source,
+}: {
+  error?: string | null;
+  loading?: boolean;
+  source?: "live" | "development" | "unavailable";
+}) {
+  if (loading) {
+    return <div className="rounded-md border bg-white p-3 text-sm text-muted-foreground">Loading Leads from the operational backend...</div>;
+  }
+
+  if (error) {
+    const tone = source === "development" ? "border-amber-200 bg-amber-50 text-amber-900" : "border-red-200 bg-red-50 text-red-800";
+    return <div className={`rounded-md border p-3 text-sm ${tone}`}>{error}</div>;
+  }
+
+  return null;
 }

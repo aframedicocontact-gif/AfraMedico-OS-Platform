@@ -20,8 +20,10 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import type { AppView } from "../../app/App";
 import {
+  createLeadNote,
   createLeadItemId,
   getLeadPipelineStage,
+  updateLead,
   updateLeadWithActivity,
 } from "../../services/leadService";
 import type { Lead, LeadPriority, LeadStatus } from "../../types/lead";
@@ -76,6 +78,7 @@ export function LeadProfile({ lead, onNavigate, onLeadUpdated }: LeadProfileProp
   const [whatsAppSummary, setWhatsAppSummary] = useState("");
   const [emailForm, setEmailForm] = useState({ subject: "", summary: "" });
   const [followUpDate, setFollowUpDate] = useState(lead.nextFollowUp);
+  const [actionError, setActionError] = useState("");
   const [reminderForm, setReminderForm] = useState({
     title: "",
     dueDate: lead.nextFollowUp,
@@ -113,10 +116,15 @@ export function LeadProfile({ lead, onNavigate, onLeadUpdated }: LeadProfileProp
     return `${Math.max(0, Math.floor((Date.now() - lastDate.getTime()) / dayMs))} days`;
   }, [currentLead.lastContact]);
 
-  function persist(updates: Partial<Lead>, title: string, detail: string) {
-    const updated = updateLeadWithActivity(currentLead, updates, title, detail);
-    setCurrentLead(updated);
-    onLeadUpdated(updated);
+  async function persist(updates: Partial<Lead>, title: string, detail: string) {
+    setActionError("");
+    try {
+      const updated = await updateLeadWithActivity(currentLead, updates, title, detail);
+      setCurrentLead(updated);
+      onLeadUpdated(updated);
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Unable to update Lead.");
+    }
   }
 
   function updateStatus(status: LeadStatus, title = "Status Updated", detail = `Lead status changed to ${status}.`) {
@@ -176,12 +184,20 @@ export function LeadProfile({ lead, onNavigate, onLeadUpdated }: LeadProfileProp
     );
   }
 
-  function addInternalNote() {
+  async function addInternalNote() {
     if (!noteText.trim()) return;
     const timestamp = new Date().toLocaleString();
     const nextNotes = [currentLead.internalNotes, `[${timestamp}] ${noteText.trim()}`].filter(Boolean).join("\n\n");
-    persist({ internalNotes: nextNotes }, "Internal Note Added", noteText.trim());
-    setNoteText("");
+    setActionError("");
+    try {
+      await createLeadNote(currentLead.id, noteText.trim());
+      const updated = await updateLead({ ...currentLead, internalNotes: nextNotes });
+      setCurrentLead(updated);
+      onLeadUpdated(updated);
+      setNoteText("");
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Unable to add internal note.");
+    }
   }
 
   function addAttachment() {
@@ -338,6 +354,12 @@ export function LeadProfile({ lead, onNavigate, onLeadUpdated }: LeadProfileProp
           </Button>
         </CardContent>
       </Card>
+
+      {actionError ? (
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+          {actionError}
+        </div>
+      ) : null}
 
       <Card className="border-emerald-200 bg-emerald-50/50">
         <CardHeader>

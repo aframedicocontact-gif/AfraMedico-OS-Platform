@@ -1,0 +1,49 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate React App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run TypeScript check if configured
+        run: |
+          if npm run | grep -qE '^\s+type-check'; then
+            npm run type-check
+          else
+            echo "No separate type-check script configured; npm run build runs tsc -b."
+          fi
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests if configured
+        run: |
+          if npm run | grep -qE '^\s+test'; then
+            npm test
+          else
+            echo "No test script configured."
+          fi

@@ -460,6 +460,35 @@ Remaining merge caveat:
 
 - rerun dependency install/build/lint in CI or a clean local environment because this local workstation's npm install remains unreliable.
 
+## Independent CI Validation
+
+Workflow name: PR Validation
+Workflow file: `.github/workflows/pr-validation.yml`
+Node version: 22
+Trigger: pull requests targeting `main`
+
+The repository did not have an existing GitHub Actions workflow directory, so a new PR validation workflow was added.
+
+Expected CI steps:
+
+- `npm ci`
+- TypeScript check: no separate `type-check` script is configured; `npm run build` runs `tsc -b`
+- `npm run build`
+- `npm run lint`
+- Tests: no `test` script is configured, so the workflow reports tests as not configured
+
+CI result for PR #1:
+
+- `npm ci`: pending GitHub Actions run
+- TypeScript: pending GitHub Actions run
+- build: pending GitHub Actions run
+- lint: pending GitHub Actions run
+- tests: not configured
+
+Final merge readiness:
+
+- Pending independent GitHub Actions result after workflow push.
+
 ## Ready for PR Review
 
 Status: Ready for PR review with one validation caveat.

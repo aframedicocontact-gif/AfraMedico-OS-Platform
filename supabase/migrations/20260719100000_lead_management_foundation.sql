@@ -27,11 +27,33 @@ $$;
 comment on function public.generate_patient_reference_code() is
   'Generates a human-readable operational patient reference for Lead intake before a real patient_id exists.';
 
-alter table public.partners
-  add constraint partners_id_organization_unique unique (id, organization_id);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'partners_id_organization_unique'
+      and conrelid = 'public.partners'::regclass
+  ) then
+    alter table public.partners
+      add constraint partners_id_organization_unique unique (id, organization_id);
+  end if;
+end;
+$$;
 
-alter table public.partner_patient_referrals
-  add constraint partner_patient_referrals_id_organization_unique unique (id, organization_id);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'partner_patient_referrals_id_organization_unique'
+      and conrelid = 'public.partner_patient_referrals'::regclass
+  ) then
+    alter table public.partner_patient_referrals
+      add constraint partner_patient_referrals_id_organization_unique unique (id, organization_id);
+  end if;
+end;
+$$;
 
 create table public.leads (
   id uuid primary key default gen_random_uuid(),

@@ -634,3 +634,10 @@ Reason:
 The current Lead Profile UI lets staff type coordinator, hospital, and referral partner names as free text. The normalized future model should eventually use IDs from `user_profiles`, Healthcare Provider Network, and `partners`, but those selectors are not implemented in this phase. These display-name fields preserve the existing workflow and make assignments persist after refresh without pretending that free-text values are normalized foreign keys.
 
 This does not weaken the future normalized architecture. The ID fields remain available for later phases.
+
+During Development Supabase validation, the migration was adjusted before first application so the two composite foreign-key support constraints are added only when missing:
+
+- `partners_id_organization_unique`
+- `partner_patient_referrals_id_organization_unique`
+
+This does not change the approved data model. It prevents migration failure in environments where a previous hardening or partner activation migration has already added one of the required composite unique constraints.

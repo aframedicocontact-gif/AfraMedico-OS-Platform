@@ -306,6 +306,160 @@ Security notes:
 - Live writes require a properly authenticated staff session with `app_metadata.organization_id`.
 - No automated tests exist yet for Lead Management.
 
+## Development Supabase Validation
+
+Project name: AfraMedico OS - Development
+Project reference: `sblaedmxxquiavmfdmwq`
+Supabase organization ID: `hycdpopcwpeogvqyxboh`
+Region: `us-east-1`
+Validation date: 2026-07-19
+
+### Migration Result
+
+Applied to Development only.
+
+Local migration file:
+
+`supabase/migrations/20260719100000_lead_management_foundation.sql`
+
+Remote migration history entry created by the Supabase connector:
+
+`20260719141159_lead_management_foundation`
+
+Pre-apply check confirmed no existing remote migration conflict with local version `20260719100000`.
+
+Issue found before apply:
+
+- Development already had `partners_id_organization_unique` on `public.partners(id, organization_id)`.
+
+Fix applied before first Development migration run:
+
+- wrapped `partners_id_organization_unique` creation in a catalog existence check
+- wrapped `partner_patient_referrals_id_organization_unique` creation in a catalog existence check
+
+This was not a data-model change. It made the migration safe for environments where one support constraint already exists.
+
+### Table Verification
+
+Verified these tables exist:
+
+- `public.leads`
+- `public.lead_notes`
+- `public.lead_activities`
+- `public.lead_documents`
+
+Verified RLS is enabled on all four tables.
+
+Verified functions exist:
+
+- `public.generate_lead_code()`
+- `public.generate_patient_reference_code()`
+- `public.prepare_lead_insert()`
+
+Verified designed triggers exist:
+
+- `leads_prepare_insert`
+- `leads_set_updated_at`
+- `lead_notes_set_updated_at`
+
+Verified indexes exist for organization, status/stage, priority, referral linkage, contact duplicate checks, notes, activities, and documents.
+
+Verified constraints exist:
+
+- primary keys on all four new tables
+- `leads_id_organization_unique`
+- `leads_lead_code_unique`
+- `leads_source_referral_unique`
+- composite organization-safe foreign keys to patients, partners, partner referrals, user profiles, cases, and child Lead tables
+- check constraints for Lead status, pipeline stage, priority, urgency, qualification status, contact method, document status, and file size
+
+`source_referral_id` is unique when present while still allowing multiple `null` values, matching PostgreSQL unique constraint behavior.
+
+### RLS and Security Verification
+
+Verified expected organization-scoped policies exist:
+
+- Leads: select, insert, update
+- Lead notes: select, insert, update
+- Lead activities: select, insert
+- Lead documents: select, insert, update
+
+Verified no Partner Portal direct-access policy exists on the four internal Lead tables.
+
+Controlled authenticated-role validation confirmed:
+
+- a user context with `app_metadata.organization_id = e3b2dddc-9874-4911-b0f0-9dab1dd69248` can create and read its Lead
+- a different organization context cannot read the validation Lead
+- a Partner Portal-style context without `app_metadata.organization_id` cannot read the validation Lead
+- normal authenticated update cannot change the Lead `organization_id` to another organization
+
+No storage policy was added:
+
+- storage bucket count remained available for inspection
+- storage policy count was `0`
+- Lead-related storage policy count was `0`
+
+No Edge Functions were deployed or modified.
+
+### Functional Test Results
+
+Created one clearly marked Development validation Lead:
+
+- Patient name: `DEV VALIDATION TEST LEAD`
+- Email: `dev.validation.lead@example.test`
+
+Verified:
+
+- Lead creation succeeded
+- `lead_code` was generated
+- `patient_reference_code` was generated
+- Lead could be read after creation
+- `pipeline_stage` update persisted as `medical_records_pending`
+- `lead_status` update persisted as `on_hold`
+- `priority` update persisted as `High`
+- `next_follow_up_at` persisted
+- one Lead note was inserted and read
+- one Lead activity was inserted and read
+
+### Existing Data and Integration Safety
+
+Pre/post counts confirmed no unexpected row-count changes to:
+
+- `partner_patient_referrals`: remained `2`
+- `partners`: remained `2`
+- `partner_agreements`: remained `2`
+
+No existing patient or case data was modified by the validation script.
+
+No Partner Portal Edge Function was deployed or changed.
+
+No storage bucket or storage policy was added.
+
+### Cleanup Result
+
+Removed only the clearly identified validation records:
+
+- deleted Leads: `1`
+- deleted Lead notes: `1`
+- deleted Lead activities: `1`
+- deleted Lead documents: `0`
+
+Fresh post-cleanup verification confirmed:
+
+- remaining validation Leads: `0`
+- remaining validation notes: `0`
+- remaining validation activities: `0`
+
+### Development Readiness Decision
+
+Development Supabase validation passed after the pre-apply idempotency fix to the support constraints.
+
+Status: Ready for PR review and Development-environment acceptance.
+
+Remaining merge caveat:
+
+- rerun dependency install/build/lint in CI or a clean local environment because this local workstation's npm install remains unreliable.
+
 ## Ready for PR Review
 
 Status: Ready for PR review with one validation caveat.
@@ -319,4 +473,3 @@ npm.cmd run lint
 ```
 
 in an environment where npm can complete dependency installation.
-

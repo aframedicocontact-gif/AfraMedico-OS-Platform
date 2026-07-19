@@ -108,6 +108,7 @@ export function LeadProfile({ lead, onNavigate, onLeadUpdated }: LeadProfileProp
   }, [lead]);
 
   const lastActivity = currentLead.activity[0];
+  const hasCaseWorkspaceLink = Boolean(currentLead.caseId && currentLead.caseId !== "Pending case");
   const daysSinceLastContact = useMemo(() => {
     if (!currentLead.lastContact) return "Not tracked";
     const lastDate = new Date(currentLead.lastContact);
@@ -314,7 +315,13 @@ export function LeadProfile({ lead, onNavigate, onLeadUpdated }: LeadProfileProp
           ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "case-profile", caseId: currentLead.caseId })}>
+          <Button
+            variant="secondary"
+            type="button"
+            disabled={!hasCaseWorkspaceLink}
+            title={hasCaseWorkspaceLink ? "Open linked Case Workspace." : "No Case has been created for this Lead yet."}
+            onClick={() => hasCaseWorkspaceLink && onNavigate({ name: "case-profile", caseId: currentLead.caseId })}
+          >
             Open Case Workspace
           </Button>
           <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "lead-pipeline" })}>

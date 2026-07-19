@@ -6,6 +6,7 @@ This folder contains the living architecture and operational documentation for A
 
 - [Lead Management Technical Design](backend/Lead-Management-Technical-Design.md)
 - [Lead Management Foundation](backend/Lead-Management-Foundation.md)
+- [Lead Management Verification](backend/Lead-Management-Verification.md)
 
 ## Future Backend Architecture Documents
 

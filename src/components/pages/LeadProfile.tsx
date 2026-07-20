@@ -20,6 +20,7 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import type { AppView } from "../../app/App";
 import {
+  convertLeadToCase,
   createLeadNote,
   createLeadItemId,
   getLeadPipelineStage,
@@ -79,6 +80,7 @@ export function LeadProfile({ lead, onNavigate, onLeadUpdated }: LeadProfileProp
   const [emailForm, setEmailForm] = useState({ subject: "", summary: "" });
   const [followUpDate, setFollowUpDate] = useState(lead.nextFollowUp);
   const [actionError, setActionError] = useState("");
+  const [converting, setConverting] = useState(false);
   const [reminderForm, setReminderForm] = useState({
     title: "",
     dueDate: lead.nextFollowUp,
@@ -264,6 +266,27 @@ export function LeadProfile({ lead, onNavigate, onLeadUpdated }: LeadProfileProp
     persist({ nextFollowUp: followUpDate }, "Follow-up Scheduled", `Next follow-up set for ${followUpDate}.`);
   }
 
+  async function convertToCase() {
+    setActionError("");
+    setConverting(true);
+
+    try {
+      const result = await convertLeadToCase(currentLead);
+      if (result.error || !result.lead || !result.caseId) {
+        setActionError(result.error ?? "Unable to convert Lead to Case.");
+        return;
+      }
+
+      setCurrentLead(result.lead);
+      onLeadUpdated(result.lead);
+      onNavigate({ name: "case-detail", caseId: result.caseId });
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Unable to convert Lead to Case.");
+    } finally {
+      setConverting(false);
+    }
+  }
+
   function createReminder() {
     if (!reminderForm.title.trim()) return;
     const reminder = {
@@ -320,7 +343,7 @@ export function LeadProfile({ lead, onNavigate, onLeadUpdated }: LeadProfileProp
             type="button"
             disabled={!hasCaseWorkspaceLink}
             title={hasCaseWorkspaceLink ? "Open linked Case Workspace." : "No Case has been created for this Lead yet."}
-            onClick={() => hasCaseWorkspaceLink && onNavigate({ name: "case-profile", caseId: currentLead.caseId })}
+            onClick={() => hasCaseWorkspaceLink && onNavigate({ name: "case-detail", caseId: currentLead.caseId })}
           >
             Open Case Workspace
           </Button>
@@ -351,9 +374,15 @@ export function LeadProfile({ lead, onNavigate, onLeadUpdated }: LeadProfileProp
             <CalendarPlus className="h-4 w-4" />
             Schedule Consultation
           </Button>
-          <Button variant="secondary" type="button" disabled title="Patient conversion is prepared for a future sprint.">
+          <Button
+            variant="secondary"
+            type="button"
+            disabled={converting || hasCaseWorkspaceLink}
+            title={hasCaseWorkspaceLink ? "This Lead is already linked to a Case." : "Create or link Patient, create a new Case, and open it."}
+            onClick={convertToCase}
+          >
             <UserCheck className="h-4 w-4" />
-            Convert to Patient
+            {converting ? "Converting..." : "Convert to Case"}
           </Button>
           <Button variant="secondary" type="button" onClick={() => updateStatus("Closed", "Lead Archived", "Lead was archived from active intake.")}>
             <Archive className="h-4 w-4" />

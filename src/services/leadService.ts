@@ -1,6 +1,14 @@
 import { countryOptions } from "../data/countryDataset";
 import { getDevelopmentOrganizationContext } from "../lib/currentOrganization";
+import {
+  createDevelopmentId,
+  getDevelopmentOperationalPatients,
+  saveDevelopmentOperationalCase,
+  saveDevelopmentOperationalPatient,
+  saveDevelopmentOperationalTimelineEvent,
+} from "../lib/developmentOperationalStore";
 import { supabaseConfig, querySupabaseTable } from "../lib/supabaseClient";
+import type { PatientCase } from "../types/case";
 import type {
   CaseStatus,
   HospitalQuoteStatus,
@@ -11,6 +19,7 @@ import type {
   LeadStatus,
   MedicalReviewStatus,
 } from "../types/lead";
+import type { Patient } from "../types/patient";
 import { getSession } from "./authService";
 
 const STORAGE_KEY = "aframedico.development.leads";
@@ -153,6 +162,38 @@ type BackendLeadNoteRow = {
   note_type: string;
   is_internal: boolean;
   created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type BackendPatientRow = {
+  id: string;
+  organization_id: string;
+  patient_code?: string;
+  full_name?: string;
+  country: string | null;
+  phone: string | null;
+  email: string | null;
+  whatsapp?: string | null;
+  preferred_language?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type BackendCaseRow = {
+  id: string;
+  organization_id: string;
+  patient_id: string;
+  case_code: string;
+  treatment: string | null;
+  specialty: string | null;
+  country: string | null;
+  status: string;
+  priority: string;
+  urgency: string;
+  current_stage: string | null;
+  current_owner_id: string | null;
+  current_department: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -448,7 +489,7 @@ function toLead(row: BackendLeadRow, activities: BackendLeadActivityRow[] = []):
     partnerId: row.partner_id ?? undefined,
     partnerCode: row.partner_code ?? undefined,
     leadCode: row.lead_code,
-    patientId: row.patient_reference_code,
+    patientId: row.patient_id ?? row.patient_reference_code,
     caseId: row.converted_case_id ?? "Pending case",
     patientName: row.patient_full_name,
     dateOfBirth: row.date_of_birth ?? "",
@@ -610,6 +651,132 @@ function toUpdatePayload(updates: Partial<Lead>) {
   if (updates.documentsReceived !== undefined) payload.initial_records_ready = updates.documentsReceived;
 
   return payload;
+}
+
+function splitPatientName(fullName: string) {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] ?? "Unknown",
+    lastName: parts.slice(1).join(" ") || "Patient",
+  };
+}
+
+function generateCaseCode() {
+  const randomPart =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID().replaceAll("-", "").slice(0, 8).toUpperCase()
+      : `${Date.now()}`.slice(-8);
+
+  return `CASE-${new Date().getFullYear()}-${randomPart}`;
+}
+
+function toCasePriority(priority: LeadPriority): BackendCaseRow["priority"] {
+  if (priority === "Urgent") return "high";
+  return priority.toLowerCase();
+}
+
+function toCaseUrgency(priority: LeadPriority): BackendCaseRow["urgency"] {
+  if (priority === "Urgent") return "urgent";
+  if (priority === "High") return "urgent";
+  return "routine";
+}
+
+function normalizeReliableEmail(value: string | undefined) {
+  return (value ?? "").trim().toLowerCase();
+}
+
+function normalizeReliablePhone(value: string | undefined) {
+  return (value ?? "").trim();
+}
+
+async function findExistingPatientForLead(lead: Lead, organizationId: string) {
+  const email = normalizeReliableEmail(lead.primaryEmail || lead.email);
+  if (email) {
+    const result = await querySupabaseTable<BackendPatientRow[]>("patients", {
+      select: "*",
+      organization_id: `eq.${organizationId}`,
+      email: `eq.${email}`,
+      limit: 1,
+    });
+    if (result.data?.[0]) return result.data[0];
+  }
+
+  const phone = normalizeReliablePhone(lead.phoneInternationalNumber || lead.phone);
+  if (phone) {
+    const result = await querySupabaseTable<BackendPatientRow[]>("patients", {
+      select: "*",
+      organization_id: `eq.${organizationId}`,
+      phone: `eq.${phone}`,
+      limit: 1,
+    });
+    if (result.data?.[0]) return result.data[0];
+  }
+
+  const whatsApp = normalizeReliablePhone(lead.whatsappInternationalNumber || lead.whatsapp);
+  if (whatsApp && whatsApp !== phone) {
+    const result = await querySupabaseTable<BackendPatientRow[]>("patients", {
+      select: "*",
+      organization_id: `eq.${organizationId}`,
+      phone: `eq.${whatsApp}`,
+      limit: 1,
+    });
+    if (result.data?.[0]) return result.data[0];
+  }
+
+  return null;
+}
+
+async function createPatientFromLead(lead: Lead, organizationId: string) {
+  const { firstName, lastName } = splitPatientName(lead.patientName);
+  const fullName = [firstName, lastName].join(" ").trim();
+  const phone = normalizeReliablePhone(lead.phoneInternationalNumber || lead.phone || lead.whatsappInternationalNumber || lead.whatsapp);
+
+  return mutateTable<BackendPatientRow[]>("patients", "POST", {
+    organization_id: organizationId,
+    patient_code: lead.patientId || `PAT-${Date.now()}`,
+    full_name: fullName,
+    country: lead.country || null,
+    phone: phone || null,
+    whatsapp: normalizeReliablePhone(lead.whatsappInternationalNumber || lead.whatsapp) || null,
+    email: normalizeReliableEmail(lead.primaryEmail || lead.email) || null,
+    preferred_language: lead.preferredLanguage || null,
+  });
+}
+
+async function createCaseFromLead(lead: Lead, organizationId: string, patientId: string) {
+  return mutateTable<BackendCaseRow[]>("cases", "POST", {
+    organization_id: organizationId,
+    patient_id: patientId,
+    case_code: generateCaseCode(),
+    treatment: lead.interestedTreatment || null,
+    specialty: lead.interestedTreatment || null,
+    country: lead.preferredDestination || lead.country || null,
+    status: "new",
+    priority: toCasePriority(lead.priority),
+    urgency: toCaseUrgency(lead.priority),
+    current_stage: "Lead Converted",
+    current_owner_id: null,
+    current_department: "Case Management",
+  });
+}
+
+async function createCaseTimelineFromLead(lead: Lead, organizationId: string, patientId: string, caseId: string, userId: string | null) {
+  const attribution = lead.partnerCode
+    ? ` Partner attribution preserved: ${lead.referralPartner || lead.partnerCode}.`
+    : lead.referralPartner
+      ? ` Partner attribution preserved: ${lead.referralPartner}.`
+      : "";
+
+  return mutateTable("timeline_events", "POST", {
+    organization_id: organizationId,
+    case_id: caseId,
+    patient_id: patientId,
+    event_type: "lead_converted_to_case",
+    title: "Lead Converted to Case",
+    description: `Lead ${lead.leadCode ?? lead.id} was converted into a new treatment Case for ${lead.interestedTreatment}.${attribution}`,
+    department: "Case Management",
+    user_id: userId,
+  });
 }
 
 function pipelineStageToStatus(stage: LeadPipelineStage): LeadStatus {
@@ -932,6 +1099,215 @@ export async function updateLeadWithActivity(
   await createLeadActivity(lead.id, { title, description: detail });
   const refreshed = await getLeadById(lead.id);
   return refreshed.data ?? nextLead;
+}
+
+export async function convertLeadToCase(lead: Lead): Promise<{
+  lead: Lead | null;
+  patientId: string | null;
+  caseId: string | null;
+  caseCode: string | null;
+  matchedExistingPatient: boolean;
+  error: string | null;
+  source: LeadServiceSource;
+}> {
+  if (lead.caseId && lead.caseId !== "Pending case") {
+    return {
+      lead,
+      patientId: lead.patientId,
+      caseId: lead.caseId,
+      caseCode: lead.caseId,
+      matchedExistingPatient: true,
+      error: null,
+      source: "live",
+    };
+  }
+
+  if (isDevelopmentFallbackAllowed()) {
+    const developmentOrganizationId = getDevelopmentOrganizationContext().id;
+    if (!developmentOrganizationId) {
+      return {
+        lead: null,
+        patientId: null,
+        caseId: null,
+        caseCode: null,
+        matchedExistingPatient: false,
+        error: "No organization_id is available for the current staff session.",
+        source: "unavailable",
+      };
+    }
+
+    const now = nowIso();
+    const patientName = splitPatientName(lead.patientName);
+    const existingPatient = getDevelopmentOperationalPatients().find((patient) => {
+      const emailMatches = lead.email && patient.email?.toLowerCase() === lead.email.toLowerCase();
+      const phoneMatches = lead.phone && patient.phone === lead.phone;
+      return Boolean(emailMatches || phoneMatches);
+    });
+    const patient: Patient =
+      existingPatient ??
+      {
+        id: createDevelopmentId("patient-dev"),
+        organization_id: developmentOrganizationId,
+        first_name: patientName.firstName,
+        last_name: patientName.lastName,
+        date_of_birth: lead.dateOfBirth || null,
+        gender: "unknown",
+        country: lead.country || null,
+        phone: lead.phone || null,
+        email: lead.email || null,
+        status: "active",
+        created_at: now,
+        updated_at: now,
+      };
+
+    if (!existingPatient) saveDevelopmentOperationalPatient(patient);
+
+    const patientCase: PatientCase = {
+      id: createDevelopmentId("case-dev"),
+      organization_id: patient.organization_id,
+      patient_id: patient.id,
+      case_code: generateCaseCode(),
+      treatment: lead.interestedTreatment || null,
+      specialty: lead.interestedTreatment || null,
+      country: lead.preferredDestination || lead.country || null,
+      status: "new",
+      priority: toCasePriority(lead.priority) as PatientCase["priority"],
+      urgency: toCaseUrgency(lead.priority) as PatientCase["urgency"],
+      current_stage: "Lead Converted",
+      current_owner_id: null,
+      current_department: "Case Management",
+      created_at: now,
+      updated_at: now,
+    };
+    saveDevelopmentOperationalCase(patientCase);
+    saveDevelopmentOperationalTimelineEvent({
+      id: createDevelopmentId("timeline-dev"),
+      organization_id: patient.organization_id,
+      patient_id: patient.id,
+      case_id: patientCase.id,
+      event_type: "lead_converted_to_case",
+      title: "Lead Converted to Case",
+      description: `Lead ${lead.leadCode ?? lead.id} converted into ${patientCase.case_code}.`,
+      department: "Case Management",
+      user_id: null,
+      created_at: now,
+    });
+
+    const updatedLead = await updateLead({
+      ...lead,
+      patientId: patient.id,
+      caseId: patientCase.id,
+      caseStatus: "Active",
+      currentStatus: "Accepted",
+      pipelineStage: "Confirmed",
+      lastContact: today(),
+      activity: [
+        {
+          date: today(),
+          title: "Lead Converted to Case",
+          detail: `Created Case ${patientCase.case_code} for ${lead.interestedTreatment}.`,
+        },
+        ...(lead.activity ?? []),
+      ],
+    });
+
+    return {
+      lead: updatedLead,
+      patientId: patient.id,
+      caseId: patientCase.id,
+      caseCode: patientCase.case_code,
+      matchedExistingPatient: Boolean(existingPatient),
+      error: null,
+      source: "development",
+    };
+  }
+
+  const session = await getSession();
+  const organizationId = getCurrentOrganizationId(session?.user?.app_metadata?.organization_id);
+  if (!organizationId) {
+    return {
+      lead: null,
+      patientId: null,
+      caseId: null,
+      caseCode: null,
+      matchedExistingPatient: false,
+      error: "No organization_id is available for the current staff session.",
+      source: "unavailable",
+    };
+  }
+
+  const existingPatient = await findExistingPatientForLead(lead, organizationId);
+  let patient = existingPatient;
+
+  if (!patient) {
+    const createdPatient = await createPatientFromLead(lead, organizationId);
+    if (createdPatient.error || !createdPatient.data?.[0]) {
+      return {
+        lead: null,
+        patientId: null,
+        caseId: null,
+        caseCode: null,
+        matchedExistingPatient: false,
+        error: createdPatient.error ?? "Unable to create Patient for Lead conversion.",
+        source: createdPatient.source,
+      };
+    }
+    patient = createdPatient.data[0];
+  }
+
+  const createdCase = await createCaseFromLead(lead, organizationId, patient.id);
+  if (createdCase.error || !createdCase.data?.[0]) {
+    return {
+      lead: null,
+      patientId: patient.id,
+      caseId: null,
+      caseCode: null,
+      matchedExistingPatient: Boolean(existingPatient),
+      error: createdCase.error ?? "Unable to create Case for Lead conversion.",
+      source: createdCase.source,
+    };
+  }
+
+  const patientCase = createdCase.data[0];
+  await createCaseTimelineFromLead(lead, organizationId, patient.id, patientCase.id, session?.user?.id ?? null);
+
+  const updated = await mutateTable<BackendLeadRow[]>("leads", "PATCH", {
+    patient_id: patient.id,
+    converted_case_id: patientCase.id,
+    lead_status: "converted",
+    pipeline_stage: "converted",
+    internal_summary: [lead.internalNotes, `Converted to Case ${patientCase.case_code}.`].filter(Boolean).join("\n\n"),
+  }, {
+    id: `eq.${lead.id}`,
+  });
+  if (updated.error || !updated.data?.[0]) {
+    return {
+      lead: null,
+      patientId: patient.id,
+      caseId: patientCase.id,
+      caseCode: patientCase.case_code,
+      matchedExistingPatient: Boolean(existingPatient),
+      error: updated.error ?? "Case was created, but Lead linkage update failed.",
+      source: updated.source,
+    };
+  }
+
+  await createLeadActivity(lead.id, {
+    title: "Lead Converted to Case",
+    description: `Linked Patient ${patient.id} and created Case ${patientCase.case_code}.`,
+    type: "lead_converted_to_case",
+  });
+
+  const refreshed = await getLeadById(lead.id);
+  return {
+    lead: refreshed.data ?? toLead(updated.data[0]),
+    patientId: patient.id,
+    caseId: patientCase.id,
+    caseCode: patientCase.case_code,
+    matchedExistingPatient: Boolean(existingPatient),
+    error: refreshed.error,
+    source: "live",
+  };
 }
 
 export async function createLeadNote(leadId: string, noteText: string, noteType = "internal") {

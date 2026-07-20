@@ -53,11 +53,25 @@ export async function getPartnerAgreementDownloadUrl(
 
 export async function submitPartnerPatientReferral(input: {
   patient_full_name: string;
+  date_of_birth?: string;
+  city?: string;
+  nationality?: string;
+  gender?: string;
+  preferred_language?: string;
+  phone_country_code?: string;
+  phone_local_number?: string;
   patient_email: string;
+  confirm_email?: string;
   patient_phone: string;
+  whatsapp_country_code?: string;
+  whatsapp_local_number?: string;
+  whatsapp?: string;
   patient_country: string;
   requested_treatment: string;
-  medical_summary: string;
+  medical_condition?: string;
+  urgency?: string;
+  preferred_destination?: string;
+  medical_history?: string;
   initial_records_ready: boolean;
   patient_consent_confirmed: boolean;
 }): Promise<Result<{ success: boolean; referral: { id: string; referral_code: string; referral_status: string; submitted_at: string; lead_id?: string; lead_code?: string } }>> {

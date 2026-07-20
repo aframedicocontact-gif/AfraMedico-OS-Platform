@@ -138,6 +138,10 @@ export type PartnerPortalAgreement = {
 export type PartnerPortalReferral = {
   id: string;
   referral_code: string;
+  lead_code?: string | null;
+  lead_status?: string | null;
+  pipeline_stage?: string | null;
+  priority?: string | null;
   patient_full_name: string;
   patient_country: string;
   requested_treatment: string;

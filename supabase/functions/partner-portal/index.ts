@@ -25,6 +25,22 @@ function normalize(value: string) {
   return value.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
 }
 
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function normalizeUrgency(value: string) {
+  if (value === 'Urgent') return 'urgent';
+  if (value === 'High') return 'priority';
+  if (value === 'Low' || value === 'Medium') return 'routine';
+  return 'unknown';
+}
+
+function normalizePriority(value: string, initialRecordsReady: boolean) {
+  if (['Low', 'Medium', 'High', 'Urgent'].includes(value)) return value;
+  return initialRecordsReady ? 'Medium' : 'High';
+}
+
 async function sha256(value: string) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest))
@@ -284,13 +300,35 @@ serve(async (req) => {
         return json({ error: 'Sign the Partner Agreement before introducing a patient.' }, 403);
       }
       const patientFullName = clean(body?.patient_full_name, 200);
+      const dateOfBirth = clean(body?.date_of_birth, 20);
       const patientEmail = clean(body?.patient_email, 254).toLocaleLowerCase();
+      const confirmEmail = clean(body?.confirm_email, 254).toLocaleLowerCase();
+      const phoneCountryCode = clean(body?.phone_country_code, 20);
+      const phoneLocalNumber = clean(body?.phone_local_number, 60);
       const patientPhone = clean(body?.patient_phone, 60);
+      const whatsappCountryCode = clean(body?.whatsapp_country_code, 20);
+      const whatsappLocalNumber = clean(body?.whatsapp_local_number, 60);
+      const whatsapp = clean(body?.whatsapp, 60);
       const patientCountry = clean(body?.patient_country, 120);
+      const city = clean(body?.city, 120);
+      const nationality = clean(body?.nationality, 120);
+      const gender = clean(body?.gender, 40);
+      const preferredLanguage = clean(body?.preferred_language, 80);
       const requestedTreatment = clean(body?.requested_treatment, 300);
-      const medicalSummary = clean(body?.medical_summary, 4000);
-      if (!patientFullName || !patientPhone || !patientCountry || !requestedTreatment || !medicalSummary) {
+      const medicalCondition = clean(body?.medical_condition, 1000);
+      const medicalHistory = clean(body?.medical_history, 4000);
+      const urgency = clean(body?.urgency, 40);
+      const preferredDestination = clean(body?.preferred_destination, 120);
+      const initialRecordsReady = body?.initial_records_ready === true;
+      const medicalSummary = medicalHistory || medicalCondition;
+      if (!patientFullName || !dateOfBirth || !patientPhone || !patientCountry || !patientEmail || !confirmEmail || !requestedTreatment || !medicalSummary) {
         return json({ error: 'Complete all required patient referral fields.' }, 400);
+      }
+      if (!isValidEmail(patientEmail)) {
+        return json({ error: 'Patient email format is invalid.' }, 400);
+      }
+      if (patientEmail !== confirmEmail) {
+        return json({ error: 'Patient email and confirmation email must match.' }, 400);
       }
       if (body?.patient_consent_confirmed !== true) {
         return json({ error: 'Patient consent must be confirmed.' }, 400);
@@ -309,9 +347,9 @@ serve(async (req) => {
           patient_country: patientCountry,
           requested_treatment: requestedTreatment,
           medical_summary: medicalSummary,
-          initial_records_ready: body?.initial_records_ready === true,
+          initial_records_ready: initialRecordsReady,
           patient_consent_confirmed: true,
-          referral_status: body?.initial_records_ready === true ? 'under_review' : 'documents_requested',
+          referral_status: initialRecordsReady ? 'under_review' : 'documents_requested',
         })
         .select('id, referral_code, referral_status, submitted_at')
         .single();
@@ -330,20 +368,30 @@ serve(async (req) => {
           acquisition_source: 'referral_partner',
           submission_channel: 'partner_portal',
           patient_full_name: patientFullName,
+          date_of_birth: dateOfBirth,
           country: patientCountry,
+          city: city || null,
+          nationality: nationality || null,
+          gender: gender || null,
+          preferred_language: preferredLanguage || 'English',
           primary_email: patientEmail || null,
+          phone_country_code: phoneCountryCode || null,
+          phone_local_number: phoneLocalNumber || null,
           phone_e164: patientPhone || null,
-          whatsapp_e164: patientPhone || null,
-          preferred_contact_method: patientPhone ? 'whatsapp' : patientEmail ? 'email' : null,
+          whatsapp_country_code: whatsappCountryCode || null,
+          whatsapp_local_number: whatsappLocalNumber || null,
+          whatsapp_e164: whatsapp || patientPhone || null,
+          preferred_contact_method: whatsapp || patientPhone ? 'whatsapp' : 'email',
           requested_treatment: requestedTreatment,
-          medical_condition: medicalSummary,
+          medical_condition: medicalCondition || null,
           medical_summary: medicalSummary,
           medical_history: medicalSummary,
-          urgency: 'unknown',
-          initial_records_ready: body?.initial_records_ready === true,
-          pipeline_stage: body?.initial_records_ready === true ? 'qualification' : 'medical_records_pending',
+          urgency: normalizeUrgency(urgency),
+          preferred_destination: preferredDestination || null,
+          initial_records_ready: initialRecordsReady,
+          pipeline_stage: initialRecordsReady ? 'qualification' : 'medical_records_pending',
           lead_status: 'open',
-          priority: body?.initial_records_ready === true ? 'Medium' : 'High',
+          priority: normalizePriority(urgency, initialRecordsReady),
           referral_partner_name: partner.name,
           qualification_status: 'unreviewed',
           internal_summary: `Created from Partner Portal referral ${referral.referral_code}.`,
@@ -356,7 +404,8 @@ serve(async (req) => {
         .single();
       if (leadError || !lead) {
         console.error('linked lead creation failed', leadError);
-        return json({ error: 'Referral was saved, but the internal Lead could not be created. AfraMedico staff should review this referral manually.' }, 500);
+        await admin.from('partner_patient_referrals').delete().eq('id', referral.id).eq('partner_id', partner.id);
+        return json({ error: 'Unable to create the internal Lead. The referral submission was not saved; please try again or contact AfraMedico.' }, 500);
       }
 
       const { error: activityError } = await admin
@@ -392,6 +441,29 @@ serve(async (req) => {
       console.error('partner referral list failed', referralsError);
       return json({ error: 'Unable to load referrals' }, 500);
     }
+    const referralIds = (referrals ?? []).map((referral) => referral.id);
+    const { data: linkedLeads, error: linkedLeadsError } = referralIds.length
+      ? await admin
+        .from('leads')
+        .select('source_referral_id, lead_code, lead_status, pipeline_stage, priority')
+        .in('source_referral_id', referralIds)
+      : { data: [], error: null };
+    if (linkedLeadsError) {
+      console.error('partner referral linked lead lookup failed', linkedLeadsError);
+    }
+    const leadByReferralId = new Map(
+      (linkedLeads ?? []).map((lead) => [lead.source_referral_id, lead]),
+    );
+    const referralSummaries = (referrals ?? []).map((referral) => {
+      const linkedLead = leadByReferralId.get(referral.id);
+      return {
+        ...referral,
+        lead_code: linkedLead?.lead_code ?? null,
+        lead_status: linkedLead?.lead_status ?? null,
+        pipeline_stage: linkedLead?.pipeline_stage ?? null,
+        priority: linkedLead?.priority ?? null,
+      };
+    });
 
     return json({
       partner: {
@@ -423,7 +495,7 @@ serve(async (req) => {
         has_final_pdf: Boolean(agreement.final_pdf_storage_path),
       },
       can_submit_referral: agreement.status === 'fully_executed' && partner.status === 'active',
-      referrals: referrals ?? [],
+      referrals: referralSummaries,
     });
   } catch (error) {
     console.error('partner-portal failure', error);

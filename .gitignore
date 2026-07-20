@@ -11,5 +11,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .npm-cache/
+.npm-cache-codex/
 .DS_Store
 Thumbs.db

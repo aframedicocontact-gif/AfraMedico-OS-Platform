@@ -389,7 +389,7 @@ serve(async (req) => {
           urgency: normalizeUrgency(urgency),
           preferred_destination: preferredDestination || null,
           initial_records_ready: initialRecordsReady,
-          pipeline_stage: initialRecordsReady ? 'qualification' : 'medical_records_pending',
+          pipeline_stage: 'new_lead',
           lead_status: 'open',
           priority: normalizePriority(urgency, initialRecordsReady),
           referral_partner_name: partner.name,

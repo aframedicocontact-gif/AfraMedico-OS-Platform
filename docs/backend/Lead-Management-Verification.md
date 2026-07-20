@@ -506,3 +506,93 @@ npm.cmd run lint
 ```
 
 in an environment where npm can complete dependency installation.
+
+## Clean Environment Validation
+
+Validation date: 2026-07-19
+
+Validation method:
+
+- Docker requested as the preferred clean environment, but Docker is not installed on this workstation.
+- A fresh local clone outside the working repository was created instead.
+- The clean clone did not reuse the existing repository's `node_modules` directory or build output.
+- npm cache was isolated inside the clean clone for the second attempt to avoid the known broken global npm cache.
+
+Validated branch:
+
+`feature/supabase-leads-backend`
+
+Exact validated commit:
+
+`0d45e299ded2f065434866f9b68f66bf1a307dda`
+
+Clean validation path:
+
+`C:\Users\user\Documents\Codex\validation-clean-aframedico-os-isolated-20260719220403`
+
+Node and npm:
+
+- Expected CI Node version: Node 22
+- Available local Node version: `v24.14.1`
+- Available local npm version: `11.11.0`
+- Node 22 was not available locally, and Docker was unavailable, so exact Node 22 parity could not be achieved on this workstation.
+
+Commands run:
+
+```powershell
+npm.cmd ci
+```
+
+Result: failed before dependency installation completed.
+
+Failure summary:
+
+```text
+npm error Exit handler never called!
+```
+
+The npm debug log also showed package fetch failures with `EACCES` from `https://registry.npmjs.org/...` even with an isolated local cache.
+
+Because `npm ci` failed, the following commands could not be meaningfully executed in the clean branch environment:
+
+```powershell
+npm.cmd run build
+npm.cmd run lint
+```
+
+TypeScript result:
+
+- No separate `type-check` script exists.
+- TypeScript is executed through `npm run build`, but build could not run because `npm ci` did not complete.
+
+Build result:
+
+- Not executed after clean dependency installation because `npm ci` failed.
+
+Lint result:
+
+- Not executed after clean dependency installation because `npm ci` failed.
+
+Tests result:
+
+- Not configured. `package.json` does not define a `test` script.
+
+Branch-introduced vs pre-existing distinction:
+
+- A separate fresh clone of `main` was created at commit `80ff06471d660ce3867a7cefde43f9142f5d9890`.
+- `npm.cmd ci` failed on `main` with the same npm internal error before project scripts ran.
+- This indicates the clean-environment validation blocker is environmental/infrastructure related, not introduced by the Lead Management branch.
+
+GitHub Actions infrastructure limitation:
+
+- GitHub Actions creates workflow run records for this branch, but the run fails with `startup_failure` before scheduling any job.
+- The workflow files are present and readable on GitHub at the branch head.
+- The `PR Validation` workflow content is syntactically minimal and valid.
+- The temporary diagnostic workflow was removed after confirming that the startup failure occurs before runner execution.
+- This is tracked separately from application validation because no GitHub Actions job reaches `npm ci`, build, or lint.
+
+Clean environment readiness decision:
+
+- Blocked by environment/platform validation infrastructure.
+- No Lead Management branch-specific code or migration defect was identified by this clean-environment attempt.
+- The PR should not be merged until either GitHub Actions can schedule jobs successfully or a clean Node 22 environment can complete `npm ci`, `npm run build`, and `npm run lint`.

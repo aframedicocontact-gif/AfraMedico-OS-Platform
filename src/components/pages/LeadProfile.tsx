@@ -466,6 +466,8 @@ export function LeadProfile({ lead, onNavigate, onLeadUpdated }: LeadProfileProp
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-3">
               <Field label="Primary Partner Attribution" value={currentLead.primaryPartnerAttribution} />
+              <Field label="Partner Code" value={currentLead.partnerCode || "Not linked"} />
+              <Field label="Source Referral ID" value={currentLead.sourceReferralId || "Not linked"} />
               <Field label="First Referral Date" value={currentLead.firstReferralDate} />
               <Field label="Lifetime Partner Owner" value={currentLead.lifetimePartnerOwner} />
               <Field label="Ownership Status" value={<Badge tone="gold">{currentLead.ownershipStatus}</Badge>} />

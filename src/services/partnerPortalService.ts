@@ -60,10 +60,10 @@ export async function submitPartnerPatientReferral(input: {
   medical_summary: string;
   initial_records_ready: boolean;
   patient_consent_confirmed: boolean;
-}): Promise<Result<{ success: boolean; referral: { id: string; referral_code: string; referral_status: string; submitted_at: string } }>> {
+}): Promise<Result<{ success: boolean; referral: { id: string; referral_code: string; referral_status: string; submitted_at: string; lead_id?: string; lead_code?: string } }>> {
   const result = await callSupabaseFunction<{
     success: boolean;
-    referral: { id: string; referral_code: string; referral_status: string; submitted_at: string };
+    referral: { id: string; referral_code: string; referral_status: string; submitted_at: string; lead_id?: string; lead_code?: string };
   }>("partner-portal", { action: "submit_referral", ...input });
   return { data: result.data, error: result.error };
 }

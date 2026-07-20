@@ -319,7 +319,67 @@ serve(async (req) => {
         console.error('partner referral insert failed', referralError);
         return json({ error: 'Unable to submit patient referral' }, 500);
       }
-      return json({ success: true, referral });
+
+      const { data: lead, error: leadError } = await admin
+        .from('leads')
+        .insert({
+          organization_id: link.organization_id,
+          source_referral_id: referral.id,
+          partner_id: partner.id,
+          partner_code: partner.partner_code,
+          acquisition_source: 'referral_partner',
+          submission_channel: 'partner_portal',
+          patient_full_name: patientFullName,
+          country: patientCountry,
+          primary_email: patientEmail || null,
+          phone_e164: patientPhone || null,
+          whatsapp_e164: patientPhone || null,
+          preferred_contact_method: patientPhone ? 'whatsapp' : patientEmail ? 'email' : null,
+          requested_treatment: requestedTreatment,
+          medical_condition: medicalSummary,
+          medical_summary: medicalSummary,
+          medical_history: medicalSummary,
+          urgency: 'unknown',
+          initial_records_ready: body?.initial_records_ready === true,
+          pipeline_stage: body?.initial_records_ready === true ? 'qualification' : 'medical_records_pending',
+          lead_status: 'open',
+          priority: body?.initial_records_ready === true ? 'Medium' : 'High',
+          referral_partner_name: partner.name,
+          qualification_status: 'unreviewed',
+          internal_summary: `Created from Partner Portal referral ${referral.referral_code}.`,
+          patient_consent_confirmed: true,
+          consent_confirmed_at: referral.submitted_at,
+          consent_confirmed_by_partner_id: partner.id,
+          submitted_at: referral.submitted_at,
+        })
+        .select('id, lead_code')
+        .single();
+      if (leadError || !lead) {
+        console.error('linked lead creation failed', leadError);
+        return json({ error: 'Referral was saved, but the internal Lead could not be created. AfraMedico staff should review this referral manually.' }, 500);
+      }
+
+      const { error: activityError } = await admin
+        .from('lead_activities')
+        .insert({
+          organization_id: link.organization_id,
+          lead_id: lead.id,
+          activity_type: 'partner_referral_submitted',
+          activity_title: 'Partner Referral Submitted',
+          activity_description: `${partner.name} submitted referral ${referral.referral_code}.`,
+          performed_at: referral.submitted_at,
+          metadata: {
+            referral_id: referral.id,
+            referral_code: referral.referral_code,
+            partner_id: partner.id,
+            partner_code: partner.partner_code,
+          },
+        });
+      if (activityError) {
+        console.error('linked lead activity insert failed', activityError);
+      }
+
+      return json({ success: true, referral: { ...referral, lead_id: lead.id, lead_code: lead.lead_code } });
     }
 
     const { data: referrals, error: referralsError } = await admin

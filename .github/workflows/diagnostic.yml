@@ -1,0 +1,11 @@
+name: Diagnostic
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "GitHub Actions is running"

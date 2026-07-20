@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - feature/supabase-leads-backend
 
 permissions:
   contents: read

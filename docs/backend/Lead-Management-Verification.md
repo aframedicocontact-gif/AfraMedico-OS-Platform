@@ -469,6 +469,8 @@ Trigger: pull requests targeting `main`
 
 The repository did not have an existing GitHub Actions workflow directory, so a new PR validation workflow was added.
 
+PR validation workflow added; awaiting the first GitHub Actions run triggered by a subsequent branch update.
+
 Expected CI steps:
 
 - `npm ci`

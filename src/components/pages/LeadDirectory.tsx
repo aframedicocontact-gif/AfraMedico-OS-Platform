@@ -18,6 +18,9 @@ import {
 
 type LeadDirectoryProps = {
   leads: Lead[];
+  loading?: boolean;
+  error?: string | null;
+  dataSource?: "live" | "development" | "unavailable";
   onNavigate: (view: AppView) => void;
 };
 
@@ -43,6 +46,7 @@ const leadSources: LeadSource[] = [
 
 const statuses: LeadStatus[] = [
   "New",
+  "New Lead",
   "Contacted",
   "Medical Documents Requested",
   "Documents Received",
@@ -54,7 +58,7 @@ const statuses: LeadStatus[] = [
   "Lost",
 ];
 
-export function LeadDirectory({ leads, onNavigate }: LeadDirectoryProps) {
+export function LeadDirectory({ dataSource, error, leads, loading, onNavigate }: LeadDirectoryProps) {
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState("all");
   const [source, setSource] = useState<"all" | LeadSource>("all");
@@ -106,6 +110,8 @@ export function LeadDirectory({ leads, onNavigate }: LeadDirectoryProps) {
           Add Lead
         </Button>
       </div>
+
+      <LeadDataState loading={loading} error={error} source={dataSource} />
 
       <div className="rounded-lg border bg-white p-4 shadow-sm">
         <div className="grid gap-3 xl:grid-cols-[1.4fr_180px_220px_220px]">
@@ -203,9 +209,37 @@ export function LeadDirectory({ leads, onNavigate }: LeadDirectoryProps) {
                 <TableCell>{lead.nextFollowUp}</TableCell>
               </TableRow>
             ))}
+            {!filteredLeads.length ? (
+              <TableRow>
+                <TableCell className="py-8 text-center text-sm text-muted-foreground" colSpan={10}>
+                  {loading ? "Loading Leads..." : "No Leads found."}
+                </TableCell>
+              </TableRow>
+            ) : null}
           </TableBody>
         </Table>
       </div>
     </div>
   );
+}
+
+function LeadDataState({
+  error,
+  loading,
+  source,
+}: {
+  error?: string | null;
+  loading?: boolean;
+  source?: "live" | "development" | "unavailable";
+}) {
+  if (loading) {
+    return <div className="rounded-md border bg-white p-3 text-sm text-muted-foreground">Loading Leads from the operational backend...</div>;
+  }
+
+  if (error) {
+    const tone = source === "development" ? "border-amber-200 bg-amber-50 text-amber-900" : "border-red-200 bg-red-50 text-red-800";
+    return <div className={`rounded-md border p-3 text-sm ${tone}`}>{error}</div>;
+  }
+
+  return null;
 }

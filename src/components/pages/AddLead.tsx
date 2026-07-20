@@ -1,6 +1,6 @@
 import { ArrowLeft, ClipboardList, FileSearch, Mail, Plane, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import type { AppView } from "../../app/App";
 import {
   callingCodeOptions,
@@ -12,7 +12,6 @@ import {
   calculateLeadAge,
   createLead,
   findLeadDuplicates,
-  generateNextPatientId,
   validateLeadInput,
   type CreateLeadInput,
 } from "../../services/leadService";
@@ -114,22 +113,18 @@ function buildInternationalNumber(countryCode: string, localNumber: string) {
 }
 
 export function AddLead({ existingLeads, onLeadCreated, onNavigate }: AddLeadProps) {
-  const nextPatientId = useMemo(() => generateNextPatientId(existingLeads), [existingLeads]);
   const [form, setForm] = useState<CreateLeadInput>(() => ({
     ...defaultLeadInput,
-    patientId: nextPatientId,
+    patientId: "Generated on save",
   }));
   const [errors, setErrors] = useState<string[]>([]);
   const [invalidFields, setInvalidFields] = useState<string[]>([]);
   const [savedDuplicateWarning, setSavedDuplicateWarning] = useState("");
+  const [saving, setSaving] = useState(false);
   const duplicateResult = useMemo(
     () => findLeadDuplicates(form, existingLeads),
     [existingLeads, form],
   );
-
-  useEffect(() => {
-    setForm((current) => (current.patientId ? current : { ...current, patientId: nextPatientId }));
-  }, [nextPatientId]);
 
   function updateField<Key extends keyof CreateLeadInput>(key: Key, value: CreateLeadInput[Key]) {
     setForm((current) => {
@@ -171,8 +166,9 @@ export function AddLead({ existingLeads, onLeadCreated, onNavigate }: AddLeadPro
     setSavedDuplicateWarning("");
   }
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    if (saving) return;
     const validation = validateLeadInput(form);
     const nextInvalidFields = [
       !form.patientName.trim() ? "patientName" : "",
@@ -193,7 +189,13 @@ export function AddLead({ existingLeads, onLeadCreated, onNavigate }: AddLeadPro
       return;
     }
 
-    const result = createLead(form, existingLeads);
+    setSaving(true);
+    const result = await createLead(form, existingLeads);
+    setSaving(false);
+    if (!result.lead) {
+      setErrors([result.error ?? "Unable to save Lead."]);
+      return;
+    }
     if (result.duplicateResult.hasDuplicate) {
       setSavedDuplicateWarning("Possible duplicate detected and saved for review.");
     }
@@ -372,8 +374,8 @@ export function AddLead({ existingLeads, onLeadCreated, onNavigate }: AddLeadPro
               <p className="mt-1">Saved leads are stored in local development storage and appear in the lead directory.</p>
             </div>
             <div className="flex flex-col gap-2">
-              <Button type="submit">
-                Save Lead
+              <Button type="submit" disabled={saving}>
+                {saving ? "Saving..." : "Save Lead"}
               </Button>
               <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "lead-directory" })}>
                 Cancel

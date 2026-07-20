@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "../components/layout/AppShell";
 import type { UnifiedCaseContext } from "../components/context/UnifiedPatientContext";
 import { AddLead } from "../components/pages/AddLead";
@@ -54,7 +54,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { supabaseConfig } from "../lib/supabaseClient";
 import { mergeImportedAuthorityOrganizations } from "../services/authorityImportService";
 import { getPasswordRecoveryTokensFromLocation } from "../services/authService";
-import { getLeads } from "../services/leadService";
+import { getLeads, listLeads } from "../services/leadService";
 import organizationsJson from "../data/organizations.json";
 import leadsJson from "../data/leads.json";
 import referralPartnersJson from "../data/referral-partners.json";
@@ -166,6 +166,9 @@ export function App() {
     mergeImportedAuthorityOrganizations(baseOrganizations),
   );
   const [leads, setLeads] = useState<Lead[]>(() => getLeads(seedLeads));
+  const [leadLoading, setLeadLoading] = useState(false);
+  const [leadError, setLeadError] = useState<string | null>(null);
+  const [leadSource, setLeadSource] = useState<"live" | "development" | "unavailable">("unavailable");
   const { isAuthenticated, loading: authLoading, signOut, user } = useAuth();
   const authRequired = supabaseConfig.isConfigured;
   const publicView = isPublicView(view.name);
@@ -178,6 +181,21 @@ export function App() {
   const isPartnerPortalSession = Boolean(
     isAuthenticated && user?.app_metadata?.partner_portal === true,
   );
+
+  const refreshLeads = useCallback(async () => {
+    if (authRequired && (!isAuthenticated || isPartnerPortalSession)) {
+      return;
+    }
+
+    setLeadLoading(true);
+    const result = await listLeads(seedLeads);
+    setLeadLoading(false);
+    setLeadSource(result.source);
+    setLeadError(result.error);
+    if (result.data) {
+      setLeads(result.data);
+    }
+  }, [authRequired, isAuthenticated, isPartnerPortalSession]);
 
   useEffect(() => {
     if (authRequired && !authLoading && !isAuthenticated && !publicView) {
@@ -197,6 +215,12 @@ export function App() {
       setView({ name: "partner-dashboard" });
     }
   }, [isPartnerPortalSession, view.name]);
+
+  useEffect(() => {
+    if (!authLoading) {
+      void refreshLeads();
+    }
+  }, [authLoading, refreshLeads]);
 
   useEffect(() => {
     function handlePopState() {
@@ -231,7 +255,7 @@ export function App() {
     }
 
     return leads.find((lead) => lead.id === view.leadId) ?? leads[0];
-  }, [view]);
+  }, [leads, view]);
 
   const selectedProtectionCase = useMemo(() => {
     if (view.name !== "referral-details") {
@@ -499,32 +523,36 @@ export function App() {
         <ReferralPartnersModule partners={referralPartners} initialView={view} />
       ) : null}
       {view.name === "lead-dashboard" ? (
-        <LeadDashboard leads={leads} onNavigate={setView} />
+        <LeadDashboard leads={leads} loading={leadLoading} error={leadError} dataSource={leadSource} onNavigate={setView} />
       ) : null}
       {view.name === "lead-directory" ? (
-        <LeadDirectory leads={leads} onNavigate={setView} />
+        <LeadDirectory leads={leads} loading={leadLoading} error={leadError} dataSource={leadSource} onNavigate={setView} />
       ) : null}
       {view.name === "lead-profile" ? (
-        <LeadProfile
-          lead={selectedLead}
-          onNavigate={setView}
-          onLeadUpdated={() => {
-            setLeads(getLeads(seedLeads));
-          }}
-        />
+        selectedLead ? (
+          <LeadProfile
+            lead={selectedLead}
+            onNavigate={setView}
+            onLeadUpdated={(lead) => {
+              setLeads((current) => current.map((item) => (item.id === lead.id ? lead : item)));
+              void refreshLeads();
+            }}
+          />
+        ) : null
       ) : null}
       {view.name === "add-lead" ? (
         <AddLead
           existingLeads={leads}
           onLeadCreated={(lead) => {
-            setLeads(getLeads(seedLeads));
+            setLeads((current) => [lead, ...current.filter((item) => item.id !== lead.id)]);
+            void refreshLeads();
             setView({ name: "lead-profile", leadId: lead.id });
           }}
           onNavigate={setView}
         />
       ) : null}
       {view.name === "lead-pipeline" ? (
-        <LeadPipeline leads={leads} onNavigate={setView} />
+        <LeadPipeline leads={leads} loading={leadLoading} error={leadError} dataSource={leadSource} onNavigate={setView} />
       ) : null}
       {view.name === "clinical-decision-dashboard" ? (
         <ClinicalDecisionDashboard reviews={clinicalReviews} onNavigate={setView} />

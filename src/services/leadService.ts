@@ -1123,6 +1123,19 @@ export async function convertLeadToCase(lead: Lead): Promise<{
   }
 
   if (isDevelopmentFallbackAllowed()) {
+    const developmentOrganizationId = getDevelopmentOrganizationContext().id;
+    if (!developmentOrganizationId) {
+      return {
+        lead: null,
+        patientId: null,
+        caseId: null,
+        caseCode: null,
+        matchedExistingPatient: false,
+        error: "No organization_id is available for the current staff session.",
+        source: "unavailable",
+      };
+    }
+
     const now = nowIso();
     const patientName = splitPatientName(lead.patientName);
     const existingPatient = getDevelopmentOperationalPatients().find((patient) => {
@@ -1134,7 +1147,7 @@ export async function convertLeadToCase(lead: Lead): Promise<{
       existingPatient ??
       {
         id: createDevelopmentId("patient-dev"),
-        organization_id: getDevelopmentOrganizationContext().id,
+        organization_id: developmentOrganizationId,
         first_name: patientName.firstName,
         last_name: patientName.lastName,
         date_of_birth: lead.dateOfBirth || null,

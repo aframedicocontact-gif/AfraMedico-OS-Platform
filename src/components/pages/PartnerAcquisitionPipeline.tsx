@@ -340,6 +340,13 @@ export function PartnerAcquisitionPipeline() {
             {sendResult ? (
               <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-900">
                 Sent {sendResult.sent}. Failed {sendResult.failed}. Excluded {sendResult.excluded}. Duplicate warnings {sendResult.duplicateWarnings}.
+                {sendResult.failedReasons?.length ? (
+                  <div className="mt-2 space-y-1 text-xs text-amber-900">
+                    {sendResult.failedReasons.map((reason) => (
+                      <p key={reason}>{reason}</p>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             ) : null}
             {sendError ? (

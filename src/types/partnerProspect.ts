@@ -95,5 +95,6 @@ export type PartnerProspectSendResult = {
   failed: number;
   excluded: number;
   duplicateWarnings: number;
+  failedReasons?: string[];
   message: string;
 };

@@ -21,6 +21,7 @@ import {
   Search,
   Settings,
   Sparkles,
+  UserPlus,
   UsersRound,
 } from "lucide-react";
 import { useState } from "react";
@@ -114,11 +115,18 @@ export function AppShell({ children, caseContext, currentView, onNavigate, onSig
               currentView === "partner-directory" ||
               currentView === "referral-partner-profile" ||
               currentView === "add-referral-partner" ||
-              currentView === "referral-pipeline"
+              currentView === "referral-pipeline" ||
+              currentView === "partner-acquisition-pipeline"
             }
             icon={<Network className="h-4 w-4" />}
             label="Referral Partners"
             onClick={() => onNavigate({ name: "referral-dashboard" })}
+          />
+          <NavButton
+            active={currentView === "partner-acquisition-pipeline"}
+            icon={<UserPlus className="h-4 w-4" />}
+            label="Partner Acquisition"
+            onClick={() => onNavigate({ name: "partner-acquisition-pipeline" })}
           />
           <NavButton
             active={

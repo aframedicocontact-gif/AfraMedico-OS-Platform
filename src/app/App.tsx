@@ -42,6 +42,7 @@ import { OutreachWorkspace } from "../components/pages/OutreachWorkspace";
 import { OperationsCenter } from "../components/pages/OperationsCenter";
 import { PartnerActivation } from "../components/pages/PartnerActivation";
 import { PartnerAgreementVerify } from "../components/pages/PartnerAgreementVerify";
+import { PartnerAcquisitionPipeline } from "../components/pages/PartnerAcquisitionPipeline";
 import { PartnerDashboard } from "../components/pages/PartnerDashboard";
 import { PatientsPage } from "../components/pages/PatientsPage";
 import { ProtectionAuditTrail } from "../components/pages/ProtectionAuditTrail";
@@ -103,6 +104,7 @@ export type AppView =
   | { name: "referral-partner-profile"; partnerId: string }
   | { name: "add-referral-partner" }
   | { name: "referral-pipeline" }
+  | { name: "partner-acquisition-pipeline" }
   | { name: "lead-dashboard" }
   | { name: "lead-directory" }
   | { name: "lead-profile"; leadId: string }
@@ -440,11 +442,14 @@ export function App() {
       window.history.pushState({}, "", "/cases");
     } else if (nextView.name === "case-detail") {
       window.history.pushState({}, "", `/cases/${nextView.caseId}`);
+    } else if (nextView.name === "partner-acquisition-pipeline") {
+      window.history.pushState({}, "", "/referrals/acquisition");
     } else if (
       window.location.pathname === "/organizations" ||
       window.location.pathname === "/patients" ||
       window.location.pathname === "/cases" ||
-      window.location.pathname.startsWith("/cases/")
+      window.location.pathname.startsWith("/cases/") ||
+      window.location.pathname.startsWith("/referrals/acquisition")
     ) {
       window.history.pushState({}, "", "/");
     }
@@ -522,6 +527,7 @@ export function App() {
       {isReferralPartnersView(view.name) ? (
         <ReferralPartnersModule partners={referralPartners} initialView={view} />
       ) : null}
+      {view.name === "partner-acquisition-pipeline" ? <PartnerAcquisitionPipeline /> : null}
       {view.name === "lead-dashboard" ? (
         <LeadDashboard leads={leads} loading={leadLoading} error={leadError} dataSource={leadSource} onNavigate={setView} />
       ) : null}
@@ -743,6 +749,10 @@ function resolveViewFromPathname(pathname: string): AppView {
     if (caseId) {
       return { name: "case-detail", caseId };
     }
+  }
+
+  if (pathname === "/referrals/acquisition") {
+    return { name: "partner-acquisition-pipeline" };
   }
 
   if (pathname === "/referrals" || pathname.startsWith("/referrals/")) {

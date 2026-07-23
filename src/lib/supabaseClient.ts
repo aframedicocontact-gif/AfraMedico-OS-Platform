@@ -136,6 +136,66 @@ export async function querySupabaseTable<T>(
   }
 }
 
+export async function mutateSupabaseTable<T>(
+  tableName: string,
+  method: "POST" | "PATCH",
+  body: unknown,
+  queryParams: QueryParams = {},
+): Promise<SupabaseQueryResult<T>> {
+  if (!supabaseConfig.isConfigured) {
+    return {
+      data: null,
+      error: "Supabase environment variables are not configured.",
+      status: 0,
+    };
+  }
+
+  try {
+    const accessToken = getStoredAccessToken();
+    if (!accessToken) {
+      return {
+        data: null,
+        error: "Sign in with an internal AfraMedico staff account before changing records.",
+        status: 401,
+      };
+    }
+
+    const response = await fetch(buildRestUrl(tableName, queryParams), {
+      method,
+      headers: {
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(body),
+    });
+
+    const responseText = await response.text();
+    const payload = responseText ? JSON.parse(responseText) : null;
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: payload?.message || response.statusText || `Request failed with status ${response.status}`,
+        status: response.status,
+      };
+    }
+
+    return {
+      data: payload as T,
+      error: null,
+      status: response.status,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown Supabase mutation error.",
+      status: 0,
+    };
+  }
+}
+
 export async function callSupabaseFunction<T>(
   functionName: string,
   body: unknown = {},
@@ -190,5 +250,8 @@ export const supabaseClient = {
   config: supabaseConfig,
   from<T>(tableName: string, queryParams: QueryParams = {}) {
     return querySupabaseTable<T>(tableName, queryParams);
+  },
+  mutate<T>(tableName: string, method: "POST" | "PATCH", body: unknown, queryParams: QueryParams = {}) {
+    return mutateSupabaseTable<T>(tableName, method, body, queryParams);
   },
 };

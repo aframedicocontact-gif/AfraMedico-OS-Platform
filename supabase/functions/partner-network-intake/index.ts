@@ -66,6 +66,10 @@ function asNullableInteger(v: unknown): number | null {
   return typeof v === 'number' && Number.isFinite(v) ? Math.trunc(v) : null;
 }
 
+function normalizeEmail(v: unknown): string | null {
+  return typeof v === 'string' && v.trim().length > 0 ? v.trim().toLowerCase() : null;
+}
+
 function makePartnerCode(sourceApplicationId: string): string {
   return `NET-${sourceApplicationId.replace(/-/g, '').slice(0, 10).toUpperCase()}`;
 }
@@ -153,7 +157,7 @@ serve(async (req) => {
       return json({ error: 'Failed to create partner' }, 500);
     }
 
-    const { error: intakeErr } = await adminClient
+    const { data: newIntake, error: intakeErr } = await adminClient
       .from('partner_network_intake')
       .insert({
         organization_id: GROWTH_OS_DEFAULT_ORGANIZATION_ID,
@@ -175,7 +179,9 @@ serve(async (req) => {
         motivation: asNullableString(body.motivation),
         linkedin: asNullableString(body.linkedin),
         application_date: applicationDate,
-      });
+      })
+      .select('id')
+      .single();
 
     if (intakeErr) {
       // Unique-violation on source_application_id means a concurrent request
@@ -202,6 +208,24 @@ serve(async (req) => {
       console.error('intake insert error:', intakeErr);
       await adminClient.from('partners').delete().eq('id', newPartner.id);
       return json({ error: 'Failed to record partner intake' }, 500);
+    }
+
+    const normalizedProspectEmail = normalizeEmail(body.email);
+    if (normalizedProspectEmail && newIntake?.id) {
+      const { error: prospectMatchErr } = await adminClient
+        .from('partner_prospects')
+        .update({
+          outreach_status: 'applied',
+          partner_id: newPartner.id,
+          partner_network_intake_id: newIntake.id,
+          applied_at: new Date().toISOString(),
+        })
+        .eq('organization_id', GROWTH_OS_DEFAULT_ORGANIZATION_ID)
+        .eq('email_normalized', normalizedProspectEmail);
+
+      if (prospectMatchErr) {
+        console.warn('partner prospect match update failed:', prospectMatchErr.message);
+      }
     }
 
     return json({ success: true, partner_id: newPartner.id });

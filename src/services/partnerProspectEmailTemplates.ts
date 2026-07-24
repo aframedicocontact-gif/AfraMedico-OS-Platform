@@ -91,102 +91,162 @@ function htmlShell(title: string, previewText: string, body: string) {
 
 const templates: Record<PartnerProspectEmailTemplateType, TemplateDefinition> = {
   executive: {
-    subject: "Your Professional Background Caught Our Attention",
+    subject: "Professional Partnership Opportunity – AfraMedico Global Referral Partner Network",
     previewText: "An invitation to explore a separate professional opportunity with AfraMedico.",
     variablesUsed: ["first_name", "reason_for_assignment", "recommended_role"],
     htmlBody: `
       <p>Dear {{first_name}},</p>
-      <p>Thank you for your interest in AfraMedico. The original hourly Indeed position has been filled.</p>
-      <p>We reviewed your background and believe there may be a separate commission-based collaboration opportunity worth exploring through the AfraMedico Global Referral Partner Network.</p>
-      <p>Based on our review, {{reason_for_assignment}}. This may align with the role of <strong>{{recommended_role}}</strong>.</p>
-      <p>${employmentDisclaimer}</p>
-      <p>${applicationRequirement}</p>
+      <p>Thank you for your interest in AfraMedico.</p>
+      <p>The original hourly position advertised on Indeed has now been filled.</p>
+      <p>Following a professional review of your application, our recruitment team identified that your background, experience, and community profile appear to be well aligned with a professional partnership opportunity within the <strong>AfraMedico Global Referral Partner Network</strong>.</p>
+      <p><strong>This opportunity enables approved partners to build a flexible, performance-based income by referring international patients seeking trusted medical treatment abroad, while working independently within their own professional or community networks.</strong></p>
+      <p>Based on this assessment, we invite you to review the partnership opportunity, eligibility requirements, collaboration process, compensation structure, and application steps by visiting the link below.</p>
+      <p>Please note that this invitation is separate from the Indeed position you originally applied for and does <strong>not</strong> constitute an offer of employment. Referral Partners operate as independent collaborators, and participation is subject to application review, due diligence, and formal approval by AfraMedico.</p>
+      <div style="text-align:center; margin:30px 0;">
+        <a href="{{application_url}}" style="background:#0b6b57;color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">
+          Review the Opportunity, Compensation &amp; Continue Your Application
+        </a>
+      </div>
+      <p>Selected and approved Referral Partners may also be considered for <strong>AfraMedico-sponsored enrollment</strong> in the <strong>Cross-Border Healthcare Coordination &amp; Medical Tourism Management Certificate Program</strong>, delivered by <strong>Richmond Hill College</strong>.</p>
+      <p>Certificate sponsorship is selective and subject to eligibility, program availability, and AfraMedico approval.</p>
+      <p>If you have any questions, our team will be pleased to assist you throughout the application process.</p>
+      <p>Kind regards,</p>
+      <p><strong>AfraMedico Partner Network</strong><br>International Patient Services</p>
     `,
     textBody: `
 Dear {{first_name}},
 
-Thank you for your interest in AfraMedico. The original hourly Indeed position has been filled.
+Thank you for your interest in AfraMedico.
 
-We reviewed your background and believe there may be a separate commission-based collaboration opportunity worth exploring through the AfraMedico Global Referral Partner Network.
+The original hourly position advertised on Indeed has now been filled.
 
-Based on our review, {{reason_for_assignment}}. This may align with the role of {{recommended_role}}.
+Following a professional review of your application, our recruitment team identified that your background, experience, and community profile appear to be well aligned with a professional partnership opportunity within the AfraMedico Global Referral Partner Network.
 
-${employmentDisclaimer}
+This opportunity enables approved partners to build a flexible, performance-based income by referring international patients seeking trusted medical treatment abroad, while working independently within their own professional or community networks.
 
-${applicationRequirement}
+Based on this assessment, we invite you to review the partnership opportunity, eligibility requirements, collaboration process, compensation structure, and application steps by visiting the link below.
 
-${sponsorshipSentence} Sponsorship is selective and is not guaranteed.
+Please note that this invitation is separate from the Indeed position you originally applied for and does not constitute an offer of employment. Referral Partners operate as independent collaborators, and participation is subject to application review, due diligence, and formal approval by AfraMedico.
 
-Apply to Join the Network:
+Review the Opportunity, Compensation & Continue Your Application:
 {{application_url}}
 
+Selected and approved Referral Partners may also be considered for AfraMedico-sponsored enrollment in the Cross-Border Healthcare Coordination & Medical Tourism Management Certificate Program, delivered by Richmond Hill College.
+
+Certificate sponsorship is selective and subject to eligibility, program availability, and AfraMedico approval.
+
+If you have any questions, our team will be pleased to assist you throughout the application process.
+
+Kind regards,
+
 AfraMedico Partner Network
+International Patient Services
     `.trim(),
   },
   professional: {
-    subject: "A Professional Opportunity with AfraMedico",
+    subject: "Professional Partnership Opportunity – AfraMedico Global Referral Partner Network",
     previewText: "Your experience may be relevant to AfraMedico’s Global Referral Partner Network.",
     variablesUsed: ["first_name", "profession", "country"],
     htmlBody: `
       <p>Dear {{first_name}},</p>
-      <p>Thank you for your interest in AfraMedico. The original hourly Indeed position has been filled.</p>
-      <p>Your experience in {{profession}} may be relevant to a separate commission-based collaboration opportunity with AfraMedico.</p>
-      <p>AfraMedico is building a Global Referral Partner Network for trusted professionals who may help patients and families learn about coordinated international healthcare options. If selected and approved, you may collaborate with AfraMedico as a Referral Partner in or connected to {{country}}.</p>
-      <p>${employmentDisclaimer}</p>
-      <p>${applicationRequirement}</p>
+      <p>Thank you for your interest in AfraMedico.</p>
+      <p>The original hourly position advertised on Indeed has now been filled.</p>
+      <p>Following a professional review of your application, our recruitment team identified that your background, experience, and community profile appear to be well aligned with a professional partnership opportunity within the <strong>AfraMedico Global Referral Partner Network</strong>.</p>
+      <p><strong>This opportunity enables approved partners to build a flexible, performance-based income by referring international patients seeking trusted medical treatment abroad, while working independently within their own professional or community networks.</strong></p>
+      <p>Based on this assessment, we invite you to review the partnership opportunity, eligibility requirements, collaboration process, compensation structure, and application steps by visiting the link below.</p>
+      <p>Please note that this invitation is separate from the Indeed position you originally applied for and does <strong>not</strong> constitute an offer of employment. Referral Partners operate as independent collaborators, and participation is subject to application review, due diligence, and formal approval by AfraMedico.</p>
+      <div style="text-align:center; margin:30px 0;">
+        <a href="{{application_url}}" style="background:#0b6b57;color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">
+          Review the Opportunity, Compensation &amp; Continue Your Application
+        </a>
+      </div>
+      <p>Selected and approved Referral Partners may also be considered for <strong>AfraMedico-sponsored enrollment</strong> in the <strong>Cross-Border Healthcare Coordination &amp; Medical Tourism Management Certificate Program</strong>, delivered by <strong>Richmond Hill College</strong>.</p>
+      <p>Certificate sponsorship is selective and subject to eligibility, program availability, and AfraMedico approval.</p>
+      <p>If you have any questions, our team will be pleased to assist you throughout the application process.</p>
+      <p>Kind regards,</p>
+      <p><strong>AfraMedico Partner Network</strong><br>International Patient Services</p>
     `,
     textBody: `
 Dear {{first_name}},
 
-Thank you for your interest in AfraMedico. The original hourly Indeed position has been filled.
+Thank you for your interest in AfraMedico.
 
-Your experience in {{profession}} may be relevant to a separate commission-based collaboration opportunity with AfraMedico.
+The original hourly position advertised on Indeed has now been filled.
 
-AfraMedico is building a Global Referral Partner Network for trusted professionals who may help patients and families learn about coordinated international healthcare options. If selected and approved, you may collaborate with AfraMedico as a Referral Partner in or connected to {{country}}.
+Following a professional review of your application, our recruitment team identified that your background, experience, and community profile appear to be well aligned with a professional partnership opportunity within the AfraMedico Global Referral Partner Network.
 
-${employmentDisclaimer}
+This opportunity enables approved partners to build a flexible, performance-based income by referring international patients seeking trusted medical treatment abroad, while working independently within their own professional or community networks.
 
-${applicationRequirement}
+Based on this assessment, we invite you to review the partnership opportunity, eligibility requirements, collaboration process, compensation structure, and application steps by visiting the link below.
 
-${sponsorshipSentence} Sponsorship is selective and is not guaranteed.
+Please note that this invitation is separate from the Indeed position you originally applied for and does not constitute an offer of employment. Referral Partners operate as independent collaborators, and participation is subject to application review, due diligence, and formal approval by AfraMedico.
 
-Apply to Join the Network:
+Review the Opportunity, Compensation & Continue Your Application:
 {{application_url}}
 
+Selected and approved Referral Partners may also be considered for AfraMedico-sponsored enrollment in the Cross-Border Healthcare Coordination & Medical Tourism Management Certificate Program, delivered by Richmond Hill College.
+
+Certificate sponsorship is selective and subject to eligibility, program availability, and AfraMedico approval.
+
+If you have any questions, our team will be pleased to assist you throughout the application process.
+
+Kind regards,
+
 AfraMedico Partner Network
+International Patient Services
     `.trim(),
   },
   standard: {
-    subject: "Invitation to Join the AfraMedico Global Referral Partner Network",
+    subject: "Professional Partnership Opportunity – AfraMedico Global Referral Partner Network",
     previewText: "Explore a separate commission-based collaboration opportunity with AfraMedico.",
     variablesUsed: ["first_name"],
     htmlBody: `
       <p>Dear {{first_name}},</p>
-      <p>Thank you for your interest in AfraMedico. The original hourly Indeed position has been filled.</p>
-      <p>We would like to invite you to apply for a separate commission-based collaboration opportunity through the AfraMedico Global Referral Partner Network.</p>
-      <p>Approved Referral Partners may introduce patients who need international medical coordination and may collaborate with AfraMedico under the approved partner framework.</p>
-      <p>${employmentDisclaimer}</p>
-      <p>${applicationRequirement}</p>
+      <p>Thank you for your interest in AfraMedico.</p>
+      <p>The original hourly position advertised on Indeed has now been filled.</p>
+      <p>Following a professional review of your application, our recruitment team identified that your background, experience, and community profile appear to be well aligned with a professional partnership opportunity within the <strong>AfraMedico Global Referral Partner Network</strong>.</p>
+      <p><strong>This opportunity enables approved partners to build a flexible, performance-based income by referring international patients seeking trusted medical treatment abroad, while working independently within their own professional or community networks.</strong></p>
+      <p>Based on this assessment, we invite you to review the partnership opportunity, eligibility requirements, collaboration process, compensation structure, and application steps by visiting the link below.</p>
+      <p>Please note that this invitation is separate from the Indeed position you originally applied for and does <strong>not</strong> constitute an offer of employment. Referral Partners operate as independent collaborators, and participation is subject to application review, due diligence, and formal approval by AfraMedico.</p>
+      <div style="text-align:center; margin:30px 0;">
+        <a href="{{application_url}}" style="background:#0b6b57;color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">
+          Review the Opportunity, Compensation &amp; Continue Your Application
+        </a>
+      </div>
+      <p>Selected and approved Referral Partners may also be considered for <strong>AfraMedico-sponsored enrollment</strong> in the <strong>Cross-Border Healthcare Coordination &amp; Medical Tourism Management Certificate Program</strong>, delivered by <strong>Richmond Hill College</strong>.</p>
+      <p>Certificate sponsorship is selective and subject to eligibility, program availability, and AfraMedico approval.</p>
+      <p>If you have any questions, our team will be pleased to assist you throughout the application process.</p>
+      <p>Kind regards,</p>
+      <p><strong>AfraMedico Partner Network</strong><br>International Patient Services</p>
     `,
     textBody: `
 Dear {{first_name}},
 
-Thank you for your interest in AfraMedico. The original hourly Indeed position has been filled.
+Thank you for your interest in AfraMedico.
 
-We would like to invite you to apply for a separate commission-based collaboration opportunity through the AfraMedico Global Referral Partner Network.
+The original hourly position advertised on Indeed has now been filled.
 
-Approved Referral Partners may introduce patients who need international medical coordination and may collaborate with AfraMedico under the approved partner framework.
+Following a professional review of your application, our recruitment team identified that your background, experience, and community profile appear to be well aligned with a professional partnership opportunity within the AfraMedico Global Referral Partner Network.
 
-${employmentDisclaimer}
+This opportunity enables approved partners to build a flexible, performance-based income by referring international patients seeking trusted medical treatment abroad, while working independently within their own professional or community networks.
 
-${applicationRequirement}
+Based on this assessment, we invite you to review the partnership opportunity, eligibility requirements, collaboration process, compensation structure, and application steps by visiting the link below.
 
-${sponsorshipSentence} Sponsorship is selective and is not guaranteed.
+Please note that this invitation is separate from the Indeed position you originally applied for and does not constitute an offer of employment. Referral Partners operate as independent collaborators, and participation is subject to application review, due diligence, and formal approval by AfraMedico.
 
-Apply to Join the Network:
+Review the Opportunity, Compensation & Continue Your Application:
 {{application_url}}
 
+Selected and approved Referral Partners may also be considered for AfraMedico-sponsored enrollment in the Cross-Border Healthcare Coordination & Medical Tourism Management Certificate Program, delivered by Richmond Hill College.
+
+Certificate sponsorship is selective and subject to eligibility, program availability, and AfraMedico approval.
+
+If you have any questions, our team will be pleased to assist you throughout the application process.
+
+Kind regards,
+
 AfraMedico Partner Network
+International Patient Services
     `.trim(),
   },
 };

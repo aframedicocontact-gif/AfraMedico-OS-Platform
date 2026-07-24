@@ -297,10 +297,9 @@ export async function importPartnerProspects(
   };
 }
 
-export async function sendPartnerProspectInvitations(input: {
+export async function sendPartnerProspectTestPreview(input: {
   prospectIds: string[];
-  mode: "test" | "send";
-  testEmail?: string;
+  testEmail: string;
 }): Promise<ServiceResult<PartnerProspectSendResult>> {
   if (!supabaseConfig.isConfigured) {
     return {
@@ -311,13 +310,38 @@ export async function sendPartnerProspectInvitations(input: {
 
   const result = await callSupabaseFunction<PartnerProspectSendResult>(
     "partner-prospect-invitations",
-    input,
+    { action: "send_test", ...input },
   );
 
   if (result.error || !result.data) {
     return {
       data: null,
-      error: result.error ?? "Unable to send partner prospect invitation.",
+      error: result.error ?? "Unable to send partner prospect test preview.",
+    };
+  }
+
+  return { data: result.data, error: null };
+}
+
+export async function sendPartnerProspectInvitations(input: {
+  prospectIds: string[];
+}): Promise<ServiceResult<PartnerProspectSendResult>> {
+  if (!supabaseConfig.isConfigured) {
+    return {
+      data: null,
+      error: "Supabase is not configured. Invitation sending requires the secure Edge Function.",
+    };
+  }
+
+  const result = await callSupabaseFunction<PartnerProspectSendResult>(
+    "partner-prospect-invitations",
+    { action: "send_invitations", ...input },
+  );
+
+  if (result.error || !result.data) {
+    return {
+      data: null,
+      error: result.error ?? "Unable to send partner prospect invitations.",
     };
   }
 

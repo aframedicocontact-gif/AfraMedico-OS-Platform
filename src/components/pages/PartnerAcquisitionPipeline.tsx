@@ -17,6 +17,7 @@ import {
   normalizePartnerProspectCampaignGroup,
   parsePartnerProspectWorkbook,
   sendPartnerProspectInvitations,
+  sendPartnerProspectTestPreview,
 } from "../../services/partnerProspectService";
 import { renderPartnerProspectEmail } from "../../services/partnerProspectEmailTemplates";
 import type {
@@ -85,7 +86,8 @@ export function PartnerAcquisitionPipeline() {
   const [previewProspect, setPreviewProspect] = useState<PartnerProspect | null>(null);
   const [testEmail, setTestEmail] = useState("");
   const [sendResult, setSendResult] = useState<PartnerProspectSendResult | null>(null);
-  const [sending, setSending] = useState(false);
+  const [sendingInvitations, setSendingInvitations] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
   const [sendError, setSendError] = useState("");
 
   async function loadProspects() {
@@ -198,16 +200,31 @@ export function PartnerAcquisitionPipeline() {
     await loadProspects();
   }
 
-  async function handleSend(mode: "test" | "send", prospectIds: string[]) {
-    setSending(true);
+  async function handleSendTest() {
+    const prospect = sendableSelected[0];
+    if (!prospect) return;
+
+    setSendingTest(true);
     setSendError("");
     setSendResult(null);
-    const result = await sendPartnerProspectInvitations({
-      prospectIds,
-      mode,
-      testEmail: mode === "test" ? testEmail : undefined,
+    const result = await sendPartnerProspectTestPreview({
+      prospectIds: [prospect.id],
+      testEmail,
     });
-    setSending(false);
+    setSendingTest(false);
+    if (result.error || !result.data) {
+      setSendError(result.error ?? "Test email action failed.");
+      return;
+    }
+    setSendResult(result.data);
+  }
+
+  async function handleSendInvitations(prospectIds: string[]) {
+    setSendingInvitations(true);
+    setSendError("");
+    setSendResult(null);
+    const result = await sendPartnerProspectInvitations({ prospectIds });
+    setSendingInvitations(false);
     if (result.error || !result.data) {
       setSendError(result.error ?? "Invitation action failed.");
       return;
@@ -314,22 +331,22 @@ export function PartnerAcquisitionPipeline() {
               value={testEmail}
               onChange={(event) => setTestEmail(event.target.value)}
             />
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-5">
               <Button
-                disabled={sending || sendableSelected.length === 0 || !testEmail.trim()}
+                disabled={sendingTest || sendingInvitations || sendableSelected.length === 0 || !testEmail.trim()}
                 type="button"
                 variant="secondary"
-                onClick={() => void handleSend("test", [sendableSelected[0].id])}
+                onClick={() => void handleSendTest()}
               >
-                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                 Send Test
               </Button>
               <Button
-                disabled={sending || sendableSelected.length === 0 || sendableSelected.length > 20}
+                disabled={sendingInvitations || sendingTest || sendableSelected.length === 0 || sendableSelected.length > 20}
                 type="button"
-                onClick={() => void handleSend("send", sendableSelected.map((prospect) => prospect.id))}
+                onClick={() => void handleSendInvitations(sendableSelected.map((prospect) => prospect.id))}
               >
-                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                {sendingInvitations ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 Send Selected
               </Button>
             </div>
@@ -472,9 +489,9 @@ export function PartnerAcquisitionPipeline() {
                             Preview
                           </Button>
                           <Button
-                            disabled={!canSendProspectInvitation(prospect) || sending}
+                            disabled={!canSendProspectInvitation(prospect) || sendingInvitations || sendingTest}
                             type="button"
-                            onClick={() => void handleSend("send", [prospect.id])}
+                            onClick={() => void handleSendInvitations([prospect.id])}
                           >
                             Send
                           </Button>

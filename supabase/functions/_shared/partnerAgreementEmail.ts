@@ -24,11 +24,15 @@ function loadSmtpConfig() {
   if (!host || !portRaw || !username || !password || !fromEmail) {
     throw new Error("Partner SMTP secrets are not fully configured");
   }
-  const port = Number(portRaw);
-  if (!Number.isFinite(port)) {
+  const rawPort = Number(portRaw);
+  if (!Number.isFinite(rawPort)) {
     throw new Error("PARTNER_SMTP_PORT is not a valid number");
   }
-  return { host, port, username, password, fromEmail, fromName };
+  // denomailer@1.6.0 STARTTLS (port 587) fails on Deno with "Bad resource ID".
+  // Implicit TLS on port 465 works. Map 587 → 465 transparently.
+  const port = rawPort === 587 ? 465 : rawPort;
+  const tls = port === 465;
+  return { host, port, tls, username, password, fromEmail, fromName };
 }
 
 function uint8ToBase64(bytes: Uint8Array): string {
@@ -47,7 +51,7 @@ export async function sendExecutedAgreementEmail(input: SendExecutedAgreementEma
     connection: {
       hostname: config.host,
       port: config.port,
-      tls: false,
+      tls: config.tls,
       auth: { username: config.username, password: config.password },
     },
     pool: false,

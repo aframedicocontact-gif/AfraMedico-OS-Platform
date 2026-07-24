@@ -257,12 +257,13 @@ async function sendEmail(to: string, prospect: Prospect) {
     connection: {
       hostname: config.host,
       port: config.port,
-      tls: true,
+      tls: false,
       auth: {
         username: config.username,
         password: config.password,
       },
     },
+    pool: false,
   });
 
   try {

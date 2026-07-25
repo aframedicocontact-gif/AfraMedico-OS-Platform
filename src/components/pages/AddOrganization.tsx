@@ -1,6 +1,7 @@
 import { ArrowLeft, ClipboardList, Globe2, Mail, SearchCheck } from "lucide-react";
 import type { ReactNode } from "react";
 import type { AppView } from "../../app/App";
+import { countryOptions } from "../../data/countryDataset";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
@@ -35,11 +36,9 @@ export function AddOrganization({ onNavigate }: AddOrganizationProps) {
           <FormSection icon={<Globe2 className="h-4 w-4" />} title="Basic Information">
             <Field label="Organization Name" placeholder="Nigerian Medical Association" />
             <SelectField label="Country" defaultValue="Nigeria">
-              <option>Nigeria</option>
-              <option>Ghana</option>
-              <option>Kenya</option>
-              <option>Uganda</option>
-              <option>Tanzania</option>
+              {countryOptions.map((country) => (
+                <option key={country.code}>{country.name}</option>
+              ))}
             </SelectField>
             <SelectField label="Category" defaultValue="Medical Associations">
               <option>Universities</option>

@@ -2,6 +2,7 @@ import { CircleDollarSign, FileSpreadsheet, KanbanSquare, Link2, Plus, Search, S
 import { useMemo, useState } from "react";
 import type { AppView } from "../../app/App";
 import { ExternalFieldLink } from "../common/ExternalFieldLink";
+import { countryOptions } from "../../data/countryDataset";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -48,7 +49,6 @@ type SortRule = {
   direction: SortDirection;
 };
 
-const countries = ["Nigeria", "Ghana", "Kenya", "Uganda", "Tanzania", "South Africa"];
 const categories: OrganizationCategory[] = [
   "Universities",
   "Teaching Hospitals",
@@ -212,7 +212,7 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
             Prioritize universities, teaching hospitals, associations, NGOs, media, blogs, and directories for Africa authority building.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "enterprise-task-board" })}>
             <KanbanSquare className="h-4 w-4" />
             Task Board
@@ -229,13 +229,19 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
             <Link2 className="h-4 w-4" />
             Backlink Campaigns
           </Button>
-          <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "authority-discovery" })}>
-            <Sparkles className="h-4 w-4" />
-            Authority Discovery
-          </Button>
+          <div className="hidden w-px bg-border sm:block" />
           <Button variant="secondary" type="button" onClick={() => onNavigate({ name: "csv-import" })}>
             <FileSpreadsheet className="h-4 w-4" />
             Import CSV
+          </Button>
+          <Button
+            className="border border-emerald-300 bg-emerald-50 text-emerald-950 shadow-sm hover:bg-emerald-100"
+            variant="secondary"
+            type="button"
+            onClick={() => onNavigate({ name: "authority-discovery" })}
+          >
+            <Sparkles className="h-4 w-4 text-emerald-700" />
+            Authority Discovery
           </Button>
           <Button type="button" onClick={() => onNavigate({ name: "add-organization" })}>
             <Plus className="h-4 w-4" />
@@ -257,9 +263,9 @@ export function OrganizationsList({ organizations, onNavigate }: OrganizationsLi
           </label>
           <Select value={country} onChange={(event) => setCountry(event.target.value)}>
             <option value="all">All countries</option>
-            {countries.map((item) => (
-              <option key={item} value={item}>
-                {item}
+            {countryOptions.map((item) => (
+              <option key={item.code} value={item.name}>
+                {item.name}
               </option>
             ))}
           </Select>

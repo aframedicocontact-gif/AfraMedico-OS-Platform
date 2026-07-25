@@ -6,6 +6,7 @@ import {
   getBacklinkCampaigns,
   updateBacklinkCampaign,
 } from "../../services/backlinkCampaignService";
+import { countryOptions } from "../../data/countryDataset";
 import {
   updateCampaignTemplate,
   updateTargetBacklinkField,
@@ -68,7 +69,6 @@ const outreachStatuses: BacklinkOutreachStatus[] = [
 const backlinkStatuses: BacklinkStatus[] = ["Not Requested", "Requested", "Under Review", "Won", "Rejected", "Needs Follow-up"];
 const templateChannels: BacklinkTemplateChannel[] = ["Email", "LinkedIn", "Facebook", "Instagram", "Contact Form"];
 const workspaceTabs: WorkspaceTab[] = ["Overview", "Organizations", "Outreach Queue", "Templates", "Results", "Backlinks", "Partnerships"];
-const countries = ["Nigeria", "Ghana", "Kenya", "Uganda", "Tanzania", "South Africa"];
 const categories: OrganizationCategory[] = ["Universities", "Teaching Hospitals", "Medical Associations", "NGOs", "Health Blogs", "News Media", "Business Directories"];
 
 export function BacklinkCampaigns({
@@ -440,7 +440,7 @@ function CampaignBuilder({
         <form className="space-y-3" onSubmit={onSubmit}>
           <Input placeholder="Campaign Name" value={form.campaignName} onChange={(event) => setForm({ ...form, campaignName: event.target.value })} />
           <div className="grid gap-3 sm:grid-cols-2">
-            <Select value={form.targetCountry} onChange={(event) => setForm({ ...form, targetCountry: event.target.value })}>{countries.map((country) => <option key={country}>{country}</option>)}</Select>
+            <Select value={form.targetCountry} onChange={(event) => setForm({ ...form, targetCountry: event.target.value })}>{countryOptions.map((country) => <option key={country.code}>{country.name}</option>)}</Select>
             <Input placeholder="Treatment Focus" value={form.treatmentFocus} onChange={(event) => setForm({ ...form, treatmentFocus: event.target.value })} />
           </div>
           <Select value={form.campaignType} onChange={(event) => setForm({ ...form, campaignType: event.target.value as BacklinkCampaignType })}>{campaignTypes.map((type) => <option key={type}>{type}</option>)}</Select>
@@ -503,7 +503,7 @@ function OrganizationSelector({
             <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input className="pl-9" placeholder="Treatment / Keyword" value={filters.treatmentKeyword} onChange={(event) => setFilters({ ...filters, treatmentKeyword: event.target.value })} />
           </label>
-          <Select value={filters.country} onChange={(event) => setFilters({ ...filters, country: event.target.value })}><option value="all">All countries</option>{countries.map((country) => <option key={country}>{country}</option>)}</Select>
+          <Select value={filters.country} onChange={(event) => setFilters({ ...filters, country: event.target.value })}><option value="all">All countries</option>{countryOptions.map((country) => <option key={country.code}>{country.name}</option>)}</Select>
           <Select value={filters.category} onChange={(event) => setFilters({ ...filters, category: event.target.value as "all" | OrganizationCategory })}><option value="all">All categories</option>{categories.map((category) => <option key={category}>{category}</option>)}</Select>
           <Select value={filters.opportunity} onChange={(event) => setFilters({ ...filters, opportunity: event.target.value as "all" | OpportunityType })}><option value="all">All opportunities</option>{opportunities.map((opportunity) => <option key={opportunity}>{opportunity}</option>)}</Select>
           <Select value={filters.priority} onChange={(event) => setFilters({ ...filters, priority: event.target.value as "all" | OrganizationPriority })}><option value="all">All priorities</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></Select>

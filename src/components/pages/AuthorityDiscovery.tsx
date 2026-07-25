@@ -7,6 +7,7 @@ import {
   updateAuthorityDiscoveryImportCount,
 } from "../../services/authorityDiscoveryService";
 import { importAuthorityDiscoveryResults } from "../../services/authorityImportService";
+import { countryOptions } from "../../data/countryDataset";
 import type {
   AuthorityDiscoveryHistoryItem,
   AuthorityDiscoveryParameters,
@@ -39,7 +40,6 @@ type AuthorityDiscoveryProps = {
   onNavigate: (view: AppView) => void;
 };
 
-const countries = ["Nigeria", "Ghana", "Kenya", "Uganda", "Tanzania", "South Africa"];
 const categories: OrganizationCategory[] = [
   "Teaching Hospitals",
   "Medical Associations",
@@ -225,9 +225,9 @@ export function AuthorityDiscovery({ organizations, onImport, onNavigate }: Auth
               value={parameters.country}
               onChange={(event) => setParameters((current) => ({ ...current, country: event.target.value }))}
             >
-              {countries.map((country) => (
-                <option key={country} value={country}>
-                  {country}
+              {countryOptions.map((country) => (
+                <option key={country.code} value={country.name}>
+                  {country.name}
                 </option>
               ))}
             </Select>

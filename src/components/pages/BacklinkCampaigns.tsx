@@ -1,4 +1,4 @@
-import { Link2, Mail, Plus, Search, Target } from "lucide-react";
+import { Download, Link2, Mail, Plus, Search, Target } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   addOrganizationsToBacklinkCampaign,
@@ -26,6 +26,7 @@ import type {
 import type { Organization, OrganizationCategory, OrganizationPriority, OrganizationStatus, OpportunityType } from "../../types/organization";
 import { ExternalFieldLink } from "../common/ExternalFieldLink";
 import { BacklinkCsvImport } from "../backlink/BacklinkCsvImport";
+import { exportRowsAsCsv, exportRowsAsExcel, type ExportRow } from "../../lib/exportTableData";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -42,6 +43,7 @@ type BacklinkCampaignsProps = {
 
 type WorkspaceTab = "Overview" | "Organizations" | "Outreach Queue" | "Templates" | "Results" | "Backlinks" | "Partnerships";
 type BacklinkPotentialFilter = "all" | "high" | "medium" | "low";
+type CampaignTargetOrganization = { target: BacklinkCampaign["targets"][number]; organization: Organization };
 
 const campaignTypes: BacklinkCampaignType[] = [
   "Resource Page Backlink",
@@ -233,7 +235,10 @@ export function BacklinkCampaigns({
             Build backlink and partnership campaigns, prepare outreach messages, track follow-ups, and record backlink wins.
           </p>
         </div>
-        <Badge tone="warning">Copy/paste outreach only. Nothing is sent automatically.</Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <ExportButtons fileNameBase="backlink-campaign-dashboard" rows={campaignSummaryExportRows(campaigns)} />
+          <Badge tone="warning">Copy/paste outreach only. Nothing is sent automatically.</Badge>
+        </div>
       </div>
 
       <DashboardCards dashboard={dashboard} />
@@ -279,14 +284,22 @@ export function BacklinkCampaigns({
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <CardTitle>Campaign Workspace</CardTitle>
-            <Select value={selectedCampaign?.id ?? ""} onChange={(event) => setSelectedCampaignId(event.target.value)}>
-              <option value="">Select campaign</option>
-              {campaigns.map((campaign) => (
-                <option key={campaign.id} value={campaign.id}>
-                  {campaign.campaignName}
-                </option>
-              ))}
-            </Select>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              {selectedCampaign ? (
+                <ExportButtons
+                  fileNameBase={`backlink-campaign-${selectedCampaign.campaignName}`}
+                  rows={campaignTargetExportRows(selectedCampaign, allOrganizations)}
+                />
+              ) : null}
+              <Select value={selectedCampaign?.id ?? ""} onChange={(event) => setSelectedCampaignId(event.target.value)}>
+                <option value="">Select campaign</option>
+                {campaigns.map((campaign) => (
+                  <option key={campaign.id} value={campaign.id}>
+                    {campaign.campaignName}
+                  </option>
+                ))}
+              </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -529,10 +542,13 @@ function OrganizationSelector({
   return (
     <Card className="min-w-0">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Target className="h-4 w-4 text-emerald-700" />
-          Select Organizations
-        </CardTitle>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-4 w-4 text-emerald-700" />
+            Select Organizations
+          </CardTitle>
+          <ExportButtons fileNameBase="backlink-campaign-visible-organizations" rows={organizationExportRows(organizations)} />
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-3 xl:grid-cols-[1fr_repeat(6,160px)]">
@@ -582,9 +598,7 @@ function CampaignWorkspace({
   persistCampaign: (campaign: BacklinkCampaign) => void;
   tab: WorkspaceTab;
 }) {
-  const targetOrganizations = campaign.targets
-    .map((target) => ({ target, organization: organizations.find((organization) => organization.id === target.organizationId) }))
-    .filter((item): item is { target: BacklinkCampaign["targets"][number]; organization: Organization } => Boolean(item.organization));
+  const targetOrganizations = getCampaignTargetOrganizations(campaign, organizations);
 
   if (tab === "Overview") {
     return (
@@ -595,6 +609,9 @@ function CampaignWorkspace({
         <SummaryCard label="Goal" value={campaign.goal} />
         <SummaryCard label="Target Backlink URL" value={campaign.targetBacklinkUrl} />
         <SummaryCard label="Follow-up Date" value={campaign.followUpDate} />
+        <div className="lg:col-span-3">
+          <ExportButtons fileNameBase={`backlink-campaign-overview-${campaign.campaignName}`} rows={campaignOverviewExportRows(campaign)} />
+        </div>
       </div>
     );
   }
@@ -637,101 +654,111 @@ function OutreachQueueTable({
   targetOrganizations: Array<{ target: BacklinkCampaign["targets"][number]; organization: Organization }>;
 }) {
   return (
-    <TableScrollContainer>
-      <Table className="min-w-[1900px] table-fixed">
-        <TableHeader><TableRow className="bg-emerald-50/70"><TableHead className="w-[240px]">Organization</TableHead><TableHead className="w-[180px]">Website</TableHead><TableHead className="w-[180px]">Contact Page</TableHead><TableHead className="w-[220px]">Email</TableHead><TableHead className="w-[180px]">LinkedIn</TableHead><TableHead className="w-[160px]">Facebook</TableHead><TableHead className="w-[160px]">Instagram</TableHead><TableHead className="w-[160px]">WhatsApp</TableHead><TableHead className="w-[190px]">Current Status</TableHead><TableHead className="w-[160px]">Last Contact Date</TableHead><TableHead className="w-[160px]">Next Follow-up</TableHead></TableRow></TableHeader>
-        <TableBody>
-          {targetOrganizations.map(({ target, organization }) => (
-            <TableRow key={`${mode}-${organization.id}`}>
-              <TableCell className="font-medium text-emerald-950">{organization.name}</TableCell>
-              <TableCell><ExternalFieldLink type="website" value={organization.website} /></TableCell>
-              <TableCell><ExternalFieldLink type="website" value={organization.contactPage || ""} /></TableCell>
-              <TableCell><ExternalFieldLink type="email" value={organization.email} /></TableCell>
-              <TableCell><ExternalFieldLink type="linkedin" value={organization.linkedin} /></TableCell>
-              <TableCell><ExternalFieldLink type="website" value="" /></TableCell>
-              <TableCell><ExternalFieldLink type="website" value="" /></TableCell>
-              <TableCell><ExternalFieldLink type="website" value="" /></TableCell>
-              <TableCell>
-                <Select value={target.outreachStatus} onChange={(event) => persistCampaign(updateTargetOutreachStatus(campaign, organization.id, event.target.value as BacklinkOutreachStatus))}>
-                  {outreachStatuses.map((status) => <option key={status}>{status}</option>)}
-                </Select>
-              </TableCell>
-              <TableCell>{target.dateRequested || campaign.startDate || "Not set"}</TableCell>
-              <TableCell>{campaign.followUpDate || "Not set"}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableScrollContainer>
+    <div className="space-y-3">
+      <ExportButtons fileNameBase={`backlink-campaign-${mode}-${campaign.campaignName}`} rows={outreachExportRows(campaign, targetOrganizations)} />
+      <TableScrollContainer>
+        <Table className="min-w-[1900px] table-fixed">
+          <TableHeader><TableRow className="bg-emerald-50/70"><TableHead className="w-[240px]">Organization</TableHead><TableHead className="w-[180px]">Website</TableHead><TableHead className="w-[180px]">Contact Page</TableHead><TableHead className="w-[220px]">Email</TableHead><TableHead className="w-[180px]">LinkedIn</TableHead><TableHead className="w-[160px]">Facebook</TableHead><TableHead className="w-[160px]">Instagram</TableHead><TableHead className="w-[160px]">WhatsApp</TableHead><TableHead className="w-[190px]">Current Status</TableHead><TableHead className="w-[160px]">Last Contact Date</TableHead><TableHead className="w-[160px]">Next Follow-up</TableHead></TableRow></TableHeader>
+          <TableBody>
+            {targetOrganizations.map(({ target, organization }) => (
+              <TableRow key={`${mode}-${organization.id}`}>
+                <TableCell className="font-medium text-emerald-950">{organization.name}</TableCell>
+                <TableCell><ExternalFieldLink type="website" value={organization.website} /></TableCell>
+                <TableCell><ExternalFieldLink type="website" value={organization.contactPage || ""} /></TableCell>
+                <TableCell><ExternalFieldLink type="email" value={organization.email} /></TableCell>
+                <TableCell><ExternalFieldLink type="linkedin" value={organization.linkedin} /></TableCell>
+                <TableCell><ExternalFieldLink type="website" value="" /></TableCell>
+                <TableCell><ExternalFieldLink type="website" value="" /></TableCell>
+                <TableCell><ExternalFieldLink type="website" value="" /></TableCell>
+                <TableCell>
+                  <Select value={target.outreachStatus} onChange={(event) => persistCampaign(updateTargetOutreachStatus(campaign, organization.id, event.target.value as BacklinkOutreachStatus))}>
+                    {outreachStatuses.map((status) => <option key={status}>{status}</option>)}
+                  </Select>
+                </TableCell>
+                <TableCell>{target.dateRequested || campaign.startDate || "Not set"}</TableCell>
+                <TableCell>{campaign.followUpDate || "Not set"}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableScrollContainer>
+    </div>
   );
 }
 
 function TemplateEditor({ campaign, persistCampaign }: { campaign: BacklinkCampaign; persistCampaign: (campaign: BacklinkCampaign) => void }) {
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
-      {templateChannels.map((channel) => (
-        <Card key={channel}>
-          <CardHeader><CardTitle className="flex items-center gap-2"><Mail className="h-4 w-4 text-emerald-700" />{channel}</CardTitle></CardHeader>
-          <CardContent>
-            <textarea className="min-h-64 w-full rounded-md border p-3 text-sm leading-6" value={campaign.templates[channel]} onChange={(event) => persistCampaign(updateCampaignTemplate(campaign, channel, event.target.value))} />
-          </CardContent>
-        </Card>
-      ))}
+    <div className="space-y-3">
+      <ExportButtons fileNameBase={`backlink-campaign-templates-${campaign.campaignName}`} rows={templateExportRows(campaign)} />
+      <div className="grid gap-4 xl:grid-cols-2">
+        {templateChannels.map((channel) => (
+          <Card key={channel}>
+            <CardHeader><CardTitle className="flex items-center gap-2"><Mail className="h-4 w-4 text-emerald-700" />{channel}</CardTitle></CardHeader>
+            <CardContent>
+              <textarea className="min-h-64 w-full rounded-md border p-3 text-sm leading-6" value={campaign.templates[channel]} onChange={(event) => persistCampaign(updateCampaignTemplate(campaign, channel, event.target.value))} />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
 
 function BacklinkTrackingTable({ campaign, organizations, persistCampaign }: { campaign: BacklinkCampaign; organizations: Organization[]; persistCampaign: (campaign: BacklinkCampaign) => void }) {
   return (
-    <TableScrollContainer>
-      <Table className="min-w-[1500px] table-fixed">
-        <TableHeader><TableRow className="bg-emerald-50/70"><TableHead className="w-[240px]">Organization</TableHead><TableHead className="w-[200px]">Requested URL</TableHead><TableHead className="w-[200px]">Target Page</TableHead><TableHead className="w-[180px]">Anchor Text</TableHead><TableHead className="w-[170px]">Status</TableHead><TableHead className="w-[150px]">Date Requested</TableHead><TableHead className="w-[150px]">Date Won</TableHead><TableHead className="w-[200px]">Backlink URL</TableHead><TableHead className="w-[220px]">Notes</TableHead></TableRow></TableHeader>
-        <TableBody>
-          {campaign.targets.map((target) => {
-            const organization = organizations.find((item) => item.id === target.organizationId);
-            if (!organization) return null;
-            return (
-              <TableRow key={`backlink-${target.organizationId}`}>
-                <TableCell className="font-medium text-emerald-950">{organization.name}</TableCell>
-                <TableCell><Input value={target.requestedUrl} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "requestedUrl", event.target.value))} /></TableCell>
-                <TableCell><Input value={target.targetPage} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "targetPage", event.target.value))} /></TableCell>
-                <TableCell><Input value={target.anchorText} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "anchorText", event.target.value))} /></TableCell>
-                <TableCell><Select value={target.backlinkStatus} onChange={(event) => persistCampaign(updateTargetBacklinkStatus(campaign, target.organizationId, event.target.value as BacklinkStatus))}>{backlinkStatuses.map((status) => <option key={status}>{status}</option>)}</Select></TableCell>
-                <TableCell><Input type="date" value={target.dateRequested} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "dateRequested", event.target.value))} /></TableCell>
-                <TableCell><Input type="date" value={target.dateWon} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "dateWon", event.target.value))} /></TableCell>
-                <TableCell><Input value={target.backlinkUrl} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "backlinkUrl", event.target.value))} /></TableCell>
-                <TableCell><Input value={target.notes} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "notes", event.target.value))} /></TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableScrollContainer>
+    <div className="space-y-3">
+      <ExportButtons fileNameBase={`backlink-campaign-backlinks-${campaign.campaignName}`} rows={backlinkExportRows(campaign, organizations)} />
+      <TableScrollContainer>
+        <Table className="min-w-[1500px] table-fixed">
+          <TableHeader><TableRow className="bg-emerald-50/70"><TableHead className="w-[240px]">Organization</TableHead><TableHead className="w-[200px]">Requested URL</TableHead><TableHead className="w-[200px]">Target Page</TableHead><TableHead className="w-[180px]">Anchor Text</TableHead><TableHead className="w-[170px]">Status</TableHead><TableHead className="w-[150px]">Date Requested</TableHead><TableHead className="w-[150px]">Date Won</TableHead><TableHead className="w-[200px]">Backlink URL</TableHead><TableHead className="w-[220px]">Notes</TableHead></TableRow></TableHeader>
+          <TableBody>
+            {campaign.targets.map((target) => {
+              const organization = organizations.find((item) => item.id === target.organizationId);
+              if (!organization) return null;
+              return (
+                <TableRow key={`backlink-${target.organizationId}`}>
+                  <TableCell className="font-medium text-emerald-950">{organization.name}</TableCell>
+                  <TableCell><Input value={target.requestedUrl} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "requestedUrl", event.target.value))} /></TableCell>
+                  <TableCell><Input value={target.targetPage} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "targetPage", event.target.value))} /></TableCell>
+                  <TableCell><Input value={target.anchorText} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "anchorText", event.target.value))} /></TableCell>
+                  <TableCell><Select value={target.backlinkStatus} onChange={(event) => persistCampaign(updateTargetBacklinkStatus(campaign, target.organizationId, event.target.value as BacklinkStatus))}>{backlinkStatuses.map((status) => <option key={status}>{status}</option>)}</Select></TableCell>
+                  <TableCell><Input type="date" value={target.dateRequested} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "dateRequested", event.target.value))} /></TableCell>
+                  <TableCell><Input type="date" value={target.dateWon} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "dateWon", event.target.value))} /></TableCell>
+                  <TableCell><Input value={target.backlinkUrl} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "backlinkUrl", event.target.value))} /></TableCell>
+                  <TableCell><Input value={target.notes} onChange={(event) => persistCampaign(updateTargetBacklinkField(campaign, target.organizationId, "notes", event.target.value))} /></TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableScrollContainer>
+    </div>
   );
 }
 
 function FollowUpsTable({ campaign, organizations }: { campaign: BacklinkCampaign; organizations: Organization[] }) {
-  const targetOrganizations = campaign.targets
-    .map((target) => ({ target, organization: organizations.find((organization) => organization.id === target.organizationId) }))
-    .filter((item): item is { target: BacklinkCampaign["targets"][number]; organization: Organization } => Boolean(item.organization));
+  const targetOrganizations = getCampaignTargetOrganizations(campaign, organizations);
 
   return (
-    <TableScrollContainer>
-      <Table className="min-w-[980px] table-fixed">
-        <TableHeader><TableRow className="bg-emerald-50/70"><TableHead className="w-[260px]">Organization</TableHead><TableHead className="w-[180px]">Website</TableHead><TableHead className="w-[180px]">Outreach Status</TableHead><TableHead className="w-[180px]">Backlink Status</TableHead><TableHead className="w-[180px]">Next Follow-up</TableHead></TableRow></TableHeader>
-        <TableBody>
-          {targetOrganizations.map(({ target, organization }) => (
-            <TableRow key={`organization-${target.organizationId}`}>
-              <TableCell className="font-medium text-emerald-950">{organization.name}</TableCell>
-              <TableCell><ExternalFieldLink type="website" value={organization.website} /></TableCell>
-              <TableCell>{target.outreachStatus}</TableCell>
-              <TableCell>{target.backlinkStatus}</TableCell>
-              <TableCell>{campaign.followUpDate || "Not set"}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableScrollContainer>
+    <div className="space-y-3">
+      <ExportButtons fileNameBase={`backlink-campaign-organizations-${campaign.campaignName}`} rows={followUpExportRows(campaign, targetOrganizations)} />
+      <TableScrollContainer>
+        <Table className="min-w-[980px] table-fixed">
+          <TableHeader><TableRow className="bg-emerald-50/70"><TableHead className="w-[260px]">Organization</TableHead><TableHead className="w-[180px]">Website</TableHead><TableHead className="w-[180px]">Outreach Status</TableHead><TableHead className="w-[180px]">Backlink Status</TableHead><TableHead className="w-[180px]">Next Follow-up</TableHead></TableRow></TableHeader>
+          <TableBody>
+            {targetOrganizations.map(({ target, organization }) => (
+              <TableRow key={`organization-${target.organizationId}`}>
+                <TableCell className="font-medium text-emerald-950">{organization.name}</TableCell>
+                <TableCell><ExternalFieldLink type="website" value={organization.website} /></TableCell>
+                <TableCell>{target.outreachStatus}</TableCell>
+                <TableCell>{target.backlinkStatus}</TableCell>
+                <TableCell>{campaign.followUpDate || "Not set"}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableScrollContainer>
+    </div>
   );
 }
 
@@ -740,6 +767,7 @@ function PartnershipsTable({ targetOrganizations }: { targetOrganizations: Array
 
   return (
     <div className="space-y-3">
+      <ExportButtons fileNameBase="backlink-campaign-partnerships" rows={partnershipExportRows(partnershipTargets)} />
       {partnershipTargets.length === 0 ? (
         <p className="rounded-lg border bg-slate-50 p-4 text-sm text-muted-foreground">No partnership wins have been recorded in this campaign yet.</p>
       ) : null}
@@ -749,6 +777,23 @@ function PartnershipsTable({ targetOrganizations }: { targetOrganizations: Array
           <p className="mt-1 text-sm text-muted-foreground">Status: {target.outreachStatus}. Notes: {target.notes || "No notes yet."}</p>
         </div>
       ))}
+    </div>
+  );
+}
+
+function ExportButtons({ fileNameBase, rows }: { fileNameBase: string; rows: ExportRow[] }) {
+  const disabled = rows.length === 0;
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Button className="h-8 px-2 text-xs" disabled={disabled} variant="secondary" type="button" onClick={() => exportRowsAsCsv(fileNameBase, rows)}>
+        <Download className="h-4 w-4" />
+        CSV
+      </Button>
+      <Button className="h-8 px-2 text-xs" disabled={disabled} variant="secondary" type="button" onClick={() => exportRowsAsExcel(fileNameBase, rows)}>
+        <Download className="h-4 w-4" />
+        Excel
+      </Button>
     </div>
   );
 }
@@ -827,6 +872,156 @@ function buildDashboard(campaigns: BacklinkCampaign[]) {
     partnershipsWon: targets.filter((target) => target.outreachStatus === "Partnership Won").length,
     pendingFollowUps: targets.filter((target) => target.outreachStatus === "Follow-up" || target.backlinkStatus === "Needs Follow-up").length,
   };
+}
+
+function getCampaignTargetOrganizations(campaign: BacklinkCampaign, organizations: Organization[]): CampaignTargetOrganization[] {
+  return campaign.targets
+    .map((target) => ({ target, organization: organizations.find((organization) => organization.id === target.organizationId) }))
+    .filter((item): item is CampaignTargetOrganization => Boolean(item.organization));
+}
+
+function campaignSummaryExportRows(campaigns: BacklinkCampaign[]): ExportRow[] {
+  return campaigns.map((campaign) => {
+    const dashboard = buildDashboard([campaign]);
+    return {
+      "Campaign Name": campaign.campaignName,
+      Type: campaign.campaignType,
+      Country: campaign.targetCountry,
+      "Treatment Focus": campaign.treatmentFocus,
+      Goal: campaign.goal,
+      Priority: campaign.priority,
+      Status: campaign.status,
+      "Start Date": campaign.startDate,
+      "Follow-up Date": campaign.followUpDate,
+      "Target Backlink URL": campaign.targetBacklinkUrl,
+      "Anchor Text": campaign.anchorText,
+      "Organizations Targeted": dashboard.organizationsTargeted,
+      "Messages Prepared": dashboard.messagesPrepared,
+      "Messages Sent": dashboard.messagesSent,
+      Replies: dashboard.replies,
+      "Backlinks Won": dashboard.backlinksWon,
+      "Partnerships Won": dashboard.partnershipsWon,
+      "Pending Follow-ups": dashboard.pendingFollowUps,
+      Notes: campaign.notes,
+    };
+  });
+}
+
+function campaignOverviewExportRows(campaign: BacklinkCampaign[]): ExportRow[];
+function campaignOverviewExportRows(campaign: BacklinkCampaign): ExportRow[];
+function campaignOverviewExportRows(campaign: BacklinkCampaign | BacklinkCampaign[]): ExportRow[] {
+  const campaigns = Array.isArray(campaign) ? campaign : [campaign];
+  return campaignSummaryExportRows(campaigns);
+}
+
+function campaignTargetExportRows(campaign: BacklinkCampaign, organizations: Organization[]): ExportRow[] {
+  return getCampaignTargetOrganizations(campaign, organizations).map(({ target, organization }) => ({
+    Campaign: campaign.campaignName,
+    Organization: organization.name,
+    Country: organization.country,
+    Category: organization.category,
+    Website: organization.website,
+    "Contact Page": organization.contactPage,
+    Email: organization.email,
+    LinkedIn: organization.linkedin,
+    "Outreach Status": target.outreachStatus,
+    "Last Contact Date": target.dateRequested || campaign.startDate || "",
+    "Next Follow-up": campaign.followUpDate || "",
+    "Requested URL": target.requestedUrl,
+    "Target Page": target.targetPage,
+    "Anchor Text": target.anchorText,
+    "Backlink Status": target.backlinkStatus,
+    "Date Requested": target.dateRequested,
+    "Date Won": target.dateWon,
+    "Backlink URL": target.backlinkUrl,
+    Notes: target.notes,
+  }));
+}
+
+function organizationExportRows(organizations: Organization[]): ExportRow[] {
+  return organizations.map((organization) => ({
+    Organization: organization.name,
+    Country: organization.country,
+    Category: organization.category,
+    "Organization Type": organization.organizationType,
+    Website: organization.website,
+    "Contact Page": organization.contactPage,
+    Email: organization.email,
+    LinkedIn: organization.linkedin,
+    Opportunity: organization.opportunityType,
+    Priority: organization.priority,
+    Status: organization.status,
+    "Domain Rating": organization.domainRating,
+    "Backlink Potential": getBacklinkPotential(organization),
+    "Treatment Focus": organization.treatmentFocus,
+    "Medical Specialty": organization.medicalSpecialty,
+    "Next Step": organization.nextStep,
+    Notes: organization.notes,
+  }));
+}
+
+function outreachExportRows(campaign: BacklinkCampaign, targetOrganizations: CampaignTargetOrganization[]): ExportRow[] {
+  return targetOrganizations.map(({ target, organization }) => ({
+    Campaign: campaign.campaignName,
+    Organization: organization.name,
+    Country: organization.country,
+    Category: organization.category,
+    Website: organization.website,
+    "Contact Page": organization.contactPage,
+    Email: organization.email,
+    LinkedIn: organization.linkedin,
+    Facebook: "",
+    Instagram: "",
+    WhatsApp: "",
+    "Current Status": target.outreachStatus,
+    "Last Contact Date": target.dateRequested || campaign.startDate || "",
+    "Next Follow-up": campaign.followUpDate || "",
+  }));
+}
+
+function backlinkExportRows(campaign: BacklinkCampaign, organizations: Organization[]): ExportRow[] {
+  return getCampaignTargetOrganizations(campaign, organizations).map(({ target, organization }) => ({
+    Campaign: campaign.campaignName,
+    Organization: organization.name,
+    "Requested URL": target.requestedUrl,
+    "Target Page": target.targetPage,
+    "Anchor Text": target.anchorText,
+    Status: target.backlinkStatus,
+    "Date Requested": target.dateRequested,
+    "Date Won": target.dateWon,
+    "Backlink URL": target.backlinkUrl,
+    Notes: target.notes,
+  }));
+}
+
+function followUpExportRows(campaign: BacklinkCampaign, targetOrganizations: CampaignTargetOrganization[]): ExportRow[] {
+  return targetOrganizations.map(({ target, organization }) => ({
+    Campaign: campaign.campaignName,
+    Organization: organization.name,
+    Website: organization.website,
+    "Outreach Status": target.outreachStatus,
+    "Backlink Status": target.backlinkStatus,
+    "Next Follow-up": campaign.followUpDate || "",
+  }));
+}
+
+function partnershipExportRows(targetOrganizations: CampaignTargetOrganization[]): ExportRow[] {
+  return targetOrganizations.map(({ target, organization }) => ({
+    Organization: organization.name,
+    Country: organization.country,
+    Website: organization.website,
+    Email: organization.email,
+    "Outreach Status": target.outreachStatus,
+    Notes: target.notes,
+  }));
+}
+
+function templateExportRows(campaign: BacklinkCampaign): ExportRow[] {
+  return templateChannels.map((channel) => ({
+    Campaign: campaign.campaignName,
+    Channel: channel,
+    Template: campaign.templates[channel],
+  }));
 }
 
 function normalizeCampaignType(value?: string): BacklinkCampaignType {

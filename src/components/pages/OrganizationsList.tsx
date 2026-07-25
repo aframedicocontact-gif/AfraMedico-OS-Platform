@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import type { AppView } from "../../app/App";
 import { ExternalFieldLink } from "../common/ExternalFieldLink";
 import { countryOptions } from "../../data/countryDataset";
+import { exportRowsAsCsv } from "../../lib/exportTableData";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -527,29 +528,21 @@ function getOrganizationUpdatedDate(organization: Organization) {
 }
 
 function exportSelectedOrganizations(selectedOrganizations: Organization[]) {
-  if (typeof window === "undefined" || selectedOrganizations.length === 0) return;
-  const headers = ["Organization", "Country", "Category", "Priority", "Status", "Opportunity", "Email", "Website", "Next Step"];
-  const rows = selectedOrganizations.map((organization) => [
-    organization.name,
-    organization.country,
-    organization.category,
-    organization.priority,
-    statusLabels[organization.status],
-    organization.opportunityType,
-    organization.email,
-    organization.website,
-    organization.nextStep,
-  ]);
-  const csv = [headers, ...rows]
-    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
-    .join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "authority-crm-selected-organizations.csv";
-  link.click();
-  URL.revokeObjectURL(url);
+  exportRowsAsCsv("authority-crm-selected-organizations", organizationExportRows(selectedOrganizations));
+}
+
+function organizationExportRows(selectedOrganizations: Organization[]) {
+  return selectedOrganizations.map((organization) => ({
+    Organization: organization.name,
+    Country: organization.country,
+    Category: organization.category,
+    Priority: organization.priority,
+    Status: statusLabels[organization.status],
+    Opportunity: organization.opportunityType,
+    Email: organization.email,
+    Website: organization.website,
+    "Next Step": organization.nextStep,
+  }));
 }
 
 function StatusBadge({ status }: { status: OrganizationStatus }) {

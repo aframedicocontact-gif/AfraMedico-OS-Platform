@@ -2,6 +2,7 @@ import { Link2, Mail, Plus, Search, Target } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   addOrganizationsToBacklinkCampaign,
+  createCampaignTargets,
   createBacklinkCampaign,
   getBacklinkCampaigns,
   updateBacklinkCampaign,
@@ -24,6 +25,7 @@ import type {
 } from "../../types/backlinkCampaign";
 import type { Organization, OrganizationCategory, OrganizationPriority, OrganizationStatus, OpportunityType } from "../../types/organization";
 import { ExternalFieldLink } from "../common/ExternalFieldLink";
+import { BacklinkCsvImport } from "../backlink/BacklinkCsvImport";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -111,10 +113,17 @@ export function BacklinkCampaigns({
     notes: "",
   });
 
+  const allOrganizations = useMemo(
+    () => mergeOrganizations([
+      ...organizations,
+      ...campaigns.flatMap((campaign) => campaign.importedOrganizations ?? []),
+    ]),
+    [campaigns, organizations],
+  );
   const dashboard = useMemo(() => buildDashboard(campaigns), [campaigns]);
   const filteredOrganizations = useMemo(
-    () => filterOrganizations(organizations, filters),
-    [filters, organizations],
+    () => filterOrganizations(allOrganizations, filters),
+    [allOrganizations, filters],
   );
 
   useEffect(() => {
@@ -190,6 +199,30 @@ export function BacklinkCampaigns({
     );
   }
 
+  function handleCampaignCsvImport(importedOrganizations: Organization[]) {
+    if (!selectedCampaign || importedOrganizations.length === 0) return;
+
+    const existingImportedIds = new Set((selectedCampaign.importedOrganizations ?? []).map((organization) => organization.id));
+    const nextImportedOrganizations = [
+      ...(selectedCampaign.importedOrganizations ?? []),
+      ...importedOrganizations.filter((organization) => !existingImportedIds.has(organization.id)),
+    ];
+    const existingTargetIds = new Set(selectedCampaign.targets.map((target) => target.organizationId));
+    const importedTargetIds = importedOrganizations
+      .map((organization) => organization.id)
+      .filter((organizationId) => !existingTargetIds.has(organizationId));
+
+    persistCampaign({
+      ...selectedCampaign,
+      importedOrganizations: nextImportedOrganizations,
+      targets: [
+        ...selectedCampaign.targets,
+        ...createCampaignTargets(importedTargetIds, selectedCampaign.targetBacklinkUrl, selectedCampaign.anchorText),
+      ],
+    });
+    setWorkspaceTab("Organizations");
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -238,6 +271,10 @@ export function BacklinkCampaigns({
         />
       </div>
 
+      {selectedCampaign ? (
+        <BacklinkCsvImport existingOrganizations={allOrganizations} onImport={handleCampaignCsvImport} />
+      ) : null}
+
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -275,7 +312,7 @@ export function BacklinkCampaigns({
               </div>
               <CampaignWorkspace
                 campaign={selectedCampaign}
-                organizations={organizations}
+                organizations={allOrganizations}
                 persistCampaign={persistCampaign}
                 tab={workspaceTab}
               />
@@ -732,6 +769,14 @@ function getBacklinkPotential(organization: Organization): BacklinkPotentialFilt
   if (organization.opportunityType === "Backlink" || organization.domainRating >= 80) return "high";
   if (organization.domainRating >= 55 || ["News Media", "Health Blogs", "Business Directories"].includes(organization.category)) return "medium";
   return "low";
+}
+
+function mergeOrganizations(organizations: Organization[]) {
+  const byId = new Map<string, Organization>();
+  organizations.forEach((organization) => {
+    byId.set(organization.id, organization);
+  });
+  return Array.from(byId.values());
 }
 
 function filterOrganizations(

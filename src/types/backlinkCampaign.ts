@@ -1,4 +1,5 @@
 import type { OrganizationPriority } from "./organization";
+import type { Organization } from "./organization";
 
 export type BacklinkCampaignType =
   | "Resource Page Backlink"
@@ -71,6 +72,7 @@ export type BacklinkCampaign = {
   notes: string;
   targets: BacklinkCampaignTarget[];
   templates: BacklinkCampaignTemplates;
+  importedOrganizations?: Organization[];
   createdAt: string;
   updatedAt: string;
 };
